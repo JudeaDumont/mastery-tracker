@@ -12,9 +12,10 @@ function App(): ReactElement {
   const create = useMastery((state) => state.create)
 
   const totalXp = skills.reduce((sum, skill) => sum + skill.xp, 0)
-  const graphHeat = skills.length > 0
-    ? Math.round(skills.reduce((sum, skill) => sum + skill.heat, 0) / skills.length)
-    : 0
+  const graphHeat =
+    skills.length > 0
+      ? Math.round(skills.reduce((sum, skill) => sum + skill.heat, 0) / skills.length)
+      : 0
   const hotNodes = skills.filter((skill) => skill.heat >= 70).length
   const lockedNodes = skills.filter((skill) => isLocked(skill, skills)).length
 
@@ -47,7 +48,9 @@ function App(): ReactElement {
               </button>
             )
           })}
-          <button className="view-tab" type="button">Full view</button>
+          <button className="view-tab" type="button">
+            Full view
+          </button>
         </nav>
 
         <div className="top-actions">
@@ -72,14 +75,24 @@ function App(): ReactElement {
           <div className="graph-legend">
             {create ? (
               <>
-                <span><i className="legend-swatch legend-swatch--from" /> From</span>
-                <span><i className="legend-swatch legend-swatch--candidate" /> Candidate</span>
-                <span><i className="legend-swatch legend-swatch--full" /> Capacity</span>
+                <span>
+                  <i className="legend-swatch legend-swatch--from" /> From
+                </span>
+                <span>
+                  <i className="legend-swatch legend-swatch--candidate" /> Candidate
+                </span>
+                <span>
+                  <i className="legend-swatch legend-swatch--full" /> Capacity
+                </span>
               </>
             ) : (
               <>
-                <span><i className="legend-swatch legend-swatch--heat" /> Momentum</span>
-                <span><i className="legend-swatch legend-swatch--gate" /> Unlock gate</span>
+                <span>
+                  <i className="legend-swatch legend-swatch--heat" /> Momentum
+                </span>
+                <span>
+                  <i className="legend-swatch legend-swatch--gate" /> Unlock gate
+                </span>
               </>
             )}
           </div>
@@ -89,7 +102,11 @@ function App(): ReactElement {
 
       <footer className="xp-board">
         <Metric label="Total XP" value={totalXp.toLocaleString()} detail={`+${todayXp} today`} />
-        <Metric label="Daily average" value={Math.round(totalXp / 30).toString()} detail="prototype window" />
+        <Metric
+          label="Daily average"
+          value={Math.round(totalXp / 30).toString()}
+          detail="prototype window"
+        />
         <Metric label="Graph heat" value={graphHeat.toString()} detail={`${hotNodes} hot nodes`} />
         <Metric
           label="Recent unlocks"
@@ -101,7 +118,15 @@ function App(): ReactElement {
   )
 }
 
-function Metric({ label, value, detail }: { label: string; value: string; detail: string }): ReactElement {
+function Metric({
+  label,
+  value,
+  detail
+}: {
+  label: string
+  value: string
+  detail: string
+}): ReactElement {
   return (
     <div className="metric">
       <span>{label}</span>

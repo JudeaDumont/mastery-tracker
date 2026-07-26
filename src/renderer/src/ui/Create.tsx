@@ -1,12 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import type { ReactElement } from 'react'
-import {
-  NODE_CAPACITY,
-  createSelectionFull,
-  nodeTitle,
-  toCandidateIds,
-  useMastery
-} from '../store'
+import { NODE_CAPACITY, createSelectionFull, nodeTitle, toCandidateIds, useMastery } from '../store'
 
 export function Create(): ReactElement | null {
   const roots = useMastery((state) => state.roots)
@@ -39,11 +33,12 @@ export function Create(): ReactElement | null {
   if (!draft) return null
 
   const ids = draft.step === 'from' ? draft.fromIds : draft.toIds
-  const label = ids.length > 0
-    ? ids.map((id) => nodeTitle(id, roots, skills)).join(' · ')
-    : draft.step === 'from'
-      ? 'Root — create a new category'
-      : 'None — create a terminal node'
+  const label =
+    ids.length > 0
+      ? ids.map((id) => nodeTitle(id, roots, skills)).join(' · ')
+      : draft.step === 'from'
+        ? 'Root — create a new category'
+        : 'None — create a terminal node'
   const full = createSelectionFull(draft)
   const used = draft.fromIds.length + draft.toIds.length
 
@@ -51,7 +46,7 @@ export function Create(): ReactElement | null {
     <section className="create-card" aria-label="Create node wizard">
       <div className="create-card__step">
         <span>{draft.step === 'from' ? '1' : '2'} of 2</span>
-        <strong>{draft.step === 'from' ? 'Select From nodes' : 'Select To nodes'}</strong>
+        <strong>{draft.step === 'from' ? 'Choose From nodes' : 'Choose To nodes'}</strong>
       </div>
 
       <label className="create-name">
@@ -76,14 +71,23 @@ export function Create(): ReactElement | null {
 
       {draft.step === 'to' && (
         <div className="create-capacity">
-          <span>{used}/{NODE_CAPACITY} structural connections</span>
+          <span>
+            {used}/{NODE_CAPACITY} structural connections
+          </span>
           <span>{full ? 'Capacity reached' : `${candidateCount} candidates`}</span>
         </div>
       )}
 
       <div className="create-actions">
-        <button type="button" onClick={clear}>Clear</button>
-        <button className="create-continue" type="button" disabled={!draft.title.trim()} onClick={next}>
+        <button type="button" onClick={clear}>
+          Clear
+        </button>
+        <button
+          className="create-continue"
+          type="button"
+          disabled={!draft.title.trim()}
+          onClick={next}
+        >
           Continue
         </button>
       </div>
