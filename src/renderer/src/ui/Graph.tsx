@@ -164,7 +164,8 @@ export function Graph(): ReactElement {
         handles.get(link.id),
         gateLevel,
         targetGeometry(link.to, positions, roots),
-        lockedTarget
+        lockedTarget,
+        rootSourceGeometry(link.from, positions, roots)
       )
     })
 
@@ -175,7 +176,8 @@ export function Graph(): ReactElement {
         handles.get(link.id),
         undefined,
         targetGeometry(link.to, positions, roots),
-        false
+        false,
+        rootSourceGeometry(link.from, positions, roots)
       )
     )
     return [...structural, ...temporary]
@@ -224,6 +226,19 @@ function MasteryEdge({
   data
 }: EdgeProps): ReactElement {
   const edgeClass = String(data?.edgeClass ?? '')
+  const sourceCenterX = Number(data?.sourceCenterX ?? sourceX)
+  const sourceCenterY = Number(data?.sourceCenterY ?? sourceY)
+  const sourceRadius = Number(data?.sourceRadius ?? 0)
+  const sourceDeltaX = sourceX - sourceCenterX
+  const sourceDeltaY = sourceY - sourceCenterY
+  const sourceDistance = Math.hypot(sourceDeltaX, sourceDeltaY)
+  const useSourceGeometry = sourceRadius > 0 && sourceDistance > 0
+  const renderedSourceX = useSourceGeometry
+    ? sourceCenterX + (sourceDeltaX / sourceDistance) * sourceRadius
+    : sourceX
+  const renderedSourceY = useSourceGeometry
+    ? sourceCenterY + (sourceDeltaY / sourceDistance) * sourceRadius
+    : sourceY
   const targetSlot = Number(data?.targetSlot ?? 4)
   const targetAngle = ((140 - targetSlot * 12.5) * Math.PI) / 180
   const targetCenterX = Number(data?.targetCenterX ?? targetX)
@@ -234,8 +249,8 @@ function MasteryEdge({
   const renderedTargetX = targetCenterX + Math.cos(targetAngle) * targetRadius
   const renderedTargetY = targetCenterY - Math.sin(targetAngle) * targetRadius
   const [path, labelX, labelY] = getBezierPath({
-    sourceX,
-    sourceY,
+    sourceX: renderedSourceX,
+    sourceY: renderedSourceY,
     targetX: renderedTargetX,
     targetY: renderedTargetY,
     sourcePosition,
@@ -285,7 +300,7 @@ interface EdgeHandlePair {
   target: string
 }
 
-interface TargetGeometry {
+interface EndpointGeometry {
   centerX: number
   centerY: number
   radius: number
@@ -296,8 +311,9 @@ function edgeFor(
   className: string,
   handles?: EdgeHandlePair,
   gateLevel?: number,
-  geometry?: TargetGeometry,
-  targetLocked = false
+  geometry?: EndpointGeometry,
+  targetLocked = false,
+  sourceGeometry?: EndpointGeometry
 ): Edge {
   return {
     id: link.id,
@@ -309,6 +325,9 @@ function edgeFor(
     className,
     data: {
       edgeClass: className,
+      sourceCenterX: sourceGeometry?.centerX,
+      sourceCenterY: sourceGeometry?.centerY,
+      sourceRadius: sourceGeometry?.radius,
       targetSlot: targetSlot(handles?.target),
       targetCenterX: geometry?.centerX,
       targetCenterY: geometry?.centerY,
@@ -319,11 +338,31 @@ function edgeFor(
   }
 }
 
+function rootSourceGeometry(
+  id: NodeId,
+  positions: Record<NodeId, { x: number; y: number }>,
+  roots: Root[]
+): EndpointGeometry | undefined {
+  const position = positions[id]
+  const isRoot = roots.some((root) => root.id === id)
+  if (!position || !isRoot) return undefined
+
+  const size = 130
+  const halfSize = size / 2
+  const outerHandleOffset = size * 0.4
+
+  return {
+    centerX: position.x + halfSize,
+    centerY: position.y + halfSize,
+    radius: Math.hypot(outerHandleOffset, halfSize)
+  }
+}
+
 function targetGeometry(
   id: NodeId,
   positions: Record<NodeId, { x: number; y: number }>,
   roots: Root[]
-): TargetGeometry | undefined {
+): EndpointGeometry | undefined {
   const position = positions[id]
   if (!position) return undefined
 

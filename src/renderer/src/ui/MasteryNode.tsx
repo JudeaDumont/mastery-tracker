@@ -104,6 +104,18 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
 
   return (
     <div className={classes} style={{ '--heat': data.heat / 100 } as CSSProperties}>
+      {data.root && (
+        <>
+          <span className="root-crown-ring" aria-hidden="true" />
+          <span className="root-emblem" aria-label="Root node">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2.5 21.5 12 12 21.5 2.5 12Z" />
+              <circle cx="12" cy="12" r="3.25" />
+              <path d="M12 5.5v3M12 15.5v3M5.5 12h3M15.5 12h3" />
+            </svg>
+          </span>
+        </>
+      )}
       {targetHandleOffsets.map(({ left, top }, index) => (
         <Handle
           key={`target-${index}`}
@@ -135,7 +147,9 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
           </span>
         )}
         <strong>{data.title}</strong>
-        <span>{data.root ? `Rank ${data.level}` : `Level ${data.level}/${data.maxLevel}`}</span>
+        <span className={data.root ? 'root-rank' : undefined}>
+          {data.root ? `Rank ${data.level}` : `Level ${data.level}/${data.maxLevel}`}
+        </span>
       </div>
     </div>
   )
