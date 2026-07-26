@@ -30,6 +30,16 @@ const initialSkills: Skill[] = [
     gates: []
   },
   {
+    id: 'bench',
+    rootId: 'lifter',
+    title: 'Bench',
+    xp: 132,
+    maxLevel: 5,
+    thresholds: [100, 300, 600, 1000, 1500],
+    heat: 74,
+    gates: []
+  },
+  {
     id: 'deadlift',
     rootId: 'lifter',
     title: 'Deadlift',
@@ -40,25 +50,28 @@ const initialSkills: Skill[] = [
     gates: []
   },
   {
-    id: 'running',
+    id: 'competition',
     rootId: 'lifter',
-    title: 'Running',
+    title: 'Competition',
     xp: 0,
-    maxLevel: 3,
-    thresholds: [100, 300, 650],
+    maxLevel: 5,
+    thresholds: [100, 300, 600, 1000, 1500],
     heat: 18,
     gates: [
-      { nodeId: 'squat', level: 2 },
-      { nodeId: 'deadlift', level: 2 }
+      { nodeId: 'squat', level: 5 },
+      { nodeId: 'bench', level: 5 },
+      { nodeId: 'deadlift', level: 5 }
     ]
   }
 ]
 
 const initialLinks: Link[] = [
   { id: 'lifter-squat', from: 'lifter', to: 'squat' },
+  { id: 'lifter-bench', from: 'lifter', to: 'bench' },
   { id: 'lifter-deadlift', from: 'lifter', to: 'deadlift' },
-  { id: 'squat-running', from: 'squat', to: 'running' },
-  { id: 'deadlift-running', from: 'deadlift', to: 'running' }
+  { id: 'squat-competition', from: 'squat', to: 'competition' },
+  { id: 'bench-competition', from: 'bench', to: 'competition' },
+  { id: 'deadlift-competition', from: 'deadlift', to: 'competition' }
 ]
 
 function draftFor(skills: Skill[]): Record<SkillId, DraftUpdate> {

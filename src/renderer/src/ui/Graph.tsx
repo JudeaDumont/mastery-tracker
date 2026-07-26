@@ -4,6 +4,7 @@ import {
   Background,
   BackgroundVariant,
   Controls,
+  MarkerType,
   ReactFlow,
   type Edge,
   type Node
@@ -107,18 +108,26 @@ export function Graph(): ReactElement {
   }, [create, draft, pickedIds, positions, preview, roots, skills, toCandidates, toFull])
 
   const edges = useMemo<Edge[]>(() => {
-    const structural = links.map((link) => edgeFor(link, 'flow-edge flow-edge--structure'))
-    const gates = skills.flatMap((skill) => skill.gates.map((gate) => ({
-      id: `gate-${gate.nodeId}-${skill.id}`,
-      source: gate.nodeId,
-      target: skill.id,
-      label: `Lv ${gate.level}`,
-      className: 'flow-edge flow-edge--gate',
-      labelStyle: { fill: '#b8c8e8', fontWeight: 700 }
-    })))
-    const temporary = previewLinks.map((link) => edgeFor(link, 'flow-edge flow-edge--preview'))
-    return [...structural, ...gates, ...temporary]
-  }, [links, previewLinks, skills])
+    const allLinks = [...links, ...previewLinks]
+    const handles = edgeHandles(allLinks, positions)
+    const gateLevels = new Map(
+      skills.flatMap((skill) =>
+        skill.gates.map((gate) => [`${gate.nodeId}:${skill.id}`, gate.level] as const)
+      )
+    )
+    const structural = links.map((link) =>
+      edgeFor(
+        link,
+        'flow-edge flow-edge--structure',
+        handles.get(link.id),
+        gateLevels.get(`${link.from}:${link.to}`)
+      )
+    )
+    const temporary = previewLinks.map((link) =>
+      edgeFor(link, 'flow-edge flow-edge--preview', handles.get(link.id))
+    )
+    return [...structural, ...temporary]
+  }, [links, positions, previewLinks, skills])
 
   return (
     <ReactFlow
@@ -164,13 +173,81 @@ function masteryNode(
   }
 }
 
-function edgeFor(link: Link, className: string): Edge {
+interface EdgeHandlePair {
+  source: string
+  target: string
+}
+
+function edgeFor(
+  link: Link,
+  className: string,
+  handles?: EdgeHandlePair,
+  gateLevel?: number
+): Edge {
   return {
     id: link.id,
     source: link.from,
     target: link.to,
-    className
+    sourceHandle: handles?.source,
+    targetHandle: handles?.target,
+    className,
+    label: gateLevel ? `Lv ${gateLevel}` : undefined,
+    labelStyle: gateLevel ? { fill: '#b8c8e8', fontWeight: 700 } : undefined,
+    markerEnd: {
+      type: MarkerType.Arrow,
+      width: 8,
+      height: 8,
+      color: className.includes('preview') ? '#63dbff' : '#74bdff'
+    }
   }
+}
+
+function edgeHandles(
+  links: Link[],
+  positions: Record<NodeId, { x: number; y: number }>
+): Map<string, EdgeHandlePair> {
+  const result = new Map<string, EdgeHandlePair>()
+  const outgoing = new Map<NodeId, Link[]>()
+  const incoming = new Map<NodeId, Link[]>()
+
+  links.forEach((link) => {
+    outgoing.set(link.from, [...(outgoing.get(link.from) ?? []), link])
+    incoming.set(link.to, [...(incoming.get(link.to) ?? []), link])
+  })
+
+  outgoing.forEach((group) => {
+    const sorted = [...group].sort(
+      (left, right) => (positions[left.to]?.x ?? 0) - (positions[right.to]?.x ?? 0)
+    )
+    const slots = handleSlots(sorted.length)
+
+    sorted.forEach((link, index) => {
+      const current = result.get(link.id) ?? { source: 'source-4', target: 'target-4' }
+      result.set(link.id, { ...current, source: `source-${slots[index]}` })
+    })
+  })
+
+  incoming.forEach((group) => {
+    const sorted = [...group].sort(
+      (left, right) => (positions[left.from]?.x ?? 0) - (positions[right.from]?.x ?? 0)
+    )
+    const slots = handleSlots(sorted.length)
+
+    sorted.forEach((link, index) => {
+      const current = result.get(link.id) ?? { source: 'source-4', target: 'target-4' }
+      result.set(link.id, { ...current, target: `target-${slots[index]}` })
+    })
+  })
+
+  return result
+}
+
+function handleSlots(count: number): number[] {
+  if (count <= 1) return [4]
+
+  return Array.from({ length: count }, (_, index) =>
+    Math.round((index * 8) / (count - 1))
+  )
 }
 
 function visualFor(

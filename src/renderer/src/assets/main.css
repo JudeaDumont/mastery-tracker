@@ -193,11 +193,24 @@ button { color: inherit; }
 
 /* Automatic lattice and graph selection modes */
 .flow-edge--structure .react-flow__edge-path {
-  stroke: rgba(91, 124, 170, .52);
-  stroke-width: 8;
-  filter: drop-shadow(0 0 2px rgba(83, 139, 205, .25));
+  stroke: rgba(116, 189, 255, .82);
+  stroke-width: 3;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 2px rgba(116, 189, 255, .34)) drop-shadow(0 0 8px rgba(83, 167, 255, .18));
 }
-.flow-edge--structure .react-flow__edge-path::after { content: ''; }
+.flow-edge--structure .react-flow__edge-text {
+  fill: #d9ecff;
+}
+.flow-edge--structure .react-flow__arrowhead path,
+.flow-edge--preview .react-flow__arrowhead path {
+  stroke: none;
+}
+.flow-edge--structure .react-flow__arrowhead path {
+  fill: none;
+  stroke: rgba(116, 189, 255, .68);
+  stroke-width: 1.25;
+  filter: drop-shadow(0 0 3px rgba(116, 189, 255, .24));
+}
 .flow-edge--preview .react-flow__edge-path {
   stroke: var(--cyan);
   stroke-width: 3;

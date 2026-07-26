@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import type { ReactElement } from 'react'
 import { NODE_CAPACITY, createSelectionFull, nodeTitle, toCandidateIds, useMastery } from '../store'
 

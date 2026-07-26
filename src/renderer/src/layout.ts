@@ -22,6 +22,8 @@ const ROOT_GAP = 900
 const RING_GAP = 205
 const START_ANGLE = radians(150)
 const END_ANGLE = radians(30)
+const ROOT_SIZE = 130
+const NODE_SIZE = 112
 
 export function graphLayout({ roots, skills, links, preview }: LayoutInput): Record<NodeId, Point> {
   const allRoots = preview?.root
@@ -33,13 +35,13 @@ export function graphLayout({ roots, skills, links, preview }: LayoutInput): Rec
   const positions: Record<NodeId, Point> = {}
 
   allRoots.forEach((root, rootIndex) => {
-    const center = { x: 420 + rootIndex * ROOT_GAP, y: 130 }
+    const center = { x: 420 + rootIndex * ROOT_GAP, y: 195 }
     const rootSkills = allSkills.filter((skill) => skill.rootId === root.id)
     const depth = depthsFor(root.id, rootSkills, links)
     const angles = new Map<NodeId, number>()
     const groups = new Map<number, Skill[]>()
 
-    positions[root.id] = center
+    positions[root.id] = centeredPosition(center, ROOT_SIZE)
     rootSkills.forEach((skill) => {
       const value = depth.get(skill.id) ?? 1
       groups.set(value, [...(groups.get(value) ?? []), skill])
@@ -56,16 +58,18 @@ export function graphLayout({ roots, skills, links, preview }: LayoutInput): Rec
             .map((link) => angles.get(link.from))
             .filter((angle): angle is number => angle !== undefined)
           const fallback = distributedAngle(index, sorted.length)
-          const inherited = parentAngles.length > 0 ? circularMean(parentAngles) : fallback
-          const collisionOffset = radians((index - (sorted.length - 1) / 2) * 10)
-          const angle = clamp(inherited + collisionOffset, radians(15), radians(165))
+          const angle =
+            parentAngles.length > 1
+              ? clamp(circularMean(parentAngles), radians(15), radians(165))
+              : fallback
           const radius = RING_GAP * ring
-
-          angles.set(skill.id, angle)
-          positions[skill.id] = {
+          const nodeCenter = {
             x: center.x + Math.cos(angle) * radius,
             y: center.y + Math.sin(angle) * radius
           }
+
+          angles.set(skill.id, angle)
+          positions[skill.id] = centeredPosition(nodeCenter, NODE_SIZE)
         })
       })
   })
@@ -134,4 +138,11 @@ function radians(degrees: number): number {
 
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, value))
+}
+
+function centeredPosition(center: Point, size: number): Point {
+  return {
+    x: center.x - size / 2,
+    y: center.y - size / 2
+  }
 }

@@ -24,7 +24,23 @@ export interface MasteryNodeData extends Record<string, unknown> {
 
 export type MasteryNodeType = Node<MasteryNodeData, 'mastery'>
 
-function Ring({ level, maxLevel, locked }: Pick<MasteryNodeData, 'level' | 'maxLevel' | 'locked'>): ReactElement {
+const handleOffsets = [
+  '10%',
+  '20%',
+  '30%',
+  '40%',
+  '50%',
+  '60%',
+  '70%',
+  '80%',
+  '90%'
+]
+
+function Ring({
+  level,
+  maxLevel,
+  locked
+}: Pick<MasteryNodeData, 'level' | 'maxLevel' | 'locked'>): ReactElement {
   const radius = 47
   const circumference = 2 * Math.PI * radius
   const gap = 7
@@ -36,7 +52,9 @@ function Ring({ level, maxLevel, locked }: Pick<MasteryNodeData, 'level' | 'maxL
       {Array.from({ length: maxLevel }, (_, index) => (
         <circle
           key={index}
-          className={index < level && !locked ? 'ring-segment ring-segment--on' : 'ring-segment'}
+          className={
+            index < level && !locked ? 'ring-segment ring-segment--on' : 'ring-segment'
+          }
           cx="56"
           cy="56"
           r={radius}
@@ -50,7 +68,8 @@ function Ring({ level, maxLevel, locked }: Pick<MasteryNodeData, 'level' | 'maxL
 }
 
 export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement {
-  const heatClass = data.heat >= 75 ? 'node--hot' : data.heat >= 40 ? 'node--warm' : 'node--cold'
+  const heatClass =
+    data.heat >= 75 ? 'node--hot' : data.heat >= 40 ? 'node--warm' : 'node--cold'
   const classes = [
     'mastery-node',
     heatClass,
@@ -58,11 +77,32 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
     data.root ? 'node--root' : '',
     data.activitySelected ? 'node--activity' : '',
     `node--${data.visual}`
-  ].filter(Boolean).join(' ')
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <div className={classes} style={{ '--heat': data.heat / 100 } as CSSProperties}>
-      <Handle type="target" position={Position.Top} className="node-handle" />
+      {handleOffsets.map((left, index) => (
+        <Handle
+          key={`target-${index}`}
+          id={`target-${index}`}
+          type="target"
+          position={Position.Top}
+          className="node-handle"
+          style={{ left }}
+        />
+      ))}
+      {handleOffsets.map((left, index) => (
+        <Handle
+          key={`source-${index}`}
+          id={`source-${index}`}
+          type="source"
+          position={Position.Bottom}
+          className="node-handle"
+          style={{ left }}
+        />
+      ))}
       <Ring level={data.level} maxLevel={data.maxLevel} locked={data.locked} />
       <div className="node-core">
         {data.locked && (
@@ -76,7 +116,6 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
         <strong>{data.title}</strong>
         <span>{data.root ? `Rank ${data.level}` : `Level ${data.level}/${data.maxLevel}`}</span>
       </div>
-      {!data.root && <Handle type="source" position={Position.Bottom} className="node-handle" />}
     </div>
   )
 }
