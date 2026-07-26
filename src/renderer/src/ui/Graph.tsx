@@ -142,6 +142,7 @@ export function Graph(): ReactElement {
   const edges = useMemo<Edge[]>(() => {
     const allLinks = [...links, ...previewLinks]
     const handles = edgeHandles(allLinks, positions)
+    const fanRoutes = fanInRoutes(allLinks, positions, roots)
     const gateLevels = new Map(
       skills.flatMap((skill) =>
         skill.gates.map((gate) => [`${gate.nodeId}:${skill.id}`, gate.level] as const)
@@ -165,7 +166,8 @@ export function Graph(): ReactElement {
         gateLevel,
         targetGeometry(link.to, positions, roots),
         gateUnmet,
-        rootSourceGeometry(link.from, positions, roots)
+        rootSourceGeometry(link.from, positions, roots),
+        fanRoutes.get(link.id)
       )
     })
 
@@ -177,7 +179,8 @@ export function Graph(): ReactElement {
         undefined,
         targetGeometry(link.to, positions, roots),
         false,
-        rootSourceGeometry(link.from, positions, roots)
+        rootSourceGeometry(link.from, positions, roots),
+        fanRoutes.get(link.id)
       )
     )
     return [...structural, ...temporary]
@@ -248,7 +251,10 @@ function MasteryEdge({
   const showGateBadge = Boolean(data?.showGateBadge) && gateLevel > 0
   const renderedTargetX = targetCenterX + Math.cos(targetAngle) * targetRadius
   const renderedTargetY = targetCenterY - Math.sin(targetAngle) * targetRadius
-  const [path, labelX, labelY] = getBezierPath({
+  const fanSourceRailY = Number(data?.fanSourceRailY)
+  const fanTargetRailY = Number(data?.fanTargetRailY)
+  const useFanRoute = Number.isFinite(fanSourceRailY) && Number.isFinite(fanTargetRailY)
+  const defaultPath = getBezierPath({
     sourceX: renderedSourceX,
     sourceY: renderedSourceY,
     targetX: renderedTargetX,
@@ -256,6 +262,20 @@ function MasteryEdge({
     sourcePosition,
     targetPosition
   })
+  const fanCurve = useFanRoute
+    ? smoothFanInCurve(
+        renderedSourceX,
+        renderedSourceY,
+        renderedTargetX,
+        renderedTargetY,
+        fanSourceRailY,
+        fanTargetRailY
+      )
+    : undefined
+  const path = fanCurve?.path ?? defaultPath[0]
+  const gateLabelPoint = fanCurve ? cubicPoint(fanCurve, 0.48) : undefined
+  const labelX = gateLabelPoint?.x ?? defaultPath[1]
+  const labelY = gateLabelPoint?.y ?? defaultPath[2]
 
   return (
     <>
@@ -306,6 +326,11 @@ interface EndpointGeometry {
   radius: number
 }
 
+interface FanRoute {
+  sourceRailY: number
+  targetRailY: number
+}
+
 function edgeFor(
   link: Link,
   className: string,
@@ -313,7 +338,8 @@ function edgeFor(
   gateLevel?: number,
   geometry?: EndpointGeometry,
   targetLocked = false,
-  sourceGeometry?: EndpointGeometry
+  sourceGeometry?: EndpointGeometry,
+  fanRoute?: FanRoute
 ): Edge {
   return {
     id: link.id,
@@ -332,10 +358,123 @@ function edgeFor(
       targetCenterX: geometry?.centerX,
       targetCenterY: geometry?.centerY,
       targetRadius: geometry?.radius,
+      fanSourceRailY: fanRoute?.sourceRailY,
+      fanTargetRailY: fanRoute?.targetRailY,
       gateLevel,
       showGateBadge: targetLocked && Boolean(gateLevel)
     }
   }
+}
+
+interface CubicCurve {
+  path: string
+  sourceX: number
+  sourceY: number
+  control1X: number
+  control1Y: number
+  control2X: number
+  control2Y: number
+  targetX: number
+  targetY: number
+}
+
+function smoothFanInCurve(
+  sourceX: number,
+  sourceY: number,
+  targetX: number,
+  targetY: number,
+  sourceRailY: number,
+  targetRailY: number
+): CubicCurve {
+  const control1Y = Math.max(sourceY + 24, sourceRailY)
+  const control2Y = Math.min(targetY - 24, targetRailY)
+
+  return {
+    path: `M ${sourceX} ${sourceY} C ${sourceX} ${control1Y}, ${targetX} ${control2Y}, ${targetX} ${targetY}`,
+    sourceX,
+    sourceY,
+    control1X: sourceX,
+    control1Y,
+    control2X: targetX,
+    control2Y,
+    targetX,
+    targetY
+  }
+}
+
+function cubicPoint(curve: CubicCurve, progress: number): { x: number; y: number } {
+  const remaining = 1 - progress
+  const sourceWeight = remaining * remaining * remaining
+  const control1Weight = 3 * remaining * remaining * progress
+  const control2Weight = 3 * remaining * progress * progress
+  const targetWeight = progress * progress * progress
+
+  return {
+    x:
+      sourceWeight * curve.sourceX +
+      control1Weight * curve.control1X +
+      control2Weight * curve.control2X +
+      targetWeight * curve.targetX,
+    y:
+      sourceWeight * curve.sourceY +
+      control1Weight * curve.control1Y +
+      control2Weight * curve.control2Y +
+      targetWeight * curve.targetY
+  }
+}
+
+// Shared control bands preserve left-to-right ordering without introducing hard rails.
+function fanInRoutes(
+  links: Link[],
+  positions: Record<NodeId, { x: number; y: number }>,
+  roots: Root[]
+): Map<string, FanRoute> {
+  const result = new Map<string, FanRoute>()
+  const incoming = new Map<NodeId, Link[]>()
+
+  links.forEach((link) => {
+    incoming.set(link.to, [...(incoming.get(link.to) ?? []), link])
+  })
+
+  incoming.forEach((group, targetId) => {
+    if (group.length <= 1) return
+
+    const targetPosition = positions[targetId]
+    if (!targetPosition) return
+
+    const targetTop = targetPosition.y
+    const sourceBottoms = group
+      .map((link) => {
+        const sourcePosition = positions[link.from]
+        return sourcePosition ? sourcePosition.y + nodeSize(link.from, roots) : undefined
+      })
+      .filter((value): value is number => value !== undefined)
+
+    if (sourceBottoms.length !== group.length) return
+
+    const lowestSourceBottom = Math.max(...sourceBottoms)
+    const availableGap = targetTop - lowestSourceBottom
+    const minimumRailSeparation = 36
+    const edgePadding = Math.max(10, Math.min(28, availableGap * 0.22))
+    let sourceRailY = lowestSourceBottom + edgePadding
+    let targetRailY = targetTop - edgePadding
+
+    if (targetRailY - sourceRailY < minimumRailSeparation) {
+      const midpoint = (lowestSourceBottom + targetTop) / 2
+      sourceRailY = midpoint - minimumRailSeparation / 2
+      targetRailY = midpoint + minimumRailSeparation / 2
+    }
+
+    group.forEach((link) => {
+      result.set(link.id, { sourceRailY, targetRailY })
+    })
+  })
+
+  return result
+}
+
+function nodeSize(id: NodeId, roots: Root[]): number {
+  return roots.some((root) => root.id === id) ? 130 : 112
 }
 
 function rootSourceGeometry(
