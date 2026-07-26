@@ -1,34 +1,39 @@
-# mastery-tracker
+# Mastery Tracker
 
-An Electron application with React and TypeScript
+Local-first Electron prototype for a visual mastery graph.
 
-## Recommended IDE Setup
+## Run
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
-
-## Project Setup
-
-### Install
-
-```bash
-$ npm install
+```powershell
+npm install
+npm run dev
 ```
 
-### Development
+The install step adds React Flow and Zustand, which were not in the original Electron scaffold.
 
-```bash
-$ npm run dev
+## Included in this slice
+
+- Luminous React Flow canvas with draggable nodes
+- Segmented radial level rings
+- Root node plus Squat, Deadlift, and Running
+- Level-gated locked node
+- Hottest-to-coldest update pane
+- Batch duration, effort, and note entry
+- XP awards, level-ups, unlock checks, and heat changes
+- In-memory activity history and XP board
+
+## Short source layout
+
+```text
+src/renderer/src/
+  App.tsx
+  model.ts
+  store.ts
+  xp.ts
+  ui/
+    Graph.tsx
+    MasteryNode.tsx
+    Updates.tsx
 ```
 
-### Build
-
-```bash
-# For windows
-$ npm run build:win
-
-# For macOS
-$ npm run build:mac
-
-# For Linux
-$ npm run build:linux
-```
+The next slice should add JSON persistence through `src/main` and `src/preload`.
