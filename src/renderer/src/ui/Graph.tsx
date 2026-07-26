@@ -3,10 +3,12 @@ import type { ReactElement } from 'react'
 import {
   Background,
   BackgroundVariant,
+  BaseEdge,
   Controls,
-  MarkerType,
   ReactFlow,
+  getBezierPath,
   type Edge,
+  type EdgeProps,
   type Node
 } from '@xyflow/react'
 import { graphLayout, type PreviewNode } from '../layout'
@@ -22,6 +24,7 @@ import { isLocked, levelFor } from '../xp'
 import { MasteryNode, type MasteryNodeData, type NodeVisual } from './MasteryNode'
 
 const nodeTypes = { mastery: MasteryNode }
+const edgeTypes = { mastery: MasteryEdge }
 const PREVIEW_ID = '__new__'
 
 export function Graph(): ReactElement {
@@ -58,7 +61,7 @@ export function Graph(): ReactElement {
   )
 
   const toCandidates = useMemo(
-    () => create ? toCandidateIds(roots, skills, links, create) : new Set<NodeId>(),
+    () => (create ? toCandidateIds(roots, skills, links, create) : new Set<NodeId>()),
     [create, links, roots, skills]
   )
   const toFull = create ? createSelectionFull(create) : false
@@ -67,9 +70,10 @@ export function Graph(): ReactElement {
     const rootNodes = roots.map((root) => {
       const rootSkills = skills.filter((skill) => skill.rootId === root.id)
       const rootLevel = Math.min(10, rootSkills.reduce((sum, skill) => sum + levelFor(skill), 0))
-      const rootHeat = rootSkills.length > 0
-        ? Math.round(rootSkills.reduce((sum, skill) => sum + skill.heat, 0) / rootSkills.length)
-        : 0
+      const rootHeat =
+        rootSkills.length > 0
+          ? Math.round(rootSkills.reduce((sum, skill) => sum + skill.heat, 0) / rootSkills.length)
+          : 0
 
       return masteryNode(root.id, positions[root.id], {
         title: root.title,
@@ -78,30 +82,54 @@ export function Graph(): ReactElement {
         heat: rootHeat,
         locked: false,
         root: true,
-        visual: visualFor(root.id, root.id, pickedIds, create, toCandidates, toFull, roots, skills, links)
+        visual: visualFor(
+          root.id,
+          root.id,
+          pickedIds,
+          create,
+          toCandidates,
+          toFull,
+          roots,
+          skills,
+          links
+        )
       })
     })
 
-    const skillNodes = skills.map((skill) => masteryNode(skill.id, positions[skill.id], {
-      title: skill.title,
-      level: levelFor(skill),
-      maxLevel: skill.maxLevel,
-      heat: skill.heat,
-      locked: isLocked(skill, skills),
-      activitySelected: draft[skill.id]?.selected,
-      visual: visualFor(skill.id, skill.rootId, pickedIds, create, toCandidates, toFull, roots, skills, links)
-    }))
+    const skillNodes = skills.map((skill) =>
+      masteryNode(skill.id, positions[skill.id], {
+        title: skill.title,
+        level: levelFor(skill),
+        maxLevel: skill.maxLevel,
+        heat: skill.heat,
+        locked: isLocked(skill, skills),
+        activitySelected: draft[skill.id]?.selected,
+        visual: visualFor(
+          skill.id,
+          skill.rootId,
+          pickedIds,
+          create,
+          toCandidates,
+          toFull,
+          roots,
+          skills,
+          links
+        )
+      })
+    )
 
     const previewNode = preview
-      ? [masteryNode(PREVIEW_ID, positions[PREVIEW_ID], {
-          title: create?.title.trim() || 'New mastery',
-          level: 0,
-          maxLevel: preview.root ? 10 : 3,
-          heat: 0,
-          locked: false,
-          root: preview.root,
-          visual: 'preview'
-        })]
+      ? [
+          masteryNode(PREVIEW_ID, positions[PREVIEW_ID], {
+            title: create?.title.trim() || 'New mastery',
+            level: 0,
+            maxLevel: preview.root ? 10 : 3,
+            heat: 0,
+            locked: false,
+            root: preview.root,
+            visual: 'preview'
+          })
+        ]
       : []
 
     return [...rootNodes, ...skillNodes, ...previewNode]
@@ -120,14 +148,21 @@ export function Graph(): ReactElement {
         link,
         'flow-edge flow-edge--structure',
         handles.get(link.id),
-        gateLevels.get(`${link.from}:${link.to}`)
+        gateLevels.get(`${link.from}:${link.to}`),
+        targetGeometry(link.to, positions, roots)
       )
     )
     const temporary = previewLinks.map((link) =>
-      edgeFor(link, 'flow-edge flow-edge--preview', handles.get(link.id))
+      edgeFor(
+        link,
+        'flow-edge flow-edge--preview',
+        handles.get(link.id),
+        undefined,
+        targetGeometry(link.to, positions, roots)
+      )
     )
     return [...structural, ...temporary]
-  }, [links, positions, previewLinks, skills])
+  }, [links, positions, previewLinks, roots, skills])
 
   return (
     <ReactFlow
@@ -135,6 +170,7 @@ export function Graph(): ReactElement {
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
       nodesDraggable={false}
       nodesConnectable={false}
       elementsSelectable={false}
@@ -160,6 +196,65 @@ export function Graph(): ReactElement {
   )
 }
 
+function MasteryEdge({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  className,
+  label,
+  labelStyle,
+  data
+}: EdgeProps): ReactElement {
+  const targetSlot = Number(data?.targetSlot ?? 4)
+  const targetAngle = ((140 - targetSlot * 12.5) * Math.PI) / 180
+  const targetCenterX = Number(data?.targetCenterX ?? targetX)
+  const targetCenterY = Number(data?.targetCenterY ?? targetY)
+  const targetRadius = Number(data?.targetRadius ?? 0)
+  const renderedTargetX = targetCenterX + Math.cos(targetAngle) * targetRadius
+  const renderedTargetY = targetCenterY - Math.sin(targetAngle) * targetRadius
+  const notchHalfLength = 3.5
+  const notchX = Math.sin(targetAngle) * notchHalfLength
+  const notchY = Math.cos(targetAngle) * notchHalfLength
+  const [path] = getBezierPath({
+    sourceX,
+    sourceY,
+    targetX: renderedTargetX,
+    targetY: renderedTargetY,
+    sourcePosition,
+    targetPosition
+  })
+  const showTerminal = className?.includes('flow-edge--structure')
+
+  return (
+    <>
+      <BaseEdge
+        id={id}
+        path={path}
+        className={className}
+        label={label}
+        labelStyle={labelStyle}
+        labelShowBg={Boolean(label)}
+        labelBgPadding={[5, 3]}
+        labelBgBorderRadius={6}
+        labelBgStyle={{ fill: 'rgba(8, 12, 24, .86)' }}
+      />
+      {showTerminal && (
+        <line
+          className="edge-terminal-notch"
+          x1={renderedTargetX - notchX}
+          y1={renderedTargetY - notchY}
+          x2={renderedTargetX + notchX}
+          y2={renderedTargetY + notchY}
+        />
+      )}
+    </>
+  )
+}
+
 function masteryNode(
   id: NodeId,
   position: { x: number; y: number } | undefined,
@@ -178,14 +273,22 @@ interface EdgeHandlePair {
   target: string
 }
 
+interface TargetGeometry {
+  centerX: number
+  centerY: number
+  radius: number
+}
+
 function edgeFor(
   link: Link,
   className: string,
   handles?: EdgeHandlePair,
-  gateLevel?: number
+  gateLevel?: number,
+  geometry?: TargetGeometry
 ): Edge {
   return {
     id: link.id,
+    type: 'mastery',
     source: link.from,
     target: link.to,
     sourceHandle: handles?.source,
@@ -193,13 +296,36 @@ function edgeFor(
     className,
     label: gateLevel ? `Lv ${gateLevel}` : undefined,
     labelStyle: gateLevel ? { fill: '#b8c8e8', fontWeight: 700 } : undefined,
-    markerEnd: {
-      type: MarkerType.Arrow,
-      width: 8,
-      height: 8,
-      color: className.includes('preview') ? '#63dbff' : '#74bdff'
+    data: {
+      targetSlot: targetSlot(handles?.target),
+      targetCenterX: geometry?.centerX,
+      targetCenterY: geometry?.centerY,
+      targetRadius: geometry?.radius
     }
   }
+}
+
+function targetGeometry(
+  id: NodeId,
+  positions: Record<NodeId, { x: number; y: number }>,
+  roots: Root[]
+): TargetGeometry | undefined {
+  const position = positions[id]
+  if (!position) return undefined
+
+  const size = roots.some((root) => root.id === id) ? 130 : 112
+  const radius = size / 2
+
+  return {
+    centerX: position.x + radius,
+    centerY: position.y + radius,
+    radius
+  }
+}
+
+function targetSlot(handleId?: string): number {
+  const parsed = Number(handleId?.replace('target-', '') ?? 4)
+  return Number.isInteger(parsed) && parsed >= 0 && parsed <= 8 ? parsed : 4
 }
 
 function edgeHandles(
@@ -245,9 +371,7 @@ function edgeHandles(
 function handleSlots(count: number): number[] {
   if (count <= 1) return [4]
 
-  return Array.from({ length: count }, (_, index) =>
-    Math.round((index * 8) / (count - 1))
-  )
+  return Array.from({ length: count }, (_, index) => Math.round((index * 8) / (count - 1)))
 }
 
 function visualFor(
@@ -261,19 +385,17 @@ function visualFor(
   skills: Skill[],
   links: Link[]
 ): NodeVisual {
-  if (!create) return pickedIds.includes(id) ? 'picked' : 'normal'
-
-  if (create.step === 'from') {
+  if (id === PREVIEW_ID) return 'preview'
+  if (create?.step === 'from') {
     if (create.fromIds.includes(id)) return 'from'
-    const selectedRoot = create.fromIds[0]
-      ? nodeRootId(create.fromIds[0], roots, skills)
-      : undefined
-    const sameRoot = !selectedRoot || selectedRoot === rootId
-    return sameRoot && canUseFromNode(id, roots, links) ? 'normal' : 'unavailable'
+    const ok = canUseFromNode(id, rootId, roots, skills, links, create)
+    return ok ? 'candidate' : 'unavailable'
   }
-
-  if (create.fromIds.includes(id)) return 'from'
-  if (create.toIds.includes(id)) return full ? 'to-full' : 'to'
-  if (candidates.has(id) && !full) return 'candidate'
-  return 'unavailable'
+  if (create?.step === 'to') {
+    if (create.toIds.includes(id)) return full ? 'to-full' : 'to'
+    if (create.fromIds.includes(id)) return 'from'
+    return candidates.has(id) ? 'candidate' : 'unavailable'
+  }
+  if (pickedIds.includes(id)) return 'picked'
+  return 'normal'
 }

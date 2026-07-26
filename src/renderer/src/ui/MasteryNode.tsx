@@ -24,7 +24,7 @@ export interface MasteryNodeData extends Record<string, unknown> {
 
 export type MasteryNodeType = Node<MasteryNodeData, 'mastery'>
 
-const handleOffsets = [
+const sourceHandleOffsets = [
   '10%',
   '20%',
   '30%',
@@ -35,6 +35,22 @@ const handleOffsets = [
   '80%',
   '90%'
 ]
+
+const RING_CENTER = 56
+const RING_OUTER_RADIUS = 49.75
+const TARGET_ENDPOINT_GAP = 8.5
+const TARGET_HANDLE_RADIUS = RING_OUTER_RADIUS + TARGET_ENDPOINT_GAP
+const TARGET_START_DEGREES = 140
+const TARGET_STEP_DEGREES = 12.5
+
+const targetHandleOffsets = Array.from({ length: 9 }, (_, index) => {
+  const angle = ((TARGET_START_DEGREES - index * TARGET_STEP_DEGREES) * Math.PI) / 180
+
+  return {
+    left: RING_CENTER + Math.cos(angle) * TARGET_HANDLE_RADIUS,
+    top: RING_CENTER - Math.sin(angle) * TARGET_HANDLE_RADIUS
+  }
+})
 
 function Ring({
   level,
@@ -83,17 +99,17 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
 
   return (
     <div className={classes} style={{ '--heat': data.heat / 100 } as CSSProperties}>
-      {handleOffsets.map((left, index) => (
+      {targetHandleOffsets.map(({ left, top }, index) => (
         <Handle
           key={`target-${index}`}
           id={`target-${index}`}
           type="target"
           position={Position.Top}
           className="node-handle"
-          style={{ left }}
+          style={{ left, top }}
         />
       ))}
-      {handleOffsets.map((left, index) => (
+      {sourceHandleOffsets.map((left, index) => (
         <Handle
           key={`source-${index}`}
           id={`source-${index}`}

@@ -201,15 +201,11 @@ button { color: inherit; }
 .flow-edge--structure .react-flow__edge-text {
   fill: #d9ecff;
 }
-.flow-edge--structure .react-flow__arrowhead path,
-.flow-edge--preview .react-flow__arrowhead path {
-  stroke: none;
-}
-.flow-edge--structure .react-flow__arrowhead path {
-  fill: none;
-  stroke: rgba(116, 189, 255, .68);
-  stroke-width: 1.25;
-  filter: drop-shadow(0 0 3px rgba(116, 189, 255, .24));
+.edge-terminal-notch {
+  stroke: rgba(176, 227, 255, .76);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 3px rgba(116, 189, 255, .34));
 }
 .flow-edge--preview .react-flow__edge-path {
   stroke: var(--cyan);
