@@ -76,9 +76,7 @@ export function Graph(): ReactElement {
       )
       const rootMomentum =
         rootSkills.length > 0
-          ? Math.round(
-              rootSkills.reduce((sum, skill) => sum + skill.momentum, 0) / rootSkills.length
-            )
+          ? Math.round(rootSkills.reduce((sum, skill) => sum + skill.momentum, 0) / rootSkills.length)
           : 0
 
       return masteryNode(root.id, positions[root.id], {
@@ -145,7 +143,7 @@ export function Graph(): ReactElement {
       : []
 
     return [...rootNodes, ...skillNodes, ...previewNode]
-  }, [create, pickedIds, positions, preview, roots, skills, toCandidates, toFull])
+  }, [create, links, pickedIds, positions, preview, roots, skills, toCandidates, toFull])
 
   const edges = useMemo<Edge[]>(() => {
     const allLinks = [...links, ...previewLinks]
@@ -157,6 +155,22 @@ export function Graph(): ReactElement {
       )
     )
     const skillsById = new Map(skills.map((skill) => [skill.id, skill]))
+    const buildEdge = (
+      link: Link,
+      className: string,
+      gateLevel?: number,
+      gateUnmet = false
+    ): Edge =>
+      edgeFor(
+        link,
+        className,
+        handles.get(link.id),
+        gateLevel,
+        endpointGeometry(link.to, positions, roots, 'target'),
+        gateUnmet,
+        endpointGeometry(link.from, positions, roots, 'source'),
+        fanRoutes.get(link.id)
+      )
 
     const structural = links.map((link) => {
       const gateLevel = gateLevels.get(`${link.from}:${link.to}`)
@@ -167,29 +181,11 @@ export function Graph(): ReactElement {
         ? 'flow-edge flow-edge--locked-gate'
         : 'flow-edge flow-edge--structure'
 
-      return edgeFor(
-        link,
-        edgeClass,
-        handles.get(link.id),
-        gateLevel,
-        targetGeometry(link.to, positions, roots),
-        gateUnmet,
-        sourceGeometry(link.from, positions, roots),
-        fanRoutes.get(link.id)
-      )
+      return buildEdge(link, edgeClass, gateLevel, gateUnmet)
     })
 
     const temporary = previewLinks.map((link) =>
-      edgeFor(
-        link,
-        'flow-edge flow-edge--preview',
-        handles.get(link.id),
-        undefined,
-        targetGeometry(link.to, positions, roots),
-        false,
-        sourceGeometry(link.from, positions, roots),
-        fanRoutes.get(link.id)
-      )
+      buildEdge(link, 'flow-edge flow-edge--preview')
     )
     return [...structural, ...temporary]
   }, [links, positions, previewLinks, roots, skills])
@@ -294,11 +290,9 @@ function MasteryEdge({
         <EdgeLabelRenderer>
           <div
             className="edge-gate-badge"
-            style={
-              {
-                transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`
-              } as CSSProperties
-            }
+            style={{
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`
+            } as CSSProperties}
           >
             <span className="edge-gate-badge__lock" aria-hidden="true">
               <svg viewBox="0 0 24 24">
@@ -455,7 +449,9 @@ function fanInRoutes(
 
   const convergenceTargets = Array.from(incoming.entries())
     .filter(([, group]) => group.length > 1)
-    .sort(([leftId], [rightId]) => (positions[leftId]?.x ?? 0) - (positions[rightId]?.x ?? 0))
+    .sort(([leftId], [rightId]) =>
+      (positions[leftId]?.x ?? 0) - (positions[rightId]?.x ?? 0)
+    )
 
   convergenceTargets.forEach(([targetId, group], targetIndex) => {
     const targetPosition = positions[targetId]
@@ -474,12 +470,14 @@ function fanInRoutes(
     const lowestSourceBottom = Math.max(...sourceBottoms)
     const availableGap = targetTop - lowestSourceBottom
     const targetCount = convergenceTargets.length
-    const bandProgress = targetCount <= 1 ? 0.5 : 0.34 + (0.32 * targetIndex) / (targetCount - 1)
+    const bandProgress =
+      targetCount <= 1 ? 0.5 : 0.34 + (0.32 * targetIndex) / (targetCount - 1)
     const bandCenter = lowestSourceBottom + availableGap * bandProgress
     const railSeparation = Math.max(34, Math.min(64, availableGap * 0.16))
     const sourceRailY = bandCenter - railSeparation / 2
     const targetRailY = bandCenter + railSeparation / 2
-    const curveDirection = targetCount <= 1 ? 0 : targetIndex < (targetCount - 1) / 2 ? -1 : 1
+    const curveDirection =
+      targetCount <= 1 ? 0 : targetIndex < (targetCount - 1) / 2 ? -1 : 1
 
     group.forEach((link) => {
       result.set(link.id, { sourceRailY, targetRailY, curveDirection })
@@ -493,10 +491,11 @@ function nodeSize(id: NodeId, roots: Root[]): number {
   return roots.some((root) => root.id === id) ? 130 : 112
 }
 
-function sourceGeometry(
+function endpointGeometry(
   id: NodeId,
   positions: Record<NodeId, { x: number; y: number }>,
-  roots: Root[]
+  roots: Root[],
+  endpoint: 'source' | 'target'
 ): EndpointGeometry | undefined {
   const position = positions[id]
   if (!position) return undefined
@@ -504,29 +503,11 @@ function sourceGeometry(
   const isRoot = roots.some((root) => root.id === id)
   const size = isRoot ? 130 : 112
   const halfSize = size / 2
-  const radius = isRoot ? Math.hypot(size * 0.4, halfSize) : halfSize
+  const radius = endpoint === 'source' && isRoot ? Math.hypot(size * 0.4, halfSize) : halfSize
 
   return {
     centerX: position.x + halfSize,
     centerY: position.y + halfSize,
-    radius
-  }
-}
-
-function targetGeometry(
-  id: NodeId,
-  positions: Record<NodeId, { x: number; y: number }>,
-  roots: Root[]
-): EndpointGeometry | undefined {
-  const position = positions[id]
-  if (!position) return undefined
-
-  const size = roots.some((root) => root.id === id) ? 130 : 112
-  const radius = size / 2
-
-  return {
-    centerX: position.x + radius,
-    centerY: position.y + radius,
     radius
   }
 }
