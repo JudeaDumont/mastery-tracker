@@ -12,6 +12,7 @@ export interface LevelProgress {
   level: number
   currentXp: number
   requiredXp: number
+  overflowXp: number
   maxed: boolean
 }
 
@@ -47,6 +48,7 @@ export function levelProgressFor(
       level: skill.maxLevel,
       currentXp: 0,
       requiredXp: 0,
+      overflowXp: Math.max(0, skill.xp - totalXpRequired(skill)),
       maxed: true
     }
   }
@@ -60,6 +62,7 @@ export function levelProgressFor(
     level,
     currentXp: Math.max(0, Math.min(requiredXp, skill.xp - completedLevelXp)),
     requiredXp,
+    overflowXp: 0,
     maxed: false
   }
 }

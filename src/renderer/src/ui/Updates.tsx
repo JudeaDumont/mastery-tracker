@@ -132,7 +132,7 @@ export function Updates(): ReactElement {
                     {locked
                       ? 'Locked'
                       : maxed
-                        ? `Level ${skill.maxLevel}/${skill.maxLevel} · Max`
+                        ? `Level ${skill.maxLevel}/${skill.maxLevel} · Current cap`
                         : `Level ${levelFor(skill)}/${skill.maxLevel}`} · Heat {skill.heat}
                   </small>
                 </span>
@@ -140,12 +140,12 @@ export function Updates(): ReactElement {
                   {update?.selected
                     ? `+${projectedXp(update, skill)} XP`
                     : maxed
-                      ? 'MAX'
+                      ? `${progress.overflowXp} XP banked`
                       : `${progress.currentXp}/${progress.requiredXp} XP`}
                 </span>
               </button>
 
-              {update?.selected && !locked && !maxed && !create && (
+              {update?.selected && !locked && !create && (
                 <div className="update-fields">
                   <label>
                     Duration

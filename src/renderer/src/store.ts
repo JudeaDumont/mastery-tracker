@@ -11,7 +11,7 @@ import type {
   SkillId,
   SubmitResult
 } from './model'
-import { earnedXp, isLocked, isMaxLevel, levelFor, remainingXpToMax } from './xp'
+import { earnedXp, isLocked, levelFor } from './xp'
 
 export const NODE_CAPACITY = 4
 export const ROOT_CAPACITY = 8
@@ -85,7 +85,7 @@ const initialSkills: Skill[] = [
     id: 'g',
     rootId: 'lifter',
     title: 'G',
-    xp: 1630,
+    xp: 1880,
     maxLevel: 5,
     levelXpRequirements,
     heat: 50,
@@ -220,7 +220,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
   toggle: (id) =>
     set((state) => {
       const skill = state.skills.find((candidate) => candidate.id === id)
-      if (!skill || isLocked(skill, state.skills) || isMaxLevel(skill)) return state
+      if (!skill || isLocked(skill, state.skills)) return state
 
       return {
         draft: {
@@ -252,12 +252,9 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
     const skills = before.skills.map((skill) => {
       const update = before.draft[skill.id]
-      if (!update?.selected || isLocked(skill, before.skills) || isMaxLevel(skill)) return skill
+      if (!update?.selected || isLocked(skill, before.skills)) return skill
 
-      const xp = Math.min(
-        earnedXp(update.minutes, update.effort),
-        remainingXpToMax(skill)
-      )
+      const xp = earnedXp(update.minutes, update.effort)
       if (xp <= 0) return skill
 
       totalXp += xp
@@ -307,7 +304,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
       if (!skill) return { pickedIds }
 
-      const selected = !picked && !isLocked(skill, state.skills) && !isMaxLevel(skill)
+      const selected = !picked && !isLocked(skill, state.skills)
 
       return {
         pickedIds,
@@ -432,8 +429,8 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 }))
 
 export function projectedXp(update: DraftUpdate, skill: Skill): number {
-  if (!update.selected || isMaxLevel(skill)) return 0
-  return Math.min(earnedXp(update.minutes, update.effort), remainingXpToMax(skill))
+  if (!update.selected) return 0
+  return earnedXp(update.minutes, update.effort)
 }
 
 export function nodeTitle(id: NodeId, roots: Root[], skills: Skill[]): string {
