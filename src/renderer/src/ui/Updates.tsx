@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import type { ReactElement } from 'react'
 import type { Effort } from '../model'
 import { projectedXp, useMastery } from '../store'
-import { isLocked, levelFor } from '../xp'
+import { isLocked, levelFor, levelProgressFor } from '../xp'
 import { Create } from './Create'
 
 const effortLabels: Record<Effort, string> = {
@@ -26,7 +26,10 @@ export function Updates(): ReactElement {
 
   const ordered = useMemo(() => [...skills].sort((a, b) => b.heat - a.heat), [skills])
   const selected = ordered.filter((skill) => draft[skill.id]?.selected)
-  const totalProjectedXp = selected.reduce((sum, skill) => sum + projectedXp(draft[skill.id]), 0)
+  const totalProjectedXp = selected.reduce(
+    (sum, skill) => sum + projectedXp(draft[skill.id], skill),
+    0
+  )
   const totalMinutes = selected.reduce((sum, skill) => sum + draft[skill.id].minutes, 0)
 
   return (
@@ -60,26 +63,38 @@ export function Updates(): ReactElement {
         {ordered.map((skill) => {
           const update = draft[skill.id]
           const locked = isLocked(skill, skills)
+          const progress = levelProgressFor(skill)
+          const maxed = progress.maxed
 
           return (
             <section
               key={skill.id}
-              className={`update-row ${update?.selected ? 'update-row--selected' : ''} ${locked ? 'update-row--locked' : ''}`}
+              className={`update-row ${update?.selected ? 'update-row--selected' : ''} ${locked ? 'update-row--locked' : ''} ${maxed ? 'update-row--maxed' : ''}`}
             >
               <button
                 className="update-row__header"
                 type="button"
-                disabled={locked || Boolean(create)}
+                disabled={locked || maxed || Boolean(create)}
                 onClick={() => toggle(skill.id)}
               >
                 <span className="heat-dot" style={{ '--row-heat': skill.heat / 100 } as React.CSSProperties} />
                 <span className="update-title">
                   <strong>{skill.title}</strong>
                   <small>
-                    {locked ? 'Locked' : `Level ${levelFor(skill)}/${skill.maxLevel}`} · Heat {skill.heat}
+                    {locked
+                      ? 'Locked'
+                      : maxed
+                        ? `Level ${skill.maxLevel}/${skill.maxLevel} · Max`
+                        : `Level ${levelFor(skill)}/${skill.maxLevel}`} · Heat {skill.heat}
                   </small>
                 </span>
-                <span className="row-xp">{update?.selected ? `+${projectedXp(update)} XP` : `${skill.xp} XP`}</span>
+                <span className="row-xp">
+                  {update?.selected
+                    ? `+${projectedXp(update, skill)} XP`
+                    : maxed
+                      ? 'MAX'
+                      : `${progress.currentXp}/${progress.requiredXp} XP`}
+                </span>
               </button>
 
               {update?.selected && !create && (

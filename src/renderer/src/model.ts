@@ -26,7 +26,7 @@ export interface Skill {
   title: string
   xp: number
   maxLevel: number
-  thresholds: number[]
+  levelXpRequirements: number[]
   heat: number
   gates: Gate[]
 }

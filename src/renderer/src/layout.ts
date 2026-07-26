@@ -90,7 +90,7 @@ function previewSkill(id: NodeId, rootId: RootId): Skill {
     title: 'Preview',
     xp: 0,
     maxLevel: 3,
-    thresholds: [100, 300, 600],
+    levelXpRequirements: [100, 200, 300],
     heat: 0,
     gates: []
   }

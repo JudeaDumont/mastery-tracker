@@ -11,14 +11,14 @@ import type {
   SkillId,
   SubmitResult
 } from './model'
-import { earnedXp, isLocked, levelFor } from './xp'
+import { earnedXp, isLocked, isMaxLevel, levelFor, remainingXpToMax } from './xp'
 
 export const NODE_CAPACITY = 4
 export const ROOT_CAPACITY = 8
 
 const initialRoots: Root[] = [{ id: 'lifter', title: 'Lifter' }]
 
-const thresholds = [100, 300, 600, 1000, 1500]
+const levelXpRequirements = [100, 180, 275, 425, 650]
 
 const initialSkills: Skill[] = [
   {
@@ -27,7 +27,7 @@ const initialSkills: Skill[] = [
     title: 'A',
     xp: 145,
     maxLevel: 5,
-    thresholds,
+    levelXpRequirements,
     heat: 35,
     gates: []
   },
@@ -35,9 +35,9 @@ const initialSkills: Skill[] = [
     id: 'b',
     rootId: 'lifter',
     title: 'B',
-    xp: 1600,
+    xp: 1200,
     maxLevel: 5,
-    thresholds,
+    levelXpRequirements,
     heat: 65,
     gates: []
   },
@@ -47,7 +47,7 @@ const initialSkills: Skill[] = [
     title: 'C',
     xp: 350,
     maxLevel: 5,
-    thresholds,
+    levelXpRequirements,
     heat: 42,
     gates: []
   },
@@ -57,7 +57,7 @@ const initialSkills: Skill[] = [
     title: 'D',
     xp: 650,
     maxLevel: 5,
-    thresholds,
+    levelXpRequirements,
     heat: 58,
     gates: []
   },
@@ -65,9 +65,9 @@ const initialSkills: Skill[] = [
     id: 'e',
     rootId: 'lifter',
     title: 'E',
-    xp: 1700,
+    xp: 420,
     maxLevel: 5,
-    thresholds,
+    levelXpRequirements,
     heat: 70,
     gates: []
   },
@@ -75,9 +75,9 @@ const initialSkills: Skill[] = [
     id: 'f',
     rootId: 'lifter',
     title: 'F',
-    xp: 1800,
+    xp: 1350,
     maxLevel: 5,
-    thresholds,
+    levelXpRequirements,
     heat: 62,
     gates: []
   },
@@ -85,9 +85,9 @@ const initialSkills: Skill[] = [
     id: 'g',
     rootId: 'lifter',
     title: 'G',
-    xp: 1900,
+    xp: 1630,
     maxLevel: 5,
-    thresholds,
+    levelXpRequirements,
     heat: 50,
     gates: []
   },
@@ -97,7 +97,7 @@ const initialSkills: Skill[] = [
     title: 'H',
     xp: 1050,
     maxLevel: 5,
-    thresholds,
+    levelXpRequirements,
     heat: 68,
     gates: []
   },
@@ -107,15 +107,15 @@ const initialSkills: Skill[] = [
     title: 'I',
     xp: 0,
     maxLevel: 5,
-    thresholds,
+    levelXpRequirements,
     heat: 18,
     gates: [
-      { nodeId: 'a', level: 5 },
-      { nodeId: 'b', level: 5 },
-      { nodeId: 'c', level: 5 },
-      { nodeId: 'd', level: 5 },
-      { nodeId: 'e', level: 5 },
-      { nodeId: 'f', level: 5 },
+      { nodeId: 'a', level: 2 },
+      { nodeId: 'b', level: 3 },
+      { nodeId: 'c', level: 3 },
+      { nodeId: 'd', level: 4 },
+      { nodeId: 'e', level: 2 },
+      { nodeId: 'f', level: 4 },
       { nodeId: 'g', level: 5 },
       { nodeId: 'h', level: 5 }
     ]
@@ -193,7 +193,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
   toggle: (id) =>
     set((state) => {
       const skill = state.skills.find((candidate) => candidate.id === id)
-      if (!skill || isLocked(skill, state.skills)) return state
+      if (!skill || isLocked(skill, state.skills) || isMaxLevel(skill)) return state
 
       return {
         draft: {
@@ -225,9 +225,12 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
     const skills = before.skills.map((skill) => {
       const update = before.draft[skill.id]
-      if (!update?.selected || isLocked(skill, before.skills)) return skill
+      if (!update?.selected || isLocked(skill, before.skills) || isMaxLevel(skill)) return skill
 
-      const xp = earnedXp(update.minutes, update.effort)
+      const xp = Math.min(
+        earnedXp(update.minutes, update.effort),
+        remainingXpToMax(skill)
+      )
       if (xp <= 0) return skill
 
       totalXp += xp
@@ -353,7 +356,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       title: draft.title.trim(),
       xp: 0,
       maxLevel: 3,
-      thresholds: [100, 300, 600],
+      levelXpRequirements: [100, 200, 300],
       heat: 0,
       gates: []
     }
@@ -386,8 +389,9 @@ export const useMastery = create<MasteryStore>((set, get) => ({
     })
 }))
 
-export function projectedXp(update: DraftUpdate): number {
-  return update.selected ? earnedXp(update.minutes, update.effort) : 0
+export function projectedXp(update: DraftUpdate, skill: Skill): number {
+  if (!update.selected || isMaxLevel(skill)) return 0
+  return Math.min(earnedXp(update.minutes, update.effort), remainingXpToMax(skill))
 }
 
 export function nodeTitle(id: NodeId, roots: Root[], skills: Skill[]): string {
