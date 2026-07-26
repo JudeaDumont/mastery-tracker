@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { CSSProperties, ReactElement } from 'react'
 import {
   Background,
@@ -18,11 +18,12 @@ import {
   canUseFromNode,
   createSelectionFull,
   nodeRootId,
+  nodeTitle,
   ROOT_ACCENTS,
   toCandidateIds,
   useMastery
 } from '../store'
-import { isLocked, levelFor } from '../xp'
+import { isLocked, levelFor, levelProgressFor } from '../xp'
 import { MasteryNode, type MasteryNodeData, type NodeVisual } from './MasteryNode'
 
 const nodeTypes = { mastery: MasteryNode }
@@ -79,6 +80,8 @@ export function Graph(): ReactElement {
           ? Math.round(rootSkills.reduce((sum, skill) => sum + skill.momentum, 0) / rootSkills.length)
           : 0
 
+      const rootXp = rootSkills.reduce((sum, skill) => sum + Math.max(0, skill.xp), 0)
+
       return masteryNode(root.id, positions[root.id], {
         title: root.title,
         level: rootLevel,
@@ -87,6 +90,16 @@ export function Graph(): ReactElement {
         accent: root.accent ?? 'teal',
         locked: false,
         root: true,
+        maxed: false,
+        levelXpTargets: [],
+        levelReachedAt: [],
+        details: [
+          { label: 'Type', value: 'Root category' },
+          { label: 'Rank', value: `${rootLevel}/10` },
+          { label: 'Connected nodes', value: String(rootSkills.length) },
+          { label: 'Total XP', value: rootXp.toLocaleString() },
+          { label: 'Momentum', value: String(rootMomentum) }
+        ],
         activitySelected: pickedIds.includes(root.id),
         visual: visualFor(
           root.id,
@@ -102,14 +115,40 @@ export function Graph(): ReactElement {
       })
     })
 
-    const skillNodes = skills.map((skill) =>
-      masteryNode(skill.id, positions[skill.id], {
+    const skillNodes = skills.map((skill) => {
+      const progress = levelProgressFor(skill)
+      const locked = isLocked(skill, skills)
+      const root = roots.find((candidate) => candidate.id === skill.rootId)
+      const prerequisites = skill.gates.length > 0
+        ? skill.gates
+            .map((gate) => `${nodeTitle(gate.nodeId, roots, skills)} Lv ${gate.level}`)
+            .join(', ')
+        : 'None'
+
+      return masteryNode(skill.id, positions[skill.id], {
         title: skill.title,
-        level: levelFor(skill),
+        level: progress.level,
         maxLevel: skill.maxLevel,
         momentum: skill.momentum,
         accent: rootAccentFor(skill.rootId, roots),
-        locked: isLocked(skill, skills),
+        locked,
+        maxed: progress.maxed,
+        levelXpTargets: cumulativeXpTargets(skill.levelXpRequirements, skill.maxLevel),
+        levelReachedAt: skill.levelReachedAt ?? [],
+        details: [
+          { label: 'Root', value: root?.title ?? skill.rootId },
+          { label: 'Level', value: `${progress.level}/${skill.maxLevel}` },
+          {
+            label: 'XP',
+            value: `${progress.currentXp.toLocaleString()}/${progress.requiredXp.toLocaleString()}`
+          },
+          { label: 'Momentum', value: String(skill.momentum) },
+          {
+            label: 'Status',
+            value: locked ? 'Locked' : progress.maxed ? 'Current cap reached' : 'In progress'
+          },
+          { label: 'Prerequisites', value: prerequisites }
+        ],
         activitySelected: pickedIds.includes(skill.id),
         visual: visualFor(
           skill.id,
@@ -123,7 +162,7 @@ export function Graph(): ReactElement {
           links
         )
       })
-    )
+    })
 
     const previewNode = preview
       ? [
@@ -155,6 +194,9 @@ export function Graph(): ReactElement {
       )
     )
     const skillsById = new Map(skills.map((skill) => [skill.id, skill]))
+    const titleFor = (id: NodeId): string =>
+      id === PREVIEW_ID ? create?.title.trim() || 'New mastery' : nodeTitle(id, roots, skills)
+
     const buildEdge = (
       link: Link,
       className: string,
@@ -169,7 +211,9 @@ export function Graph(): ReactElement {
         endpointGeometry(link.to, positions, roots, 'target'),
         gateUnmet,
         endpointGeometry(link.from, positions, roots, 'source'),
-        fanRoutes.get(link.id)
+        fanRoutes.get(link.id),
+        titleFor(link.from),
+        titleFor(link.to)
       )
 
     const structural = links.map((link) => {
@@ -188,7 +232,7 @@ export function Graph(): ReactElement {
       buildEdge(link, 'flow-edge flow-edge--preview')
     )
     return [...structural, ...temporary]
-  }, [links, positions, previewLinks, roots, skills])
+  }, [create, links, positions, previewLinks, roots, skills])
 
   return (
     <ReactFlow
@@ -232,7 +276,10 @@ function MasteryEdge({
   targetPosition,
   data
 }: EdgeProps): ReactElement {
+  const [hovered, setHovered] = useState(false)
   const edgeClass = String(data?.edgeClass ?? '')
+  const sourceTitle = String(data?.sourceTitle ?? 'Unknown node')
+  const targetTitle = String(data?.targetTitle ?? 'Unknown node')
   const sourceCenterX = Number(data?.sourceCenterX ?? sourceX)
   const sourceCenterY = Number(data?.sourceCenterY ?? sourceY)
   const sourceRadius = Number(data?.sourceRadius ?? 0)
@@ -282,10 +329,18 @@ function MasteryEdge({
   const gateLabelPoint = fanCurve ? cubicPoint(fanCurve, 0.48) : undefined
   const labelX = gateLabelPoint?.x ?? defaultPath[1]
   const labelY = gateLabelPoint?.y ?? defaultPath[2]
+  const hoverPoint = fanCurve ? cubicPoint(fanCurve, 0.64) : { x: defaultPath[1], y: defaultPath[2] }
 
   return (
     <>
       <BaseEdge id={id} path={path} className={edgeClass} />
+      <path
+        d={path}
+        className="edge-hover-target"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      />
+
       {showGateBadge && (
         <EdgeLabelRenderer>
           <div
@@ -301,6 +356,22 @@ function MasteryEdge({
               </svg>
             </span>
             <span>Lv {gateLevel}</span>
+          </div>
+        </EdgeLabelRenderer>
+      )}
+
+      {hovered && (
+        <EdgeLabelRenderer>
+          <div
+            className="edge-hover-tooltip"
+            style={{
+              transform: `translate(-50%, -115%) translate(${hoverPoint.x}px, ${hoverPoint.y}px)`
+            } as CSSProperties}
+          >
+            <strong>
+              {sourceTitle} → {targetTitle}
+            </strong>
+            <span>Level requirement: {gateLevel}</span>
           </div>
         </EdgeLabelRenderer>
       )}
@@ -346,7 +417,9 @@ function edgeFor(
   geometry?: EndpointGeometry,
   targetLocked = false,
   sourceGeometry?: EndpointGeometry,
-  fanRoute?: FanRoute
+  fanRoute?: FanRoute,
+  sourceTitle = link.from,
+  targetTitle = link.to
 ): Edge {
   return {
     id: link.id,
@@ -368,7 +441,9 @@ function edgeFor(
       fanSourceRailY: fanRoute?.sourceRailY,
       fanTargetRailY: fanRoute?.targetRailY,
       fanCurveDirection: fanRoute?.curveDirection,
-      gateLevel,
+      sourceTitle,
+      targetTitle,
+      gateLevel: gateLevel ?? 0,
       showGateBadge: targetLocked && Boolean(gateLevel)
     }
   }
@@ -561,6 +636,16 @@ function handleSlots(count: number): number[] {
   if (count <= 1) return [4]
 
   return Array.from({ length: count }, (_, index) => Math.round((index * 8) / (count - 1)))
+}
+
+function cumulativeXpTargets(requirements: number[], maxLevel: number): number[] {
+  let total = 0
+
+  return Array.from({ length: maxLevel }, (_, index) => {
+    const configured = requirements[index]
+    total += Number.isFinite(configured) && configured > 0 ? configured : 1
+    return total
+  })
 }
 
 function rootAccentFor(rootId: RootId | undefined, roots: Root[]): RootAccent {

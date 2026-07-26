@@ -23,6 +23,8 @@ const initialRoots: Root[] = [{ id: 'lifter', title: 'Lifter', accent: 'teal' }]
 
 const levelXpRequirements = [100, 180, 275, 425, 650]
 
+const reached = (...dates: string[]): Array<string | null> => dates
+
 const initialSkills: Skill[] = [
   {
     id: 'a',
@@ -31,6 +33,9 @@ const initialSkills: Skill[] = [
     xp: 145,
     maxLevel: 5,
     levelXpRequirements,
+    levelReachedAt: reached(
+      '2026-06-02T14:00:00.000Z'
+    ),
     momentum: 6,
     gates: []
   },
@@ -41,6 +46,12 @@ const initialSkills: Skill[] = [
     xp: 1200,
     maxLevel: 5,
     levelXpRequirements,
+    levelReachedAt: reached(
+      '2026-01-12T14:00:00.000Z',
+      '2026-02-21T14:00:00.000Z',
+      '2026-04-03T14:00:00.000Z',
+      '2026-06-28T14:00:00.000Z'
+    ),
     momentum: 73,
     gates: []
   },
@@ -51,6 +62,10 @@ const initialSkills: Skill[] = [
     xp: 350,
     maxLevel: 5,
     levelXpRequirements,
+    levelReachedAt: reached(
+      '2026-03-05T14:00:00.000Z',
+      '2026-05-14T14:00:00.000Z'
+    ),
     momentum: 28,
     gates: []
   },
@@ -61,6 +76,11 @@ const initialSkills: Skill[] = [
     xp: 650,
     maxLevel: 5,
     levelXpRequirements,
+    levelReachedAt: reached(
+      '2026-01-27T14:00:00.000Z',
+      '2026-03-18T14:00:00.000Z',
+      '2026-06-11T14:00:00.000Z'
+    ),
     momentum: 54,
     gates: []
   },
@@ -71,6 +91,10 @@ const initialSkills: Skill[] = [
     xp: 420,
     maxLevel: 5,
     levelXpRequirements,
+    levelReachedAt: reached(
+      '2026-04-08T14:00:00.000Z',
+      '2026-07-01T14:00:00.000Z'
+    ),
     momentum: 15,
     gates: []
   },
@@ -81,6 +105,12 @@ const initialSkills: Skill[] = [
     xp: 1350,
     maxLevel: 5,
     levelXpRequirements,
+    levelReachedAt: reached(
+      '2026-01-09T14:00:00.000Z',
+      '2026-02-18T14:00:00.000Z',
+      '2026-04-30T14:00:00.000Z',
+      '2026-07-10T14:00:00.000Z'
+    ),
     momentum: 87,
     gates: []
   },
@@ -91,6 +121,13 @@ const initialSkills: Skill[] = [
     xp: 1880,
     maxLevel: 5,
     levelXpRequirements,
+    levelReachedAt: reached(
+      '2025-12-18T14:00:00.000Z',
+      '2026-01-29T14:00:00.000Z',
+      '2026-03-20T14:00:00.000Z',
+      '2026-05-22T14:00:00.000Z',
+      '2026-07-18T14:00:00.000Z'
+    ),
     momentum: 41,
     gates: []
   },
@@ -101,6 +138,12 @@ const initialSkills: Skill[] = [
     xp: 1050,
     maxLevel: 5,
     levelXpRequirements,
+    levelReachedAt: reached(
+      '2026-01-20T14:00:00.000Z',
+      '2026-03-02T14:00:00.000Z',
+      '2026-05-07T14:00:00.000Z',
+      '2026-07-14T14:00:00.000Z'
+    ),
     momentum: 100,
     gates: []
   },
@@ -111,6 +154,7 @@ const initialSkills: Skill[] = [
     xp: 0,
     maxLevel: 5,
     levelXpRequirements,
+    levelReachedAt: [],
     momentum: 22,
     gates: [
       { nodeId: 'a', level: 2 },
@@ -130,6 +174,7 @@ const initialSkills: Skill[] = [
     xp: 0,
     maxLevel: 5,
     levelXpRequirements,
+    levelReachedAt: [],
     momentum: 64,
     gates: [
       { nodeId: 'a', level: 2 },
@@ -272,11 +317,13 @@ export const useMastery = create<MasteryStore>((set, get) => ({
         note: update.note.trim()
       })
 
-      return {
+      const updatedSkill: Skill = {
         ...skill,
         xp: skill.xp + xp,
         momentum: Math.min(100, skill.momentum + Math.max(3, Math.round(xp / 12)))
       }
+
+      return recordReachedLevels(updatedSkill, oldLevels.get(skill.id) ?? 0, occurredAt)
     })
 
     const levelUps = skills.reduce((count, skill) => {
@@ -403,6 +450,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       xp: 0,
       maxLevel: 3,
       levelXpRequirements: [100, 200, 300],
+      levelReachedAt: [],
       momentum: 0,
       gates: []
     }
@@ -434,6 +482,22 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       return { create: null }
     })
 }))
+
+function recordReachedLevels(
+  skill: Skill,
+  previousLevel: number,
+  occurredAt: string
+): Skill {
+  const nextLevel = levelFor(skill)
+  if (nextLevel <= previousLevel) return skill
+
+  const levelReachedAt = [...(skill.levelReachedAt ?? [])]
+  for (let level = previousLevel + 1; level <= nextLevel; level += 1) {
+    if (!levelReachedAt[level - 1]) levelReachedAt[level - 1] = occurredAt
+  }
+
+  return { ...skill, levelReachedAt }
+}
 
 export function projectedXp(update: DraftUpdate, skill: Skill): number {
   if (!update.selected) return 0

@@ -29,6 +29,7 @@ export interface Skill {
   xp: number
   maxLevel: number
   levelXpRequirements: number[]
+  levelReachedAt?: Array<string | null>
   momentum: number
   gates: Gate[]
 }

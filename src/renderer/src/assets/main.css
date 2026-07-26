@@ -679,3 +679,135 @@ button { color: inherit; }
   font-size: 9px;
   letter-spacing: .12em;
 }
+
+/* Mastery cap marker and graph hover details */
+.ring-segment {
+  pointer-events: stroke;
+  cursor: help;
+}
+
+.max-level-crown {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  z-index: 7;
+  width: 28px;
+  height: 20px;
+  transform: translateX(-50%);
+  color: rgb(var(--family-rgb));
+  pointer-events: none;
+  filter: drop-shadow(0 0 5px rgba(var(--family-rgb), .78));
+}
+.max-level-crown svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: rgba(var(--family-rgb), .22);
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.node-core {
+  position: relative;
+}
+.node-detail-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 15px);
+  z-index: 40;
+  width: 218px;
+  display: grid;
+  gap: 5px;
+  padding: 10px 11px;
+  border: 1px solid rgba(var(--family-rgb), .34);
+  border-radius: 10px;
+  background: rgba(6, 11, 23, .97);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, .42),
+    0 0 18px rgba(var(--family-rgb), .12);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 5px);
+  transition: opacity .14s ease, transform .14s ease, visibility .14s ease;
+  pointer-events: none;
+  text-align: left;
+}
+.node-detail-tooltip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 8px;
+  height: 8px;
+  border-right: 1px solid rgba(var(--family-rgb), .34);
+  border-bottom: 1px solid rgba(var(--family-rgb), .34);
+  background: rgba(6, 11, 23, .97);
+  transform: translate(-50%, -4px) rotate(45deg);
+}
+.node-core:hover .node-detail-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+.node-core .node-detail-tooltip > b {
+  margin-bottom: 2px;
+  color: rgba(244, 250, 255, .98);
+  font-size: 11px;
+  line-height: 1.2;
+}
+.node-core .node-detail-tooltip > div {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+.node-core .node-detail-tooltip span {
+  color: rgba(155, 174, 204, .8);
+  font-size: 8.5px;
+  line-height: 1.35;
+}
+.node-core .node-detail-tooltip strong {
+  min-width: 0;
+  color: rgba(222, 234, 250, .94);
+  font-size: 8.5px;
+  font-weight: 650;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.edge-hover-target {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 16;
+  pointer-events: stroke;
+  cursor: help;
+}
+.edge-hover-tooltip {
+  position: absolute;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 150px;
+  padding: 8px 10px;
+  border: 1px solid rgba(138, 175, 218, .28);
+  border-radius: 9px;
+  background: rgba(6, 11, 23, .97);
+  color: rgba(222, 234, 250, .96);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.edge-hover-tooltip strong {
+  font-size: 10px;
+  font-weight: 750;
+}
+.edge-hover-tooltip span {
+  color: rgba(170, 190, 219, .86);
+  font-size: 9px;
+}
+.react-flow__edge {
+  pointer-events: all;
+}

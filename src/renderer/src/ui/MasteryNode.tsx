@@ -12,6 +12,11 @@ export type NodeVisual =
   | 'unavailable'
   | 'preview'
 
+export interface NodeDetail {
+  label: string
+  value: string
+}
+
 export interface MasteryNodeData extends Record<string, unknown> {
   title: string
   level: number
@@ -21,6 +26,10 @@ export interface MasteryNodeData extends Record<string, unknown> {
   locked: boolean
   root?: boolean
   activitySelected?: boolean
+  maxed?: boolean
+  levelXpTargets?: number[]
+  levelReachedAt?: Array<string | null>
+  details?: NodeDetail[]
   visual: NodeVisual
 }
 
@@ -57,8 +66,14 @@ const targetHandleOffsets = Array.from({ length: 9 }, (_, index) => {
 function Ring({
   level,
   maxLevel,
-  locked
-}: Pick<MasteryNodeData, 'level' | 'maxLevel' | 'locked'>): ReactElement {
+  locked,
+  root,
+  levelXpTargets = [],
+  levelReachedAt = []
+}: Pick<
+  MasteryNodeData,
+  'level' | 'maxLevel' | 'locked' | 'root' | 'levelXpTargets' | 'levelReachedAt'
+>): ReactElement {
   const radius = 47
   const circumference = 2 * Math.PI * radius
   const gap = 7
@@ -71,19 +86,27 @@ function Ring({
     <svg className="level-ring" viewBox="0 0 112 112" aria-hidden="true">
       {Array.from({ length: maxLevel }, (_, index) => {
         const rotation = -90 - dashDegrees / 2 + index * sectorDegrees
+        const reached = index < level && !locked
+        const tooltip = ringSegmentTooltip(
+          index,
+          reached,
+          root,
+          levelXpTargets[index],
+          levelReachedAt[index]
+        )
 
         return (
-          <circle
-            key={index}
-            className={
-              index < level && !locked ? 'ring-segment ring-segment--on' : 'ring-segment'
-            }
-            cx="56"
-            cy="56"
-            r={radius}
-            strokeDasharray={`${dashLength} ${circumference - dashLength}`}
-            transform={`rotate(${rotation} 56 56)`}
-          />
+          <g key={index} className="ring-segment-hit">
+            <title>{tooltip}</title>
+            <circle
+              className={reached ? 'ring-segment ring-segment--on' : 'ring-segment'}
+              cx="56"
+              cy="56"
+              r={radius}
+              strokeDasharray={`${dashLength} ${circumference - dashLength}`}
+              transform={`rotate(${rotation} 56 56)`}
+            />
+          </g>
         )
       })}
     </svg>
@@ -96,6 +119,7 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
     `node--accent-${data.accent}`,
     data.locked ? 'node--locked' : '',
     data.root ? 'node--root' : '',
+    data.maxed && !data.root ? 'node--maxed' : '',
     data.activitySelected ? 'node--activity' : '',
     `node--${data.visual}`
   ]
@@ -121,6 +145,16 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
           </span>
         </>
       )}
+
+      {data.maxed && !data.root && (
+        <span className="max-level-crown" aria-label="Current level cap reached">
+          <svg viewBox="0 0 32 22" aria-hidden="true">
+            <path d="M3 6.5 9.5 12 16 3l6.5 9L29 6.5 26.5 19h-21Z" />
+            <path d="M6 16.5h20" />
+          </svg>
+        </span>
+      )}
+
       {targetHandleOffsets.map(({ left, top }, index) => (
         <Handle
           key={`target-${index}`}
@@ -141,7 +175,16 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
           style={{ left }}
         />
       ))}
-      <Ring level={data.level} maxLevel={data.maxLevel} locked={data.locked} />
+
+      <Ring
+        level={data.level}
+        maxLevel={data.maxLevel}
+        locked={data.locked}
+        root={data.root}
+        levelXpTargets={data.levelXpTargets}
+        levelReachedAt={data.levelReachedAt}
+      />
+
       <div className="node-core">
         {data.locked && (
           <span className="lock-mark" aria-label="Locked">
@@ -155,7 +198,48 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
         <span className={data.root ? 'root-rank' : undefined}>
           {data.root ? `Rank ${data.level}` : `Level ${data.level}/${data.maxLevel}`}
         </span>
+
+        {(data.details?.length ?? 0) > 0 && (
+          <div className="node-detail-tooltip" role="tooltip">
+            <b>{data.title}</b>
+            {data.details?.map((detail) => (
+              <div key={`${detail.label}-${detail.value}`}>
+                <span>{detail.label}</span>
+                <strong>{detail.value}</strong>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
+}
+
+function ringSegmentTooltip(
+  index: number,
+  reached: boolean,
+  root: boolean | undefined,
+  cumulativeXp: number | undefined,
+  reachedAt: string | null | undefined
+): string {
+  const levelLabel = root ? `Rank segment ${index + 1}` : `Level ${index + 1}`
+  const xpLabel = Number.isFinite(cumulativeXp)
+    ? ` · ${Number(cumulativeXp).toLocaleString()} cumulative XP`
+    : ''
+
+  if (!reached) return `${levelLabel}${xpLabel} · Not reached`
+  if (!reachedAt) return `${levelLabel}${xpLabel} · Reached before date tracking began`
+
+  return `${levelLabel}${xpLabel} · Reached ${formatReachedDate(reachedAt)}`
+}
+
+function formatReachedDate(value: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }).format(date)
 }
