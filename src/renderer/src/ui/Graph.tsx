@@ -204,11 +204,11 @@ function MasteryEdge({
   targetY,
   sourcePosition,
   targetPosition,
-  className,
   label,
   labelStyle,
   data
 }: EdgeProps): ReactElement {
+  const edgeClass = String(data?.edgeClass ?? '')
   const targetSlot = Number(data?.targetSlot ?? 4)
   const targetAngle = ((140 - targetSlot * 12.5) * Math.PI) / 180
   const targetCenterX = Number(data?.targetCenterX ?? targetX)
@@ -216,9 +216,6 @@ function MasteryEdge({
   const targetRadius = Number(data?.targetRadius ?? 0)
   const renderedTargetX = targetCenterX + Math.cos(targetAngle) * targetRadius
   const renderedTargetY = targetCenterY - Math.sin(targetAngle) * targetRadius
-  const notchHalfLength = 3.5
-  const notchX = Math.sin(targetAngle) * notchHalfLength
-  const notchY = Math.cos(targetAngle) * notchHalfLength
   const [path] = getBezierPath({
     sourceX,
     sourceY,
@@ -227,31 +224,19 @@ function MasteryEdge({
     sourcePosition,
     targetPosition
   })
-  const showTerminal = className?.includes('flow-edge--structure')
 
   return (
-    <>
-      <BaseEdge
-        id={id}
-        path={path}
-        className={className}
-        label={label}
-        labelStyle={labelStyle}
-        labelShowBg={Boolean(label)}
-        labelBgPadding={[5, 3]}
-        labelBgBorderRadius={6}
-        labelBgStyle={{ fill: 'rgba(8, 12, 24, .86)' }}
-      />
-      {showTerminal && (
-        <line
-          className="edge-terminal-notch"
-          x1={renderedTargetX - notchX}
-          y1={renderedTargetY - notchY}
-          x2={renderedTargetX + notchX}
-          y2={renderedTargetY + notchY}
-        />
-      )}
-    </>
+    <BaseEdge
+      id={id}
+      path={path}
+      className={edgeClass}
+      label={label}
+      labelStyle={labelStyle}
+      labelShowBg={Boolean(label)}
+      labelBgPadding={[5, 3]}
+      labelBgBorderRadius={6}
+      labelBgStyle={{ fill: 'rgba(8, 12, 24, .86)' }}
+    />
   )
 }
 
@@ -297,6 +282,7 @@ function edgeFor(
     label: gateLevel ? `Lv ${gateLevel}` : undefined,
     labelStyle: gateLevel ? { fill: '#b8c8e8', fontWeight: 700 } : undefined,
     data: {
+      edgeClass: className,
       targetSlot: targetSlot(handles?.target),
       targetCenterX: geometry?.centerX,
       targetCenterY: geometry?.centerY,
@@ -388,7 +374,11 @@ function visualFor(
   if (id === PREVIEW_ID) return 'preview'
   if (create?.step === 'from') {
     if (create.fromIds.includes(id)) return 'from'
-    const ok = canUseFromNode(id, rootId, roots, skills, links, create)
+    const selectedRoot = create.fromIds[0]
+      ? nodeRootId(create.fromIds[0], roots, skills)
+      : undefined
+    const sameRoot = !selectedRoot || selectedRoot === rootId
+    const ok = sameRoot && canUseFromNode(id, roots, links)
     return ok ? 'candidate' : 'unavailable'
   }
   if (create?.step === 'to') {
