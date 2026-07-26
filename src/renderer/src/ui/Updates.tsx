@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactElement } from 'react'
-import type { Effort } from '../model'
+import type { Effort, NodeId } from '../model'
 import { projectedXp, useMastery } from '../store'
 import { isLocked, levelFor, levelProgressFor } from '../xp'
 import { Create } from './Create'
@@ -19,12 +19,39 @@ export function Updates(): ReactElement {
   const draft = useMastery((state) => state.draft)
   const pickedIds = useMastery((state) => state.pickedIds)
   const create = useMastery((state) => state.create)
-  const togglePicked = useMastery((state) => state.togglePicked)
   const edit = useMastery((state) => state.edit)
   const submit = useMastery((state) => state.submit)
   const beginCreate = useMastery((state) => state.beginCreate)
   const lastResult = useMastery((state) => state.lastResult)
   const lastCreated = useMastery((state) => state.lastCreated)
+  const [expandedIds, setExpandedIds] = useState<Set<NodeId>>(new Set())
+  const previousPickedIds = useRef<Set<NodeId>>(new Set())
+
+  useEffect(() => {
+    const selectedIds = new Set(pickedIds)
+    const previousIds = previousPickedIds.current
+
+    setExpandedIds((current) => {
+      const next = new Set([...current].filter((id) => selectedIds.has(id)))
+
+      pickedIds.forEach((id) => {
+        if (!previousIds.has(id)) next.add(id)
+      })
+
+      return next
+    })
+
+    previousPickedIds.current = selectedIds
+  }, [pickedIds])
+
+  const toggleExpanded = (id: NodeId): void => {
+    setExpandedIds((current) => {
+      const next = new Set(current)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const ordered = useMemo(() => [...skills].sort((a, b) => b.heat - a.heat), [skills])
   const selectedRoots = roots.filter((root) => pickedIds.includes(root.id))
@@ -84,25 +111,46 @@ export function Updates(): ReactElement {
                   rootSkills.reduce((sum, skill) => sum + skill.heat, 0) / rootSkills.length
                 )
               : 0
+          const expanded = expandedIds.has(root.id)
 
           return (
-            <section key={root.id} className="update-row update-row--selected update-row--root">
+            <section
+              key={root.id}
+              className={`update-row update-row--selected update-row--root ${expanded ? 'update-row--expanded' : ''}`}
+            >
               <button
                 className="update-row__header"
                 type="button"
                 disabled={Boolean(create)}
-                title="Remove from updates"
-                onClick={() => togglePicked(root.id)}
+                title={expanded ? 'Collapse root details' : 'Expand root details'}
+                aria-expanded={expanded}
+                onClick={() => toggleExpanded(root.id)}
               >
                 <span className="root-row-mark" aria-hidden="true">
                   <span />
                 </span>
                 <span className="update-title">
                   <strong>{root.title}</strong>
-                  <small>Rank {rank} · {rootSkills.length} connected nodes · Heat {heat}</small>
+                  <small>
+                    Rank {rank} · {rootSkills.length} connected nodes · Heat {heat}
+                  </small>
                 </span>
-                <span className="row-xp row-xp--root">ROOT</span>
+                <span className="update-row__status">
+                  <span className="update-row__compact-meta update-row__compact-meta--root">
+                    <span>Rank {rank}</span>
+                    <span>{rootSkills.length} nodes</span>
+                    <span>Heat {heat}</span>
+                  </span>
+                  <span className="row-xp row-xp--root update-row__expanded-xp">ROOT</span>
+                  <span className="update-row__chevron" aria-hidden="true" />
+                </span>
               </button>
+
+              {expanded && !create && (
+                <div className="root-update-details">
+                  <span>Root rank is derived from its connected mastery nodes.</span>
+                </div>
+              )}
             </section>
           )
         })}
@@ -112,20 +160,29 @@ export function Updates(): ReactElement {
           const locked = isLocked(skill, skills)
           const progress = levelProgressFor(skill)
           const maxed = progress.maxed
+          const level = levelFor(skill)
+          const compactXp = maxed
+            ? `${progress.overflowXp} XP banked`
+            : `${progress.currentXp}/${progress.requiredXp} XP`
+          const expanded = expandedIds.has(skill.id)
 
           return (
             <section
               key={skill.id}
-              className={`update-row update-row--selected ${locked ? 'update-row--locked' : ''} ${maxed ? 'update-row--maxed' : ''}`}
+              className={`update-row update-row--selected ${locked ? 'update-row--locked' : ''} ${maxed ? 'update-row--maxed' : ''} ${expanded ? 'update-row--expanded' : ''}`}
             >
               <button
                 className="update-row__header"
                 type="button"
                 disabled={Boolean(create)}
-                title="Remove from updates"
-                onClick={() => togglePicked(skill.id)}
+                title={expanded ? 'Collapse update fields' : 'Expand update fields'}
+                aria-expanded={expanded}
+                onClick={() => toggleExpanded(skill.id)}
               >
-                <span className="heat-dot" style={{ '--row-heat': skill.heat / 100 } as React.CSSProperties} />
+                <span
+                  className="heat-dot"
+                  style={{ '--row-heat': skill.heat / 100 } as React.CSSProperties}
+                />
                 <span className="update-title">
                   <strong>{skill.title}</strong>
                   <small>
@@ -133,19 +190,29 @@ export function Updates(): ReactElement {
                       ? 'Locked'
                       : maxed
                         ? `Level ${skill.maxLevel}/${skill.maxLevel} · Current cap`
-                        : `Level ${levelFor(skill)}/${skill.maxLevel}`} · Heat {skill.heat}
+                        : `Level ${level}/${skill.maxLevel}`} · Heat {skill.heat}
                   </small>
                 </span>
-                <span className="row-xp">
-                  {update?.selected
-                    ? `+${projectedXp(update, skill)} XP`
-                    : maxed
-                      ? `${progress.overflowXp} XP banked`
-                      : `${progress.currentXp}/${progress.requiredXp} XP`}
+                <span className="update-row__status">
+                  <span className="update-row__compact-meta">
+                    <span>Lv {level}/{skill.maxLevel}</span>
+                    <span>{compactXp}</span>
+                    <span>Heat {skill.heat}</span>
+                  </span>
+                  <span className="row-xp update-row__expanded-xp">
+                    {update?.selected ? `+${projectedXp(update, skill)} XP` : compactXp}
+                  </span>
+                  <span className="update-row__chevron" aria-hidden="true" />
                 </span>
               </button>
 
-              {update?.selected && !locked && !create && (
+              {expanded && locked && !create && (
+                <div className="update-row-message">
+                  Complete this node&apos;s prerequisites before applying XP.
+                </div>
+              )}
+
+              {expanded && update?.selected && !locked && !create && (
                 <div className="update-fields">
                   <label>
                     Duration
@@ -210,7 +277,9 @@ export function Updates(): ReactElement {
 
         <div className="submit-summary">
           <span>{updatable.length} nodes</span>
-          <span>{Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m</span>
+          <span>
+            {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m
+          </span>
           <strong>+{totalProjectedXp} XP</strong>
         </div>
         <button
