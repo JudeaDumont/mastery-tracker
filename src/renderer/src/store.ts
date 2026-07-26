@@ -18,60 +18,127 @@ export const ROOT_CAPACITY = 8
 
 const initialRoots: Root[] = [{ id: 'lifter', title: 'Lifter' }]
 
+const thresholds = [100, 300, 600, 1000, 1500]
+
 const initialSkills: Skill[] = [
   {
-    id: 'squat',
+    id: 'a',
     rootId: 'lifter',
-    title: 'Squat',
+    title: 'A',
     xp: 145,
     maxLevel: 5,
-    thresholds: [100, 300, 600, 1000, 1500],
-    heat: 82,
+    thresholds,
+    heat: 35,
     gates: []
   },
   {
-    id: 'bench',
+    id: 'b',
     rootId: 'lifter',
-    title: 'Bench',
-    xp: 132,
+    title: 'B',
+    xp: 1600,
     maxLevel: 5,
-    thresholds: [100, 300, 600, 1000, 1500],
-    heat: 74,
+    thresholds,
+    heat: 65,
     gates: []
   },
   {
-    id: 'deadlift',
+    id: 'c',
     rootId: 'lifter',
-    title: 'Deadlift',
-    xp: 120,
+    title: 'C',
+    xp: 350,
     maxLevel: 5,
-    thresholds: [100, 300, 600, 1000, 1500],
-    heat: 67,
+    thresholds,
+    heat: 42,
     gates: []
   },
   {
-    id: 'competition',
+    id: 'd',
     rootId: 'lifter',
-    title: 'Competition',
+    title: 'D',
+    xp: 650,
+    maxLevel: 5,
+    thresholds,
+    heat: 58,
+    gates: []
+  },
+  {
+    id: 'e',
+    rootId: 'lifter',
+    title: 'E',
+    xp: 1700,
+    maxLevel: 5,
+    thresholds,
+    heat: 70,
+    gates: []
+  },
+  {
+    id: 'f',
+    rootId: 'lifter',
+    title: 'F',
+    xp: 1800,
+    maxLevel: 5,
+    thresholds,
+    heat: 62,
+    gates: []
+  },
+  {
+    id: 'g',
+    rootId: 'lifter',
+    title: 'G',
+    xp: 1900,
+    maxLevel: 5,
+    thresholds,
+    heat: 50,
+    gates: []
+  },
+  {
+    id: 'h',
+    rootId: 'lifter',
+    title: 'H',
+    xp: 1050,
+    maxLevel: 5,
+    thresholds,
+    heat: 68,
+    gates: []
+  },
+  {
+    id: 'i',
+    rootId: 'lifter',
+    title: 'I',
     xp: 0,
     maxLevel: 5,
-    thresholds: [100, 300, 600, 1000, 1500],
+    thresholds,
     heat: 18,
     gates: [
-      { nodeId: 'squat', level: 5 },
-      { nodeId: 'bench', level: 5 },
-      { nodeId: 'deadlift', level: 5 }
+      { nodeId: 'a', level: 5 },
+      { nodeId: 'b', level: 5 },
+      { nodeId: 'c', level: 5 },
+      { nodeId: 'd', level: 5 },
+      { nodeId: 'e', level: 5 },
+      { nodeId: 'f', level: 5 },
+      { nodeId: 'g', level: 5 },
+      { nodeId: 'h', level: 5 }
     ]
   }
 ]
 
 const initialLinks: Link[] = [
-  { id: 'lifter-squat', from: 'lifter', to: 'squat' },
-  { id: 'lifter-bench', from: 'lifter', to: 'bench' },
-  { id: 'lifter-deadlift', from: 'lifter', to: 'deadlift' },
-  { id: 'squat-competition', from: 'squat', to: 'competition' },
-  { id: 'bench-competition', from: 'bench', to: 'competition' },
-  { id: 'deadlift-competition', from: 'deadlift', to: 'competition' }
+  { id: 'lifter-a', from: 'lifter', to: 'a' },
+  { id: 'lifter-b', from: 'lifter', to: 'b' },
+  { id: 'lifter-c', from: 'lifter', to: 'c' },
+  { id: 'lifter-d', from: 'lifter', to: 'd' },
+  { id: 'lifter-e', from: 'lifter', to: 'e' },
+  { id: 'lifter-f', from: 'lifter', to: 'f' },
+  { id: 'lifter-g', from: 'lifter', to: 'g' },
+  { id: 'lifter-h', from: 'lifter', to: 'h' },
+  { id: 'a-i', from: 'a', to: 'i' },
+  { id: 'b-i', from: 'b', to: 'i' },
+  { id: 'c-i', from: 'c', to: 'i' },
+  { id: 'd-i', from: 'd', to: 'i' },
+  { id: 'e-i', from: 'e', to: 'i' },
+  { id: 'f-i', from: 'f', to: 'i' },
+  { id: 'g-i', from: 'g', to: 'i' },
+  { id: 'h-i', from: 'h', to: 'i' }
 ]
 
 function draftFor(skills: Skill[]): Record<SkillId, DraftUpdate> {

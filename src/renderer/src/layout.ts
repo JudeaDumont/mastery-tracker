@@ -18,12 +18,14 @@ interface LayoutInput {
   preview?: PreviewNode
 }
 
-const ROOT_GAP = 900
-const RING_GAP = 205
+const ROOT_GAP = 1100
+const BASE_RING_RADIUS = 205
+const RING_DEPTH_GAP = 230
 const START_ANGLE = radians(150)
 const END_ANGLE = radians(30)
 const ROOT_SIZE = 130
 const NODE_SIZE = 112
+const NODE_CLEARANCE = 14
 
 export function graphLayout({ roots, skills, links, preview }: LayoutInput): Record<NodeId, Point> {
   const allRoots = preview?.root
@@ -35,7 +37,7 @@ export function graphLayout({ roots, skills, links, preview }: LayoutInput): Rec
   const positions: Record<NodeId, Point> = {}
 
   allRoots.forEach((root, rootIndex) => {
-    const center = { x: 420 + rootIndex * ROOT_GAP, y: 195 }
+    const center = { x: 500 + rootIndex * ROOT_GAP, y: 195 }
     const rootSkills = allSkills.filter((skill) => skill.rootId === root.id)
     const depth = depthsFor(root.id, rootSkills, links)
     const angles = new Map<NodeId, number>()
@@ -47,10 +49,15 @@ export function graphLayout({ roots, skills, links, preview }: LayoutInput): Rec
       groups.set(value, [...(groups.get(value) ?? []), skill])
     })
 
+    let previousRadius = 0
+
     Array.from(groups.entries())
       .sort(([a], [b]) => a - b)
       .forEach(([ring, ringSkills]) => {
         const sorted = [...ringSkills].sort((a, b) => a.id.localeCompare(b.id))
+        const minimumDepthRadius = ring === 1 ? BASE_RING_RADIUS : previousRadius + RING_DEPTH_GAP
+        const radius = Math.max(minimumDepthRadius, minimumRadiusForCount(sorted.length))
+        previousRadius = radius
 
         sorted.forEach((skill, index) => {
           const parentAngles = links
@@ -62,7 +69,6 @@ export function graphLayout({ roots, skills, links, preview }: LayoutInput): Rec
             parentAngles.length > 1
               ? clamp(circularMean(parentAngles), radians(15), radians(165))
               : fallback
-          const radius = RING_GAP * ring
           const nodeCenter = {
             x: center.x + Math.cos(angle) * radius,
             y: center.y + Math.sin(angle) * radius
@@ -119,6 +125,15 @@ function depthsFor(rootId: RootId, skills: Skill[], links: Link[]): Map<NodeId, 
   })
 
   return depth
+}
+
+function minimumRadiusForCount(count: number): number {
+  if (count <= 1) return BASE_RING_RADIUS
+
+  const arc = Math.abs(START_ANGLE - END_ANGLE)
+  const angleStep = arc / (count - 1)
+  const centerSpacing = NODE_SIZE + NODE_CLEARANCE
+  return centerSpacing / (2 * Math.sin(angleStep / 2))
 }
 
 function distributedAngle(index: number, count: number): number {

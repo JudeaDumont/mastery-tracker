@@ -147,14 +147,14 @@ export function Graph(): ReactElement {
         skill.gates.map((gate) => [`${gate.nodeId}:${skill.id}`, gate.level] as const)
       )
     )
-    const lockedSkillIds = new Set(
-      skills.filter((skill) => isLocked(skill, skills)).map((skill) => skill.id)
-    )
+    const skillsById = new Map(skills.map((skill) => [skill.id, skill]))
 
     const structural = links.map((link) => {
       const gateLevel = gateLevels.get(`${link.from}:${link.to}`)
-      const lockedTarget = lockedSkillIds.has(link.to)
-      const edgeClass = lockedTarget && gateLevel
+      const sourceSkill = skillsById.get(link.from)
+      const gateUnmet =
+        gateLevel !== undefined && (!sourceSkill || levelFor(sourceSkill) < gateLevel)
+      const edgeClass = gateUnmet
         ? 'flow-edge flow-edge--locked-gate'
         : 'flow-edge flow-edge--structure'
 
@@ -164,7 +164,7 @@ export function Graph(): ReactElement {
         handles.get(link.id),
         gateLevel,
         targetGeometry(link.to, positions, roots),
-        lockedTarget,
+        gateUnmet,
         rootSourceGeometry(link.from, positions, roots)
       )
     })
