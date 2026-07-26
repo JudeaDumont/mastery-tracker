@@ -166,7 +166,7 @@ export function Graph(): ReactElement {
         gateLevel,
         targetGeometry(link.to, positions, roots),
         gateUnmet,
-        rootSourceGeometry(link.from, positions, roots),
+        sourceGeometry(link.from, positions, roots),
         fanRoutes.get(link.id)
       )
     })
@@ -179,7 +179,7 @@ export function Graph(): ReactElement {
         undefined,
         targetGeometry(link.to, positions, roots),
         false,
-        rootSourceGeometry(link.from, positions, roots),
+        sourceGeometry(link.from, positions, roots),
         fanRoutes.get(link.id)
       )
     )
@@ -253,6 +253,7 @@ function MasteryEdge({
   const renderedTargetY = targetCenterY - Math.sin(targetAngle) * targetRadius
   const fanSourceRailY = Number(data?.fanSourceRailY)
   const fanTargetRailY = Number(data?.fanTargetRailY)
+  const fanCurveDirection = Number(data?.fanCurveDirection ?? 0)
   const useFanRoute = Number.isFinite(fanSourceRailY) && Number.isFinite(fanTargetRailY)
   const defaultPath = getBezierPath({
     sourceX: renderedSourceX,
@@ -269,7 +270,8 @@ function MasteryEdge({
         renderedTargetX,
         renderedTargetY,
         fanSourceRailY,
-        fanTargetRailY
+        fanTargetRailY,
+        fanCurveDirection
       )
     : undefined
   const path = fanCurve?.path ?? defaultPath[0]
@@ -329,6 +331,7 @@ interface EndpointGeometry {
 interface FanRoute {
   sourceRailY: number
   targetRailY: number
+  curveDirection: number
 }
 
 function edgeFor(
@@ -360,6 +363,7 @@ function edgeFor(
       targetRadius: geometry?.radius,
       fanSourceRailY: fanRoute?.sourceRailY,
       fanTargetRailY: fanRoute?.targetRailY,
+      fanCurveDirection: fanRoute?.curveDirection,
       gateLevel,
       showGateBadge: targetLocked && Boolean(gateLevel)
     }
@@ -384,18 +388,21 @@ function smoothFanInCurve(
   targetX: number,
   targetY: number,
   sourceRailY: number,
-  targetRailY: number
+  targetRailY: number,
+  curveDirection: number
 ): CubicCurve {
   const control1Y = Math.max(sourceY + 24, sourceRailY)
   const control2Y = Math.min(targetY - 24, targetRailY)
+  const control1X = sourceX + curveDirection * 14
+  const control2X = targetX + curveDirection * 34
 
   return {
-    path: `M ${sourceX} ${sourceY} C ${sourceX} ${control1Y}, ${targetX} ${control2Y}, ${targetX} ${targetY}`,
+    path: `M ${sourceX} ${sourceY} C ${control1X} ${control1Y}, ${control2X} ${control2Y}, ${targetX} ${targetY}`,
     sourceX,
     sourceY,
-    control1X: sourceX,
+    control1X,
     control1Y,
-    control2X: targetX,
+    control2X,
     control2Y,
     targetX,
     targetY
@@ -423,7 +430,7 @@ function cubicPoint(curve: CubicCurve, progress: number): { x: number; y: number
   }
 }
 
-// Shared control bands preserve left-to-right ordering without introducing hard rails.
+// Each convergence target gets its own vertical transition band and mirrored curve bias.
 function fanInRoutes(
   links: Link[],
   positions: Record<NodeId, { x: number; y: number }>,
@@ -436,9 +443,13 @@ function fanInRoutes(
     incoming.set(link.to, [...(incoming.get(link.to) ?? []), link])
   })
 
-  incoming.forEach((group, targetId) => {
-    if (group.length <= 1) return
+  const convergenceTargets = Array.from(incoming.entries())
+    .filter(([, group]) => group.length > 1)
+    .sort(([leftId], [rightId]) =>
+      (positions[leftId]?.x ?? 0) - (positions[rightId]?.x ?? 0)
+    )
 
+  convergenceTargets.forEach(([targetId, group], targetIndex) => {
     const targetPosition = positions[targetId]
     if (!targetPosition) return
 
@@ -454,19 +465,18 @@ function fanInRoutes(
 
     const lowestSourceBottom = Math.max(...sourceBottoms)
     const availableGap = targetTop - lowestSourceBottom
-    const minimumRailSeparation = 36
-    const edgePadding = Math.max(10, Math.min(28, availableGap * 0.22))
-    let sourceRailY = lowestSourceBottom + edgePadding
-    let targetRailY = targetTop - edgePadding
-
-    if (targetRailY - sourceRailY < minimumRailSeparation) {
-      const midpoint = (lowestSourceBottom + targetTop) / 2
-      sourceRailY = midpoint - minimumRailSeparation / 2
-      targetRailY = midpoint + minimumRailSeparation / 2
-    }
+    const targetCount = convergenceTargets.length
+    const bandProgress =
+      targetCount <= 1 ? 0.5 : 0.34 + (0.32 * targetIndex) / (targetCount - 1)
+    const bandCenter = lowestSourceBottom + availableGap * bandProgress
+    const railSeparation = Math.max(34, Math.min(64, availableGap * 0.16))
+    const sourceRailY = bandCenter - railSeparation / 2
+    const targetRailY = bandCenter + railSeparation / 2
+    const curveDirection =
+      targetCount <= 1 ? 0 : targetIndex < (targetCount - 1) / 2 ? -1 : 1
 
     group.forEach((link) => {
-      result.set(link.id, { sourceRailY, targetRailY })
+      result.set(link.id, { sourceRailY, targetRailY, curveDirection })
     })
   })
 
@@ -477,23 +487,23 @@ function nodeSize(id: NodeId, roots: Root[]): number {
   return roots.some((root) => root.id === id) ? 130 : 112
 }
 
-function rootSourceGeometry(
+function sourceGeometry(
   id: NodeId,
   positions: Record<NodeId, { x: number; y: number }>,
   roots: Root[]
 ): EndpointGeometry | undefined {
   const position = positions[id]
-  const isRoot = roots.some((root) => root.id === id)
-  if (!position || !isRoot) return undefined
+  if (!position) return undefined
 
-  const size = 130
+  const isRoot = roots.some((root) => root.id === id)
+  const size = isRoot ? 130 : 112
   const halfSize = size / 2
-  const outerHandleOffset = size * 0.4
+  const radius = isRoot ? Math.hypot(size * 0.4, halfSize) : halfSize
 
   return {
     centerX: position.x + halfSize,
     centerY: position.y + halfSize,
-    radius: Math.hypot(outerHandleOffset, halfSize)
+    radius
   }
 }
 

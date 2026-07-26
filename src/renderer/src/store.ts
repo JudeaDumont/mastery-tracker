@@ -119,6 +119,25 @@ const initialSkills: Skill[] = [
       { nodeId: 'g', level: 5 },
       { nodeId: 'h', level: 5 }
     ]
+  },
+  {
+    id: 'j',
+    rootId: 'lifter',
+    title: 'J',
+    xp: 0,
+    maxLevel: 5,
+    levelXpRequirements,
+    heat: 24,
+    gates: [
+      { nodeId: 'a', level: 2 },
+      { nodeId: 'b', level: 3 },
+      { nodeId: 'c', level: 3 },
+      { nodeId: 'd', level: 4 },
+      { nodeId: 'e', level: 2 },
+      { nodeId: 'f', level: 4 },
+      { nodeId: 'g', level: 5 },
+      { nodeId: 'h', level: 5 }
+    ]
   }
 ]
 
@@ -138,7 +157,15 @@ const initialLinks: Link[] = [
   { id: 'e-i', from: 'e', to: 'i' },
   { id: 'f-i', from: 'f', to: 'i' },
   { id: 'g-i', from: 'g', to: 'i' },
-  { id: 'h-i', from: 'h', to: 'i' }
+  { id: 'h-i', from: 'h', to: 'i' },
+  { id: 'a-j', from: 'a', to: 'j' },
+  { id: 'b-j', from: 'b', to: 'j' },
+  { id: 'c-j', from: 'c', to: 'j' },
+  { id: 'd-j', from: 'd', to: 'j' },
+  { id: 'e-j', from: 'e', to: 'j' },
+  { id: 'f-j', from: 'f', to: 'j' },
+  { id: 'g-j', from: 'g', to: 'j' },
+  { id: 'h-j', from: 'h', to: 'j' }
 ]
 
 function draftFor(skills: Skill[]): Record<SkillId, DraftUpdate> {
@@ -263,6 +290,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
     set({
       skills,
       draft: draftFor(skills),
+      pickedIds: [],
       history: [...before.history, ...entries],
       todayXp: before.todayXp + totalXp,
       lastResult: { totalXp, updatedNodes, levelUps, unlocked }
@@ -270,11 +298,25 @@ export const useMastery = create<MasteryStore>((set, get) => ({
   },
 
   togglePicked: (id) =>
-    set((state) => ({
-      pickedIds: state.pickedIds.includes(id)
+    set((state) => {
+      const picked = state.pickedIds.includes(id)
+      const pickedIds = picked
         ? state.pickedIds.filter((pickedId) => pickedId !== id)
         : [...state.pickedIds, id]
-    })),
+      const skill = state.skills.find((candidate) => candidate.id === id)
+
+      if (!skill) return { pickedIds }
+
+      const selected = !picked && !isLocked(skill, state.skills) && !isMaxLevel(skill)
+
+      return {
+        pickedIds,
+        draft: {
+          ...state.draft,
+          [id]: { ...state.draft[id], selected }
+        }
+      }
+    }),
 
   beginCreate: () =>
     set((state) => ({
@@ -371,7 +413,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       links,
       draft: {
         ...state.draft,
-        [id]: { selected: false, minutes: 60, effort: 'moderate', note: '' }
+        [id]: { selected: true, minutes: 60, effort: 'moderate', note: '' }
       },
       create: null,
       pickedIds: [id],

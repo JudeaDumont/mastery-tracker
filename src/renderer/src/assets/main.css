@@ -444,3 +444,48 @@ button { color: inherit; }
 .created-banner strong { color: #a5f6cb; font-size: 11px; }
 .created-banner span { color: var(--muted); font-size: 9px; }
 .node-list--paused, .submit-zone--paused { opacity: .28; pointer-events: none; }
+
+.node-list-empty {
+  min-height: 150px;
+  display: grid;
+  place-content: center;
+  gap: 5px;
+  padding: 24px;
+  text-align: center;
+  border: 1px dashed rgba(124, 151, 194, .2);
+  border-radius: 14px;
+  background: rgba(12, 18, 34, .28);
+}
+.node-list-empty strong { color: rgba(221, 233, 250, .82); font-size: 12px; }
+.node-list-empty span { color: var(--muted); font-size: 10px; }
+
+/* Selected root nodes in the Updates pane */
+.update-row--root {
+  border-color: rgba(169, 135, 255, .42);
+  background: linear-gradient(135deg, rgba(52, 38, 91, .52), rgba(20, 31, 55, .52));
+}
+.update-row--root .update-row__header {
+  grid-template-columns: 18px 1fr auto;
+}
+.root-row-mark {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  border: 1px solid rgba(213, 195, 255, .55);
+  background: rgba(129, 91, 211, .28);
+  box-shadow: 0 0 10px rgba(150, 111, 238, .24);
+  transform: rotate(45deg);
+}
+.root-row-mark span {
+  width: 6px;
+  height: 6px;
+  border: 1px solid rgba(237, 229, 255, .86);
+  transform: rotate(45deg);
+}
+.row-xp--root {
+  color: rgba(205, 185, 255, .92);
+  font-size: 9px;
+  letter-spacing: .12em;
+}

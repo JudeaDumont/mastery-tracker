@@ -14,10 +14,12 @@ const effortLabels: Record<Effort, string> = {
 }
 
 export function Updates(): ReactElement {
+  const roots = useMastery((state) => state.roots)
   const skills = useMastery((state) => state.skills)
   const draft = useMastery((state) => state.draft)
+  const pickedIds = useMastery((state) => state.pickedIds)
   const create = useMastery((state) => state.create)
-  const toggle = useMastery((state) => state.toggle)
+  const togglePicked = useMastery((state) => state.togglePicked)
   const edit = useMastery((state) => state.edit)
   const submit = useMastery((state) => state.submit)
   const beginCreate = useMastery((state) => state.beginCreate)
@@ -25,12 +27,15 @@ export function Updates(): ReactElement {
   const lastCreated = useMastery((state) => state.lastCreated)
 
   const ordered = useMemo(() => [...skills].sort((a, b) => b.heat - a.heat), [skills])
-  const selected = ordered.filter((skill) => draft[skill.id]?.selected)
-  const totalProjectedXp = selected.reduce(
+  const selectedRoots = roots.filter((root) => pickedIds.includes(root.id))
+  const selectedSkills = ordered.filter((skill) => pickedIds.includes(skill.id))
+  const selectedCount = selectedRoots.length + selectedSkills.length
+  const updatable = selectedSkills.filter((skill) => draft[skill.id]?.selected)
+  const totalProjectedXp = updatable.reduce(
     (sum, skill) => sum + projectedXp(draft[skill.id], skill),
     0
   )
-  const totalMinutes = selected.reduce((sum, skill) => sum + draft[skill.id].minutes, 0)
+  const totalMinutes = updatable.reduce((sum, skill) => sum + draft[skill.id].minutes, 0)
 
   return (
     <aside className="updates-panel">
@@ -60,7 +65,49 @@ export function Updates(): ReactElement {
       )}
 
       <div className={`node-list ${create ? 'node-list--paused' : ''}`}>
-        {ordered.map((skill) => {
+        {selectedCount === 0 && !create && (
+          <div className="node-list-empty">
+            <strong>No nodes selected</strong>
+            <span>Select one or more nodes in the graph to add updates.</span>
+          </div>
+        )}
+
+        {selectedRoots.map((root) => {
+          const rootSkills = skills.filter((skill) => skill.rootId === root.id)
+          const rank = Math.min(
+            10,
+            rootSkills.reduce((sum, skill) => sum + levelFor(skill), 0)
+          )
+          const heat =
+            rootSkills.length > 0
+              ? Math.round(
+                  rootSkills.reduce((sum, skill) => sum + skill.heat, 0) / rootSkills.length
+                )
+              : 0
+
+          return (
+            <section key={root.id} className="update-row update-row--selected update-row--root">
+              <button
+                className="update-row__header"
+                type="button"
+                disabled={Boolean(create)}
+                title="Remove from updates"
+                onClick={() => togglePicked(root.id)}
+              >
+                <span className="root-row-mark" aria-hidden="true">
+                  <span />
+                </span>
+                <span className="update-title">
+                  <strong>{root.title}</strong>
+                  <small>Rank {rank} · {rootSkills.length} connected nodes · Heat {heat}</small>
+                </span>
+                <span className="row-xp row-xp--root">ROOT</span>
+              </button>
+            </section>
+          )
+        })}
+
+        {selectedSkills.map((skill) => {
           const update = draft[skill.id]
           const locked = isLocked(skill, skills)
           const progress = levelProgressFor(skill)
@@ -69,13 +116,14 @@ export function Updates(): ReactElement {
           return (
             <section
               key={skill.id}
-              className={`update-row ${update?.selected ? 'update-row--selected' : ''} ${locked ? 'update-row--locked' : ''} ${maxed ? 'update-row--maxed' : ''}`}
+              className={`update-row update-row--selected ${locked ? 'update-row--locked' : ''} ${maxed ? 'update-row--maxed' : ''}`}
             >
               <button
                 className="update-row__header"
                 type="button"
-                disabled={locked || maxed || Boolean(create)}
-                onClick={() => toggle(skill.id)}
+                disabled={Boolean(create)}
+                title="Remove from updates"
+                onClick={() => togglePicked(skill.id)}
               >
                 <span className="heat-dot" style={{ '--row-heat': skill.heat / 100 } as React.CSSProperties} />
                 <span className="update-title">
@@ -97,7 +145,7 @@ export function Updates(): ReactElement {
                 </span>
               </button>
 
-              {update?.selected && !create && (
+              {update?.selected && !locked && !maxed && !create && (
                 <div className="update-fields">
                   <label>
                     Duration
@@ -161,14 +209,14 @@ export function Updates(): ReactElement {
         )}
 
         <div className="submit-summary">
-          <span>{selected.length} nodes</span>
+          <span>{updatable.length} nodes</span>
           <span>{Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m</span>
           <strong>+{totalProjectedXp} XP</strong>
         </div>
         <button
           className="submit-button"
           type="button"
-          disabled={selected.length === 0 || Boolean(create)}
+          disabled={updatable.length === 0 || totalProjectedXp <= 0 || Boolean(create)}
           onClick={submit}
         >
           Submit updates

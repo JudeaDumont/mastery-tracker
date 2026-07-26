@@ -67,7 +67,9 @@ export function graphLayout({ roots, skills, links, preview }: LayoutInput): Rec
           const fallback = distributedAngle(index, sorted.length)
           const angle =
             parentAngles.length > 1
-              ? clamp(circularMean(parentAngles), radians(15), radians(165))
+              ? sorted.length > 1
+                ? convergenceAngle(index, sorted.length, radius)
+                : clamp(circularMean(parentAngles), radians(15), radians(165))
               : fallback
           const nodeCenter = {
             x: center.x + Math.cos(angle) * radius,
@@ -139,6 +141,19 @@ function minimumRadiusForCount(count: number): number {
 function distributedAngle(index: number, count: number): number {
   if (count <= 1) return Math.PI / 2
   return START_ANGLE + ((END_ANGLE - START_ANGLE) * index) / (count - 1)
+}
+
+function convergenceAngle(index: number, count: number, radius: number): number {
+  if (count <= 1) return Math.PI / 2
+
+  const spacingRatio = Math.min(1, (NODE_SIZE + NODE_CLEARANCE) / (2 * radius))
+  const minimumStep = 2 * Math.asin(spacingRatio)
+  const spread = Math.min(
+    radians(70),
+    Math.max(radians(28), minimumStep * (count - 1))
+  )
+
+  return Math.PI / 2 + spread / 2 - (spread * index) / (count - 1)
 }
 
 function circularMean(angles: number[]): number {
