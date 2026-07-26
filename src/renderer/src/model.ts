@@ -1,6 +1,19 @@
-export type SkillId = 'squat' | 'deadlift' | 'running'
+export type NodeId = string
+export type SkillId = string
+export type RootId = string
 
 export type Effort = 'recovery' | 'light' | 'moderate' | 'hard' | 'maximum'
+
+export interface Root {
+  id: RootId
+  title: string
+}
+
+export interface Link {
+  id: string
+  from: NodeId
+  to: NodeId
+}
 
 export interface Gate {
   nodeId: SkillId
@@ -9,6 +22,7 @@ export interface Gate {
 
 export interface Skill {
   id: SkillId
+  rootId: RootId
   title: string
   xp: number
   maxLevel: number
@@ -39,4 +53,13 @@ export interface SubmitResult {
   updatedNodes: number
   levelUps: number
   unlocked: string[]
+}
+
+export type CreateStep = 'from' | 'to'
+
+export interface CreateDraft {
+  step: CreateStep
+  title: string
+  fromIds: NodeId[]
+  toIds: NodeId[]
 }

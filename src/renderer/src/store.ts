@@ -1,10 +1,27 @@
 import { create } from 'zustand'
-import type { ActivityEntry, DraftUpdate, Skill, SkillId, SubmitResult } from './model'
+import type {
+  ActivityEntry,
+  CreateDraft,
+  DraftUpdate,
+  Link,
+  NodeId,
+  Root,
+  RootId,
+  Skill,
+  SkillId,
+  SubmitResult
+} from './model'
 import { earnedXp, isLocked, levelFor } from './xp'
+
+export const NODE_CAPACITY = 4
+export const ROOT_CAPACITY = 8
+
+const initialRoots: Root[] = [{ id: 'lifter', title: 'Lifter' }]
 
 const initialSkills: Skill[] = [
   {
     id: 'squat',
+    rootId: 'lifter',
     title: 'Squat',
     xp: 145,
     maxLevel: 5,
@@ -14,6 +31,7 @@ const initialSkills: Skill[] = [
   },
   {
     id: 'deadlift',
+    rootId: 'lifter',
     title: 'Deadlift',
     xp: 120,
     maxLevel: 5,
@@ -23,6 +41,7 @@ const initialSkills: Skill[] = [
   },
   {
     id: 'running',
+    rootId: 'lifter',
     title: 'Running',
     xp: 0,
     maxLevel: 3,
@@ -35,29 +54,61 @@ const initialSkills: Skill[] = [
   }
 ]
 
-const blankDraft = (): Record<SkillId, DraftUpdate> => ({
-  squat: { selected: false, minutes: 60, effort: 'moderate', note: '' },
-  deadlift: { selected: false, minutes: 60, effort: 'moderate', note: '' },
-  running: { selected: false, minutes: 30, effort: 'moderate', note: '' }
-})
+const initialLinks: Link[] = [
+  { id: 'lifter-squat', from: 'lifter', to: 'squat' },
+  { id: 'lifter-deadlift', from: 'lifter', to: 'deadlift' },
+  { id: 'squat-running', from: 'squat', to: 'running' },
+  { id: 'deadlift-running', from: 'deadlift', to: 'running' }
+]
+
+function draftFor(skills: Skill[]): Record<SkillId, DraftUpdate> {
+  return Object.fromEntries(
+    skills.map((skill) => [
+      skill.id,
+      {
+        selected: false,
+        minutes: skill.id === 'running' ? 30 : 60,
+        effort: 'moderate',
+        note: ''
+      }
+    ])
+  )
+}
 
 interface MasteryStore {
+  roots: Root[]
   skills: Skill[]
+  links: Link[]
+  pickedIds: NodeId[]
+  create: CreateDraft | null
   draft: Record<SkillId, DraftUpdate>
   history: ActivityEntry[]
   todayXp: number
   lastResult: SubmitResult | null
+  lastCreated: string | null
   toggle: (id: SkillId) => void
   edit: (id: SkillId, patch: Partial<DraftUpdate>) => void
   submit: () => void
+  togglePicked: (id: NodeId) => void
+  beginCreate: () => void
+  setCreateTitle: (title: string) => void
+  toggleCreateNode: (id: NodeId) => void
+  clearCreateSelection: () => void
+  continueCreate: () => void
+  escapeCreate: () => void
 }
 
 export const useMastery = create<MasteryStore>((set, get) => ({
+  roots: initialRoots,
   skills: initialSkills,
-  draft: blankDraft(),
+  links: initialLinks,
+  pickedIds: [],
+  create: null,
+  draft: draftFor(initialSkills),
   history: [],
   todayXp: 0,
   lastResult: null,
+  lastCreated: null,
 
   toggle: (id) =>
     set((state) => {
@@ -94,7 +145,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
     const skills = before.skills.map((skill) => {
       const update = before.draft[skill.id]
-      if (!update.selected || isLocked(skill, before.skills)) return skill
+      if (!update?.selected || isLocked(skill, before.skills)) return skill
 
       const xp = earnedXp(update.minutes, update.effort)
       if (xp <= 0) return skill
@@ -128,14 +179,251 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
     set({
       skills,
-      draft: blankDraft(),
+      draft: draftFor(skills),
       history: [...before.history, ...entries],
       todayXp: before.todayXp + totalXp,
       lastResult: { totalXp, updatedNodes, levelUps, unlocked }
     })
-  }
+  },
+
+  togglePicked: (id) =>
+    set((state) => ({
+      pickedIds: state.pickedIds.includes(id)
+        ? state.pickedIds.filter((pickedId) => pickedId !== id)
+        : [...state.pickedIds, id]
+    })),
+
+  beginCreate: () =>
+    set((state) => ({
+      create: {
+        step: 'from',
+        title: 'New mastery',
+        fromIds: normalizedInitialFrom(state.pickedIds, state.roots, state.skills, state.links),
+        toIds: []
+      },
+      lastCreated: null
+    })),
+
+  setCreateTitle: (title) =>
+    set((state) => ({
+      create: state.create ? { ...state.create, title } : null
+    })),
+
+  toggleCreateNode: (id) =>
+    set((state) => {
+      const draft = state.create
+      if (!draft) return state
+
+      if (draft.step === 'from') {
+        const fromIds = toggleFromId(id, draft.fromIds, state.roots, state.skills, state.links)
+        return { create: { ...draft, fromIds, toIds: [] } }
+      }
+
+      const selected = draft.toIds.includes(id)
+      if (selected) {
+        return { create: { ...draft, toIds: draft.toIds.filter((nodeId) => nodeId !== id) } }
+      }
+
+      const candidates = toCandidateIds(state.roots, state.skills, state.links, draft)
+      if (!candidates.has(id) || createSelectionFull(draft)) return state
+
+      return { create: { ...draft, toIds: [...draft.toIds, id] } }
+    }),
+
+  clearCreateSelection: () =>
+    set((state) => {
+      if (!state.create) return state
+      return {
+        create:
+          state.create.step === 'from'
+            ? { ...state.create, fromIds: [], toIds: [] }
+            : { ...state.create, toIds: [] }
+      }
+    }),
+
+  continueCreate: () => {
+    const state = get()
+    const draft = state.create
+    if (!draft || !draft.title.trim()) return
+
+    if (draft.step === 'from' && draft.fromIds.length === 0) {
+      const id = uniqueId(draft.title, allNodeIds(state.roots, state.skills))
+      const root: Root = { id, title: draft.title.trim() }
+      set({
+        roots: [...state.roots, root],
+        create: null,
+        pickedIds: [id],
+        lastCreated: `${root.title} root created`
+      })
+      return
+    }
+
+    if (draft.step === 'from') {
+      set({ create: { ...draft, step: 'to', toIds: [] } })
+      return
+    }
+
+    const rootId = rootForIds(draft.fromIds, state.roots, state.skills)
+    if (!rootId) return
+
+    const id = uniqueId(draft.title, allNodeIds(state.roots, state.skills))
+    const skill: Skill = {
+      id,
+      rootId,
+      title: draft.title.trim(),
+      xp: 0,
+      maxLevel: 3,
+      thresholds: [100, 300, 600],
+      heat: 0,
+      gates: []
+    }
+    const links = [
+      ...state.links,
+      ...draft.fromIds.map((from) => ({ id: `${from}-${id}`, from, to: id })),
+      ...draft.toIds.map((to) => ({ id: `${id}-${to}`, from: id, to }))
+    ]
+
+    set({
+      skills: [...state.skills, skill],
+      links,
+      draft: {
+        ...state.draft,
+        [id]: { selected: false, minutes: 60, effort: 'moderate', note: '' }
+      },
+      create: null,
+      pickedIds: [id],
+      lastCreated: `${skill.title} created and placed automatically`
+    })
+  },
+
+  escapeCreate: () =>
+    set((state) => {
+      if (!state.create) return state
+      if (state.create.step === 'to') {
+        return { create: { ...state.create, step: 'from', toIds: [] } }
+      }
+      return { create: null }
+    })
 }))
 
 export function projectedXp(update: DraftUpdate): number {
   return update.selected ? earnedXp(update.minutes, update.effort) : 0
+}
+
+export function nodeTitle(id: NodeId, roots: Root[], skills: Skill[]): string {
+  return roots.find((root) => root.id === id)?.title
+    ?? skills.find((skill) => skill.id === id)?.title
+    ?? id
+}
+
+export function nodeRootId(id: NodeId, roots: Root[], skills: Skill[]): RootId | undefined {
+  const root = roots.find((candidate) => candidate.id === id)
+  if (root) return root.id
+  return skills.find((skill) => skill.id === id)?.rootId
+}
+
+export function createSelectionFull(draft: CreateDraft): boolean {
+  return draft.fromIds.length + draft.toIds.length >= NODE_CAPACITY
+}
+
+export function canUseFromNode(id: NodeId, roots: Root[], links: Link[]): boolean {
+  const capacity = roots.some((root) => root.id === id) ? ROOT_CAPACITY : NODE_CAPACITY
+  return degreeFor(id, links) < capacity
+}
+
+export function toCandidateIds(
+  roots: Root[],
+  skills: Skill[],
+  links: Link[],
+  draft: CreateDraft
+): Set<NodeId> {
+  if (draft.step !== 'to') return new Set()
+  const rootId = rootForIds(draft.fromIds, roots, skills)
+  if (!rootId) return new Set()
+
+  return new Set(
+    skills
+      .filter((skill) => skill.rootId === rootId)
+      .filter((skill) => !draft.fromIds.includes(skill.id))
+      .filter((skill) => degreeFor(skill.id, links) < NODE_CAPACITY)
+      .filter((skill) => !draft.fromIds.some((source) => hasPath(skill.id, source, links)))
+      .map((skill) => skill.id)
+  )
+}
+
+function normalizedInitialFrom(
+  ids: NodeId[],
+  roots: Root[],
+  skills: Skill[],
+  links: Link[]
+): NodeId[] {
+  if (ids.length === 0) return []
+  const rootId = nodeRootId(ids[0], roots, skills)
+  if (!rootId) return []
+  return ids
+    .filter((id) => nodeRootId(id, roots, skills) === rootId)
+    .filter((id) => canUseFromNode(id, roots, links))
+    .slice(0, NODE_CAPACITY)
+}
+
+function toggleFromId(
+  id: NodeId,
+  current: NodeId[],
+  roots: Root[],
+  skills: Skill[],
+  links: Link[]
+): NodeId[] {
+  if (current.includes(id)) return current.filter((nodeId) => nodeId !== id)
+
+  const rootId = nodeRootId(id, roots, skills)
+  if (!rootId || !canUseFromNode(id, roots, links)) return current
+  const currentRoot = current.length > 0 ? nodeRootId(current[0], roots, skills) : rootId
+
+  if (currentRoot !== rootId) return [id]
+  if (current.length >= NODE_CAPACITY) return current
+  return [...current, id]
+}
+
+function rootForIds(ids: NodeId[], roots: Root[], skills: Skill[]): RootId | undefined {
+  return ids.length > 0 ? nodeRootId(ids[0], roots, skills) : undefined
+}
+
+function degreeFor(id: NodeId, links: Link[]): number {
+  return links.filter((link) => link.from === id || link.to === id).length
+}
+
+function hasPath(from: NodeId, to: NodeId, links: Link[]): boolean {
+  const stack = [from]
+  const visited = new Set<NodeId>()
+
+  while (stack.length > 0) {
+    const current = stack.pop()
+    if (!current || visited.has(current)) continue
+    if (current === to) return true
+    visited.add(current)
+    links
+      .filter((link) => link.from === current)
+      .forEach((link) => stack.push(link.to))
+  }
+
+  return false
+}
+
+function allNodeIds(roots: Root[], skills: Skill[]): Set<NodeId> {
+  return new Set([...roots.map((root) => root.id), ...skills.map((skill) => skill.id)])
+}
+
+function uniqueId(title: string, ids: Set<NodeId>): string {
+  const base = title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'node'
+  let id = base
+  let suffix = 2
+  while (ids.has(id)) {
+    id = `${base}-${suffix}`
+    suffix += 1
+  }
+  return id
 }

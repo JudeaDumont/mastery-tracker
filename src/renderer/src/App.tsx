@@ -1,18 +1,22 @@
+import type { ReactElement } from 'react'
 import { Graph } from './ui/Graph'
 import { Updates } from './ui/Updates'
 import { useMastery } from './store'
 import { isLocked, levelFor } from './xp'
 
-function App(): React.JSX.Element {
+function App(): ReactElement {
+  const roots = useMastery((state) => state.roots)
   const skills = useMastery((state) => state.skills)
   const todayXp = useMastery((state) => state.todayXp)
   const lastResult = useMastery((state) => state.lastResult)
+  const create = useMastery((state) => state.create)
 
   const totalXp = skills.reduce((sum, skill) => sum + skill.xp, 0)
-  const graphHeat = Math.round(skills.reduce((sum, skill) => sum + skill.heat, 0) / skills.length)
+  const graphHeat = skills.length > 0
+    ? Math.round(skills.reduce((sum, skill) => sum + skill.heat, 0) / skills.length)
+    : 0
   const hotNodes = skills.filter((skill) => skill.heat >= 70).length
   const lockedNodes = skills.filter((skill) => isLocked(skill, skills)).length
-  const lifterLevel = skills.reduce((sum, skill) => sum + levelFor(skill), 0)
 
   return (
     <div className="app-shell">
@@ -26,8 +30,23 @@ function App(): React.JSX.Element {
         </div>
 
         <nav className="view-tabs" aria-label="Graph view">
-          <button className="view-tab view-tab--active" type="button">Lifter {lifterLevel}</button>
-          <button className="view-tab" type="button">Software</button>
+          {roots.slice(0, 3).map((root, index) => {
+            const level = Math.min(
+              10,
+              skills
+                .filter((skill) => skill.rootId === root.id)
+                .reduce((sum, skill) => sum + levelFor(skill), 0)
+            )
+            return (
+              <button
+                key={root.id}
+                className={`view-tab ${index === 0 ? 'view-tab--active' : ''}`}
+                type="button"
+              >
+                {root.title} {level}
+              </button>
+            )
+          })}
           <button className="view-tab" type="button">Full view</button>
         </nav>
 
@@ -40,13 +59,29 @@ function App(): React.JSX.Element {
       <main className="workspace">
         <section className="graph-panel">
           <div className="graph-label">
-            <span className="eyebrow">Internal graph</span>
-            <strong>Lifter progression</strong>
+            <span className="eyebrow">{create ? 'Creation mode' : 'Internal graph'}</span>
+            <strong>
+              {create?.step === 'from'
+                ? 'Selecting From nodes'
+                : create?.step === 'to'
+                  ? 'Selecting To nodes'
+                  : 'Automatic mastery lattice'}
+            </strong>
           </div>
           <Graph />
           <div className="graph-legend">
-            <span><i className="legend-swatch legend-swatch--heat" /> Momentum</span>
-            <span><i className="legend-swatch legend-swatch--gate" /> Unlock gate</span>
+            {create ? (
+              <>
+                <span><i className="legend-swatch legend-swatch--from" /> From</span>
+                <span><i className="legend-swatch legend-swatch--candidate" /> Candidate</span>
+                <span><i className="legend-swatch legend-swatch--full" /> Capacity</span>
+              </>
+            ) : (
+              <>
+                <span><i className="legend-swatch legend-swatch--heat" /> Momentum</span>
+                <span><i className="legend-swatch legend-swatch--gate" /> Unlock gate</span>
+              </>
+            )}
           </div>
         </section>
         <Updates />
@@ -66,7 +101,7 @@ function App(): React.JSX.Element {
   )
 }
 
-function Metric({ label, value, detail }: { label: string; value: string; detail: string }) {
+function Metric({ label, value, detail }: { label: string; value: string; detail: string }): ReactElement {
   return (
     <div className="metric">
       <span>{label}</span>

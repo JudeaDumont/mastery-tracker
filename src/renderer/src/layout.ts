@@ -1,0 +1,137 @@
+import type { Link, NodeId, Root, RootId, Skill } from './model'
+
+export interface Point {
+  x: number
+  y: number
+}
+
+export interface PreviewNode {
+  id: NodeId
+  rootId?: RootId
+  root: boolean
+}
+
+interface LayoutInput {
+  roots: Root[]
+  skills: Skill[]
+  links: Link[]
+  preview?: PreviewNode
+}
+
+const ROOT_GAP = 900
+const RING_GAP = 205
+const START_ANGLE = radians(150)
+const END_ANGLE = radians(30)
+
+export function graphLayout({ roots, skills, links, preview }: LayoutInput): Record<NodeId, Point> {
+  const allRoots = preview?.root
+    ? [...roots, { id: preview.id, title: 'Preview' }]
+    : roots
+  const allSkills = preview && !preview.root && preview.rootId
+    ? [...skills, previewSkill(preview.id, preview.rootId)]
+    : skills
+  const positions: Record<NodeId, Point> = {}
+
+  allRoots.forEach((root, rootIndex) => {
+    const center = { x: 420 + rootIndex * ROOT_GAP, y: 130 }
+    const rootSkills = allSkills.filter((skill) => skill.rootId === root.id)
+    const depth = depthsFor(root.id, rootSkills, links)
+    const angles = new Map<NodeId, number>()
+    const groups = new Map<number, Skill[]>()
+
+    positions[root.id] = center
+    rootSkills.forEach((skill) => {
+      const value = depth.get(skill.id) ?? 1
+      groups.set(value, [...(groups.get(value) ?? []), skill])
+    })
+
+    Array.from(groups.entries())
+      .sort(([a], [b]) => a - b)
+      .forEach(([ring, ringSkills]) => {
+        const sorted = [...ringSkills].sort((a, b) => a.id.localeCompare(b.id))
+
+        sorted.forEach((skill, index) => {
+          const parentAngles = links
+            .filter((link) => link.to === skill.id)
+            .map((link) => angles.get(link.from))
+            .filter((angle): angle is number => angle !== undefined)
+          const fallback = distributedAngle(index, sorted.length)
+          const inherited = parentAngles.length > 0 ? circularMean(parentAngles) : fallback
+          const collisionOffset = radians((index - (sorted.length - 1) / 2) * 10)
+          const angle = clamp(inherited + collisionOffset, radians(15), radians(165))
+          const radius = RING_GAP * ring
+
+          angles.set(skill.id, angle)
+          positions[skill.id] = {
+            x: center.x + Math.cos(angle) * radius,
+            y: center.y + Math.sin(angle) * radius
+          }
+        })
+      })
+  })
+
+  return positions
+}
+
+function previewSkill(id: NodeId, rootId: RootId): Skill {
+  return {
+    id,
+    rootId,
+    title: 'Preview',
+    xp: 0,
+    maxLevel: 3,
+    thresholds: [100, 300, 600],
+    heat: 0,
+    gates: []
+  }
+}
+
+function depthsFor(rootId: RootId, skills: Skill[], links: Link[]): Map<NodeId, number> {
+  const ids = new Set(skills.map((skill) => skill.id))
+  const depth = new Map<NodeId, number>([[rootId, 0]])
+
+  for (let pass = 0; pass <= skills.length; pass += 1) {
+    let changed = false
+
+    skills.forEach((skill) => {
+      const sourceDepths = links
+        .filter((link) => link.to === skill.id)
+        .map((link) => depth.get(link.from))
+        .filter((value): value is number => value !== undefined)
+      const next = sourceDepths.length > 0 ? Math.max(...sourceDepths) + 1 : 1
+      const current = depth.get(skill.id)
+
+      if (current === undefined || next > current) {
+        depth.set(skill.id, Math.min(next, ids.size + 1))
+        changed = true
+      }
+    })
+
+    if (!changed) break
+  }
+
+  skills.forEach((skill) => {
+    if (!depth.has(skill.id)) depth.set(skill.id, 1)
+  })
+
+  return depth
+}
+
+function distributedAngle(index: number, count: number): number {
+  if (count <= 1) return Math.PI / 2
+  return START_ANGLE + ((END_ANGLE - START_ANGLE) * index) / (count - 1)
+}
+
+function circularMean(angles: number[]): number {
+  const x = angles.reduce((sum, angle) => sum + Math.cos(angle), 0)
+  const y = angles.reduce((sum, angle) => sum + Math.sin(angle), 0)
+  return Math.atan2(y, x)
+}
+
+function radians(degrees: number): number {
+  return (degrees * Math.PI) / 180
+}
+
+function clamp(value: number, minimum: number, maximum: number): number {
+  return Math.min(maximum, Math.max(minimum, value))
+}

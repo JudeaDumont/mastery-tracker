@@ -1,4 +1,15 @@
+import type { CSSProperties, ReactElement } from 'react'
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react'
+
+export type NodeVisual =
+  | 'normal'
+  | 'picked'
+  | 'from'
+  | 'candidate'
+  | 'to'
+  | 'to-full'
+  | 'unavailable'
+  | 'preview'
 
 export interface MasteryNodeData extends Record<string, unknown> {
   title: string
@@ -7,12 +18,13 @@ export interface MasteryNodeData extends Record<string, unknown> {
   heat: number
   locked: boolean
   root?: boolean
-  selected?: boolean
+  activitySelected?: boolean
+  visual: NodeVisual
 }
 
 export type MasteryNodeType = Node<MasteryNodeData, 'mastery'>
 
-function Ring({ level, maxLevel, locked }: Pick<MasteryNodeData, 'level' | 'maxLevel' | 'locked'>) {
+function Ring({ level, maxLevel, locked }: Pick<MasteryNodeData, 'level' | 'maxLevel' | 'locked'>): ReactElement {
   const radius = 47
   const circumference = 2 * Math.PI * radius
   const gap = 7
@@ -37,14 +49,19 @@ function Ring({ level, maxLevel, locked }: Pick<MasteryNodeData, 'level' | 'maxL
   )
 }
 
-export function MasteryNode({ data }: NodeProps<MasteryNodeType>) {
+export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement {
   const heatClass = data.heat >= 75 ? 'node--hot' : data.heat >= 40 ? 'node--warm' : 'node--cold'
+  const classes = [
+    'mastery-node',
+    heatClass,
+    data.locked ? 'node--locked' : '',
+    data.root ? 'node--root' : '',
+    data.activitySelected ? 'node--activity' : '',
+    `node--${data.visual}`
+  ].filter(Boolean).join(' ')
 
   return (
-    <div
-      className={`mastery-node ${heatClass} ${data.locked ? 'node--locked' : ''} ${data.root ? 'node--root' : ''} ${data.selected ? 'node--selected' : ''}`}
-      style={{ '--heat': data.heat / 100 } as React.CSSProperties}
-    >
+    <div className={classes} style={{ '--heat': data.heat / 100 } as CSSProperties}>
       <Handle type="target" position={Position.Top} className="node-handle" />
       <Ring level={data.level} maxLevel={data.maxLevel} locked={data.locked} />
       <div className="node-core">
