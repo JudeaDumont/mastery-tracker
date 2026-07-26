@@ -60,25 +60,30 @@ function Ring({
   const radius = 47
   const circumference = 2 * Math.PI * radius
   const gap = 7
-  const segment = circumference / maxLevel
-  const dash = Math.max(1, segment - gap)
+  const sectorDegrees = 360 / maxLevel
+  const sectorLength = circumference / maxLevel
+  const dashLength = Math.max(1, sectorLength - gap)
+  const dashDegrees = (dashLength / circumference) * 360
 
   return (
     <svg className="level-ring" viewBox="0 0 112 112" aria-hidden="true">
-      {Array.from({ length: maxLevel }, (_, index) => (
-        <circle
-          key={index}
-          className={
-            index < level && !locked ? 'ring-segment ring-segment--on' : 'ring-segment'
-          }
-          cx="56"
-          cy="56"
-          r={radius}
-          pathLength={circumference}
-          strokeDasharray={`${dash} ${circumference - dash}`}
-          transform={`rotate(${-90 + index * (360 / maxLevel)} 56 56)`}
-        />
-      ))}
+      {Array.from({ length: maxLevel }, (_, index) => {
+        const rotation = -90 - dashDegrees / 2 + index * sectorDegrees
+
+        return (
+          <circle
+            key={index}
+            className={
+              index < level && !locked ? 'ring-segment ring-segment--on' : 'ring-segment'
+            }
+            cx="56"
+            cy="56"
+            r={radius}
+            strokeDasharray={`${dashLength} ${circumference - dashLength}`}
+            transform={`rotate(${rotation} 56 56)`}
+          />
+        )
+      })}
     </svg>
   )
 }
