@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ReactElement } from 'react'
-import type { Effort, NodeId } from '../model'
+import type { CSSProperties, ReactElement } from 'react'
+import type { Effort, NodeId, RootAccent } from '../model'
 import { projectedXp, useMastery } from '../store'
 import { isLocked, levelFor, levelProgressFor } from '../xp'
 import { Create } from './Create'
@@ -53,7 +53,7 @@ export function Updates(): ReactElement {
     })
   }
 
-  const ordered = useMemo(() => [...skills].sort((a, b) => b.heat - a.heat), [skills])
+  const ordered = useMemo(() => [...skills].sort((a, b) => b.momentum - a.momentum), [skills])
   const selectedRoots = roots.filter((root) => pickedIds.includes(root.id))
   const selectedSkills = ordered.filter((skill) => pickedIds.includes(skill.id))
   const selectedCount = selectedRoots.length + selectedSkills.length
@@ -105,10 +105,10 @@ export function Updates(): ReactElement {
             10,
             rootSkills.reduce((sum, skill) => sum + levelFor(skill), 0)
           )
-          const heat =
+          const momentum =
             rootSkills.length > 0
               ? Math.round(
-                  rootSkills.reduce((sum, skill) => sum + skill.heat, 0) / rootSkills.length
+                  rootSkills.reduce((sum, skill) => sum + skill.momentum, 0) / rootSkills.length
                 )
               : 0
           const expanded = expandedIds.has(root.id)
@@ -116,7 +116,8 @@ export function Updates(): ReactElement {
           return (
             <section
               key={root.id}
-              className={`update-row update-row--selected update-row--root ${expanded ? 'update-row--expanded' : ''}`}
+              className={`update-row update-row--selected update-row--root update-row--accent-${root.accent ?? 'teal'} ${expanded ? 'update-row--expanded' : ''}`}
+              style={{ '--momentum': momentum / 100 } as CSSProperties}
             >
               <button
                 className="update-row__header"
@@ -126,20 +127,20 @@ export function Updates(): ReactElement {
                 aria-expanded={expanded}
                 onClick={() => toggleExpanded(root.id)}
               >
-                <span className="root-row-mark" aria-hidden="true">
+                <span className="root-row-mark momentum-colored" aria-hidden="true">
                   <span />
                 </span>
                 <span className="update-title">
                   <strong>{root.title}</strong>
                   <small>
-                    Rank {rank} · {rootSkills.length} connected nodes · Heat {heat}
+                    Rank {rank} · {rootSkills.length} connected nodes · Momentum {momentum}
                   </small>
                 </span>
                 <span className="update-row__status">
                   <span className="update-row__compact-meta update-row__compact-meta--root">
                     <span>Rank {rank}</span>
                     <span>{rootSkills.length} nodes</span>
-                    <span>Heat {heat}</span>
+                    <span>Momentum {momentum}</span>
                   </span>
                   <span className="row-xp row-xp--root update-row__expanded-xp">ROOT</span>
                   <span className="update-row__chevron" aria-hidden="true" />
@@ -164,12 +165,18 @@ export function Updates(): ReactElement {
           const compactXp = maxed
             ? `${progress.overflowXp} XP banked`
             : `${progress.currentXp}/${progress.requiredXp} XP`
+          const expandedXp = maxed
+            ? `${progress.overflowXp} XP banked beyond the current cap`
+            : `${progress.currentXp} / ${progress.requiredXp} XP`
+          const accent: RootAccent =
+            roots.find((root) => root.id === skill.rootId)?.accent ?? 'teal'
           const expanded = expandedIds.has(skill.id)
 
           return (
             <section
               key={skill.id}
-              className={`update-row update-row--selected ${locked ? 'update-row--locked' : ''} ${maxed ? 'update-row--maxed' : ''} ${expanded ? 'update-row--expanded' : ''}`}
+              className={`update-row update-row--selected update-row--accent-${accent} ${locked ? 'update-row--locked' : ''} ${maxed ? 'update-row--maxed' : ''} ${expanded ? 'update-row--expanded' : ''}`}
+              style={{ '--momentum': skill.momentum / 100 } as CSSProperties}
             >
               <button
                 className="update-row__header"
@@ -179,10 +186,7 @@ export function Updates(): ReactElement {
                 aria-expanded={expanded}
                 onClick={() => toggleExpanded(skill.id)}
               >
-                <span
-                  className="heat-dot"
-                  style={{ '--row-heat': skill.heat / 100 } as React.CSSProperties}
-                />
+                <span className="momentum-dot momentum-colored" aria-hidden="true" />
                 <span className="update-title">
                   <strong>{skill.title}</strong>
                   <small>
@@ -190,14 +194,14 @@ export function Updates(): ReactElement {
                       ? 'Locked'
                       : maxed
                         ? `Level ${skill.maxLevel}/${skill.maxLevel} · Current cap`
-                        : `Level ${level}/${skill.maxLevel}`} · Heat {skill.heat}
+                        : `Level ${level}/${skill.maxLevel}`} · Momentum {skill.momentum}
                   </small>
                 </span>
                 <span className="update-row__status">
                   <span className="update-row__compact-meta">
                     <span>Lv {level}/{skill.maxLevel}</span>
                     <span>{compactXp}</span>
-                    <span>Heat {skill.heat}</span>
+                    <span>Momentum {skill.momentum}</span>
                   </span>
                   <span className="row-xp update-row__expanded-xp">
                     {update?.selected ? `+${projectedXp(update, skill)} XP` : compactXp}
@@ -205,6 +209,13 @@ export function Updates(): ReactElement {
                   <span className="update-row__chevron" aria-hidden="true" />
                 </span>
               </button>
+
+              {expanded && !create && (
+                <div className="update-xp-progress">
+                  <span>{maxed ? 'XP beyond current cap' : 'Current / next level XP'}</span>
+                  <strong>{expandedXp}</strong>
+                </div>
+              )}
 
               {expanded && locked && !create && (
                 <div className="update-row-message">

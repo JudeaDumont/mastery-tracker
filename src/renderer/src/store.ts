@@ -6,6 +6,7 @@ import type {
   Link,
   NodeId,
   Root,
+  RootAccent,
   RootId,
   Skill,
   SkillId,
@@ -16,7 +17,9 @@ import { earnedXp, isLocked, levelFor } from './xp'
 export const NODE_CAPACITY = 4
 export const ROOT_CAPACITY = 8
 
-const initialRoots: Root[] = [{ id: 'lifter', title: 'Lifter' }]
+export const ROOT_ACCENTS: RootAccent[] = ['teal', 'violet', 'amber', 'rose', 'green', 'blue']
+
+const initialRoots: Root[] = [{ id: 'lifter', title: 'Lifter', accent: 'teal' }]
 
 const levelXpRequirements = [100, 180, 275, 425, 650]
 
@@ -28,7 +31,7 @@ const initialSkills: Skill[] = [
     xp: 145,
     maxLevel: 5,
     levelXpRequirements,
-    heat: 35,
+    momentum: 6,
     gates: []
   },
   {
@@ -38,7 +41,7 @@ const initialSkills: Skill[] = [
     xp: 1200,
     maxLevel: 5,
     levelXpRequirements,
-    heat: 65,
+    momentum: 73,
     gates: []
   },
   {
@@ -48,7 +51,7 @@ const initialSkills: Skill[] = [
     xp: 350,
     maxLevel: 5,
     levelXpRequirements,
-    heat: 42,
+    momentum: 28,
     gates: []
   },
   {
@@ -58,7 +61,7 @@ const initialSkills: Skill[] = [
     xp: 650,
     maxLevel: 5,
     levelXpRequirements,
-    heat: 58,
+    momentum: 54,
     gates: []
   },
   {
@@ -68,7 +71,7 @@ const initialSkills: Skill[] = [
     xp: 420,
     maxLevel: 5,
     levelXpRequirements,
-    heat: 70,
+    momentum: 15,
     gates: []
   },
   {
@@ -78,7 +81,7 @@ const initialSkills: Skill[] = [
     xp: 1350,
     maxLevel: 5,
     levelXpRequirements,
-    heat: 62,
+    momentum: 87,
     gates: []
   },
   {
@@ -88,7 +91,7 @@ const initialSkills: Skill[] = [
     xp: 1880,
     maxLevel: 5,
     levelXpRequirements,
-    heat: 50,
+    momentum: 41,
     gates: []
   },
   {
@@ -98,7 +101,7 @@ const initialSkills: Skill[] = [
     xp: 1050,
     maxLevel: 5,
     levelXpRequirements,
-    heat: 68,
+    momentum: 100,
     gates: []
   },
   {
@@ -108,7 +111,7 @@ const initialSkills: Skill[] = [
     xp: 0,
     maxLevel: 5,
     levelXpRequirements,
-    heat: 18,
+    momentum: 22,
     gates: [
       { nodeId: 'a', level: 2 },
       { nodeId: 'b', level: 3 },
@@ -127,7 +130,7 @@ const initialSkills: Skill[] = [
     xp: 0,
     maxLevel: 5,
     levelXpRequirements,
-    heat: 24,
+    momentum: 64,
     gates: [
       { nodeId: 'a', level: 2 },
       { nodeId: 'b', level: 3 },
@@ -272,7 +275,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       return {
         ...skill,
         xp: skill.xp + xp,
-        heat: Math.min(100, skill.heat + Math.max(3, Math.round(xp / 12)))
+        momentum: Math.min(100, skill.momentum + Math.max(3, Math.round(xp / 12)))
       }
     })
 
@@ -370,7 +373,11 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
     if (draft.step === 'from' && draft.fromIds.length === 0) {
       const id = uniqueId(draft.title, allNodeIds(state.roots, state.skills))
-      const root: Root = { id, title: draft.title.trim() }
+      const root: Root = {
+        id,
+        title: draft.title.trim(),
+        accent: ROOT_ACCENTS[state.roots.length % ROOT_ACCENTS.length]
+      }
       set({
         roots: [...state.roots, root],
         create: null,
@@ -396,7 +403,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       xp: 0,
       maxLevel: 3,
       levelXpRequirements: [100, 200, 300],
-      heat: 0,
+      momentum: 0,
       gates: []
     }
     const links = [

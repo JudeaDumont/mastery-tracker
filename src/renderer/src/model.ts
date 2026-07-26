@@ -1,12 +1,14 @@
 export type NodeId = string
 export type SkillId = string
 export type RootId = string
+export type RootAccent = 'teal' | 'violet' | 'amber' | 'rose' | 'green' | 'blue'
 
 export type Effort = 'recovery' | 'light' | 'moderate' | 'hard' | 'maximum'
 
 export interface Root {
   id: RootId
   title: string
+  accent?: RootAccent
 }
 
 export interface Link {
@@ -27,7 +29,7 @@ export interface Skill {
   xp: number
   maxLevel: number
   levelXpRequirements: number[]
-  heat: number
+  momentum: number
   gates: Gate[]
 }
 

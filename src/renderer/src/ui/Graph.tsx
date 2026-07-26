@@ -13,11 +13,12 @@ import {
   type Node
 } from '@xyflow/react'
 import { graphLayout, type PreviewNode } from '../layout'
-import type { CreateDraft, Link, NodeId, Root, RootId, Skill } from '../model'
+import type { CreateDraft, Link, NodeId, Root, RootAccent, RootId, Skill } from '../model'
 import {
   canUseFromNode,
   createSelectionFull,
   nodeRootId,
+  ROOT_ACCENTS,
   toCandidateIds,
   useMastery
 } from '../store'
@@ -32,7 +33,6 @@ export function Graph(): ReactElement {
   const roots = useMastery((state) => state.roots)
   const skills = useMastery((state) => state.skills)
   const links = useMastery((state) => state.links)
-  const draft = useMastery((state) => state.draft)
   const pickedIds = useMastery((state) => state.pickedIds)
   const create = useMastery((state) => state.create)
   const togglePicked = useMastery((state) => state.togglePicked)
@@ -74,18 +74,22 @@ export function Graph(): ReactElement {
         10,
         rootSkills.reduce((sum, skill) => sum + levelFor(skill), 0)
       )
-      const rootHeat =
+      const rootMomentum =
         rootSkills.length > 0
-          ? Math.round(rootSkills.reduce((sum, skill) => sum + skill.heat, 0) / rootSkills.length)
+          ? Math.round(
+              rootSkills.reduce((sum, skill) => sum + skill.momentum, 0) / rootSkills.length
+            )
           : 0
 
       return masteryNode(root.id, positions[root.id], {
         title: root.title,
         level: rootLevel,
         maxLevel: 10,
-        heat: rootHeat,
+        momentum: rootMomentum,
+        accent: root.accent ?? 'teal',
         locked: false,
         root: true,
+        activitySelected: pickedIds.includes(root.id),
         visual: visualFor(
           root.id,
           root.id,
@@ -105,9 +109,10 @@ export function Graph(): ReactElement {
         title: skill.title,
         level: levelFor(skill),
         maxLevel: skill.maxLevel,
-        heat: skill.heat,
+        momentum: skill.momentum,
+        accent: rootAccentFor(skill.rootId, roots),
         locked: isLocked(skill, skills),
-        activitySelected: draft[skill.id]?.selected,
+        activitySelected: pickedIds.includes(skill.id),
         visual: visualFor(
           skill.id,
           skill.rootId,
@@ -128,7 +133,10 @@ export function Graph(): ReactElement {
             title: create?.title.trim() || 'New mastery',
             level: 0,
             maxLevel: preview.root ? 10 : 3,
-            heat: 0,
+            momentum: 0,
+            accent: preview.root
+              ? ROOT_ACCENTS[roots.length % ROOT_ACCENTS.length]
+              : rootAccentFor(preview.rootId, roots),
             locked: false,
             root: preview.root,
             visual: 'preview'
@@ -137,7 +145,7 @@ export function Graph(): ReactElement {
       : []
 
     return [...rootNodes, ...skillNodes, ...previewNode]
-  }, [create, draft, pickedIds, positions, preview, roots, skills, toCandidates, toFull])
+  }, [create, pickedIds, positions, preview, roots, skills, toCandidates, toFull])
 
   const edges = useMemo<Edge[]>(() => {
     const allLinks = [...links, ...previewLinks]
@@ -286,9 +294,11 @@ function MasteryEdge({
         <EdgeLabelRenderer>
           <div
             className="edge-gate-badge"
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`
-            } as CSSProperties}
+            style={
+              {
+                transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`
+              } as CSSProperties
+            }
           >
             <span className="edge-gate-badge__lock" aria-hidden="true">
               <svg viewBox="0 0 24 24">
@@ -445,9 +455,7 @@ function fanInRoutes(
 
   const convergenceTargets = Array.from(incoming.entries())
     .filter(([, group]) => group.length > 1)
-    .sort(([leftId], [rightId]) =>
-      (positions[leftId]?.x ?? 0) - (positions[rightId]?.x ?? 0)
-    )
+    .sort(([leftId], [rightId]) => (positions[leftId]?.x ?? 0) - (positions[rightId]?.x ?? 0))
 
   convergenceTargets.forEach(([targetId, group], targetIndex) => {
     const targetPosition = positions[targetId]
@@ -466,14 +474,12 @@ function fanInRoutes(
     const lowestSourceBottom = Math.max(...sourceBottoms)
     const availableGap = targetTop - lowestSourceBottom
     const targetCount = convergenceTargets.length
-    const bandProgress =
-      targetCount <= 1 ? 0.5 : 0.34 + (0.32 * targetIndex) / (targetCount - 1)
+    const bandProgress = targetCount <= 1 ? 0.5 : 0.34 + (0.32 * targetIndex) / (targetCount - 1)
     const bandCenter = lowestSourceBottom + availableGap * bandProgress
     const railSeparation = Math.max(34, Math.min(64, availableGap * 0.16))
     const sourceRailY = bandCenter - railSeparation / 2
     const targetRailY = bandCenter + railSeparation / 2
-    const curveDirection =
-      targetCount <= 1 ? 0 : targetIndex < (targetCount - 1) / 2 ? -1 : 1
+    const curveDirection = targetCount <= 1 ? 0 : targetIndex < (targetCount - 1) / 2 ? -1 : 1
 
     group.forEach((link) => {
       result.set(link.id, { sourceRailY, targetRailY, curveDirection })
@@ -574,6 +580,10 @@ function handleSlots(count: number): number[] {
   if (count <= 1) return [4]
 
   return Array.from({ length: count }, (_, index) => Math.round((index * 8) / (count - 1)))
+}
+
+function rootAccentFor(rootId: RootId | undefined, roots: Root[]): RootAccent {
+  return roots.find((root) => root.id === rootId)?.accent ?? 'teal'
 }
 
 function visualFor(

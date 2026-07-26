@@ -12,11 +12,11 @@ function App(): ReactElement {
   const create = useMastery((state) => state.create)
 
   const totalXp = skills.reduce((sum, skill) => sum + skill.xp, 0)
-  const graphHeat =
+  const graphMomentum =
     skills.length > 0
-      ? Math.round(skills.reduce((sum, skill) => sum + skill.heat, 0) / skills.length)
+      ? Math.round(skills.reduce((sum, skill) => sum + skill.momentum, 0) / skills.length)
       : 0
-  const hotNodes = skills.filter((skill) => skill.heat >= 70).length
+  const highMomentumNodes = skills.filter((skill) => skill.momentum >= 70).length
   const lockedNodes = skills.filter((skill) => isLocked(skill, skills)).length
 
   return (
@@ -88,7 +88,7 @@ function App(): ReactElement {
             ) : (
               <>
                 <span>
-                  <i className="legend-swatch legend-swatch--heat" /> Momentum
+                  <i className="legend-swatch legend-swatch--momentum" /> Momentum
                 </span>
                 <span>
                   <i className="legend-swatch legend-swatch--gate" /> Unlock gate
@@ -107,7 +107,11 @@ function App(): ReactElement {
           value={Math.round(totalXp / 30).toString()}
           detail="prototype window"
         />
-        <Metric label="Graph heat" value={graphHeat.toString()} detail={`${hotNodes} hot nodes`} />
+        <Metric
+          label="Graph momentum"
+          value={graphMomentum.toString()}
+          detail={`${highMomentumNodes} high-momentum nodes`}
+        />
         <Metric
           label="Recent unlocks"
           value={(lastResult?.unlocked.length ?? 0).toString()}

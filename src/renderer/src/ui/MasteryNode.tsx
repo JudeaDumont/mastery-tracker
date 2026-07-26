@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactElement } from 'react'
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react'
+import type { RootAccent } from '../model'
 
 export type NodeVisual =
   | 'normal'
@@ -15,7 +16,8 @@ export interface MasteryNodeData extends Record<string, unknown> {
   title: string
   level: number
   maxLevel: number
-  heat: number
+  momentum: number
+  accent: RootAccent
   locked: boolean
   root?: boolean
   activitySelected?: boolean
@@ -89,11 +91,9 @@ function Ring({
 }
 
 export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement {
-  const heatClass =
-    data.heat >= 75 ? 'node--hot' : data.heat >= 40 ? 'node--warm' : 'node--cold'
   const classes = [
     'mastery-node',
-    heatClass,
+    `node--accent-${data.accent}`,
     data.locked ? 'node--locked' : '',
     data.root ? 'node--root' : '',
     data.activitySelected ? 'node--activity' : '',
@@ -103,7 +103,12 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
     .join(' ')
 
   return (
-    <div className={classes} style={{ '--heat': data.heat / 100 } as CSSProperties}>
+    <div
+      className={classes}
+      style={
+        { '--momentum': Math.max(0, Math.min(100, data.momentum)) / 100 } as CSSProperties
+      }
+    >
       {data.root && (
         <>
           <span className="root-crown-ring" aria-hidden="true" />

@@ -93,7 +93,7 @@ function previewSkill(id: NodeId, rootId: RootId): Skill {
     xp: 0,
     maxLevel: 3,
     levelXpRequirements: [100, 200, 300],
-    heat: 0,
+    momentum: 0,
     gates: []
   }
 }
