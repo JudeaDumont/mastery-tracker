@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
-import type { ReactElement } from 'react'
+import type { CSSProperties, ReactElement } from 'react'
 import {
   Background,
   BackgroundVariant,
   BaseEdge,
   Controls,
+  EdgeLabelRenderer,
   ReactFlow,
   getBezierPath,
   type Edge,
@@ -146,22 +147,35 @@ export function Graph(): ReactElement {
         skill.gates.map((gate) => [`${gate.nodeId}:${skill.id}`, gate.level] as const)
       )
     )
-    const structural = links.map((link) =>
-      edgeFor(
-        link,
-        'flow-edge flow-edge--structure',
-        handles.get(link.id),
-        gateLevels.get(`${link.from}:${link.to}`),
-        targetGeometry(link.to, positions, roots)
-      )
+    const lockedSkillIds = new Set(
+      skills.filter((skill) => isLocked(skill, skills)).map((skill) => skill.id)
     )
+
+    const structural = links.map((link) => {
+      const gateLevel = gateLevels.get(`${link.from}:${link.to}`)
+      const lockedTarget = lockedSkillIds.has(link.to)
+      const edgeClass = lockedTarget && gateLevel
+        ? 'flow-edge flow-edge--locked-gate'
+        : 'flow-edge flow-edge--structure'
+
+      return edgeFor(
+        link,
+        edgeClass,
+        handles.get(link.id),
+        gateLevel,
+        targetGeometry(link.to, positions, roots),
+        lockedTarget
+      )
+    })
+
     const temporary = previewLinks.map((link) =>
       edgeFor(
         link,
         'flow-edge flow-edge--preview',
         handles.get(link.id),
         undefined,
-        targetGeometry(link.to, positions, roots)
+        targetGeometry(link.to, positions, roots),
+        false
       )
     )
     return [...structural, ...temporary]
@@ -207,8 +221,6 @@ function MasteryEdge({
   targetY,
   sourcePosition,
   targetPosition,
-  label,
-  labelStyle,
   data
 }: EdgeProps): ReactElement {
   const edgeClass = String(data?.edgeClass ?? '')
@@ -217,9 +229,11 @@ function MasteryEdge({
   const targetCenterX = Number(data?.targetCenterX ?? targetX)
   const targetCenterY = Number(data?.targetCenterY ?? targetY)
   const targetRadius = Number(data?.targetRadius ?? 0)
+  const gateLevel = Number(data?.gateLevel ?? 0)
+  const showGateBadge = Boolean(data?.showGateBadge) && gateLevel > 0
   const renderedTargetX = targetCenterX + Math.cos(targetAngle) * targetRadius
   const renderedTargetY = targetCenterY - Math.sin(targetAngle) * targetRadius
-  const [path] = getBezierPath({
+  const [path, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
     targetX: renderedTargetX,
@@ -229,17 +243,27 @@ function MasteryEdge({
   })
 
   return (
-    <BaseEdge
-      id={id}
-      path={path}
-      className={edgeClass}
-      label={label}
-      labelStyle={labelStyle}
-      labelShowBg={Boolean(label)}
-      labelBgPadding={[5, 3]}
-      labelBgBorderRadius={6}
-      labelBgStyle={{ fill: 'rgba(8, 12, 24, .86)' }}
-    />
+    <>
+      <BaseEdge id={id} path={path} className={edgeClass} />
+      {showGateBadge && (
+        <EdgeLabelRenderer>
+          <div
+            className="edge-gate-badge"
+            style={{
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`
+            } as CSSProperties}
+          >
+            <span className="edge-gate-badge__lock" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M7 10V7a5 5 0 0 1 10 0v3" />
+                <rect x="5" y="10" width="14" height="11" rx="2" />
+              </svg>
+            </span>
+            <span>Lv {gateLevel}</span>
+          </div>
+        </EdgeLabelRenderer>
+      )}
+    </>
   )
 }
 
@@ -272,7 +296,8 @@ function edgeFor(
   className: string,
   handles?: EdgeHandlePair,
   gateLevel?: number,
-  geometry?: TargetGeometry
+  geometry?: TargetGeometry,
+  targetLocked = false
 ): Edge {
   return {
     id: link.id,
@@ -282,14 +307,14 @@ function edgeFor(
     sourceHandle: handles?.source,
     targetHandle: handles?.target,
     className,
-    label: gateLevel ? `Lv ${gateLevel}` : undefined,
-    labelStyle: gateLevel ? { fill: '#b8c8e8', fontWeight: 700 } : undefined,
     data: {
       edgeClass: className,
       targetSlot: targetSlot(handles?.target),
       targetCenterX: geometry?.centerX,
       targetCenterY: geometry?.centerY,
-      targetRadius: geometry?.radius
+      targetRadius: geometry?.radius,
+      gateLevel,
+      showGateBadge: targetLocked && Boolean(gateLevel)
     }
   }
 }
