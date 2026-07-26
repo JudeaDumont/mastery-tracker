@@ -162,12 +162,7 @@ export function Updates(): ReactElement {
           const progress = levelProgressFor(skill)
           const maxed = progress.maxed
           const level = levelFor(skill)
-          const compactXp = maxed
-            ? `${progress.overflowXp} XP banked`
-            : `${progress.currentXp}/${progress.requiredXp} XP`
-          const expandedXp = maxed
-            ? `${progress.overflowXp} XP banked beyond the current cap`
-            : `${progress.currentXp} / ${progress.requiredXp} XP`
+          const compactXp = `${progress.currentXp}/${progress.requiredXp} XP`
           const accent: RootAccent =
             roots.find((root) => root.id === skill.rootId)?.accent ?? 'teal'
           const expanded = expandedIds.has(skill.id)
@@ -190,11 +185,8 @@ export function Updates(): ReactElement {
                 <span className="update-title">
                   <strong>{skill.title}</strong>
                   <small>
-                    {locked
-                      ? 'Locked'
-                      : maxed
-                        ? `Level ${skill.maxLevel}/${skill.maxLevel} · Current cap`
-                        : `Level ${level}/${skill.maxLevel}`} · Momentum {skill.momentum}
+                    {locked ? 'Locked · ' : ''}Level {level}/{skill.maxLevel} · {compactXp} ·
+                    Momentum {skill.momentum}
                   </small>
                 </span>
                 <span className="update-row__status">
@@ -209,13 +201,6 @@ export function Updates(): ReactElement {
                   <span className="update-row__chevron" aria-hidden="true" />
                 </span>
               </button>
-
-              {expanded && !create && (
-                <div className="update-xp-progress">
-                  <span>{maxed ? 'XP beyond current cap' : 'Current / next level XP'}</span>
-                  <strong>{expandedXp}</strong>
-                </div>
-              )}
 
               {expanded && locked && !create && (
                 <div className="update-row-message">

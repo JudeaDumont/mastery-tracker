@@ -10,7 +10,9 @@ export const effortMultiplier: Record<Effort, number> = {
 
 export interface LevelProgress {
   level: number
+  /** Lifetime XP accumulated by the node. */
   currentXp: number
+  /** Cumulative XP total required for the next level, or the current cap. */
   requiredXp: number
   overflowXp: number
   maxed: boolean
@@ -40,27 +42,31 @@ export function levelProgressFor(
   skill: Pick<Skill, 'xp' | 'levelXpRequirements' | 'maxLevel'>
 ): LevelProgress {
   const requirements = requirementsFor(skill)
+  const currentXp = Math.max(0, skill.xp)
   const level = levelFor(skill)
   const maxed = level >= skill.maxLevel
+  const totalRequiredXp = requirements.reduce(
+    (total, requiredXp) => total + requiredXp,
+    0
+  )
 
   if (maxed) {
     return {
       level: skill.maxLevel,
-      currentXp: 0,
-      requiredXp: 0,
-      overflowXp: Math.max(0, skill.xp - totalXpRequired(skill)),
+      currentXp,
+      requiredXp: totalRequiredXp,
+      overflowXp: Math.max(0, currentXp - totalRequiredXp),
       maxed: true
     }
   }
 
-  const completedLevelXp = requirements
-    .slice(0, level)
-    .reduce((total, requiredXp) => total + requiredXp, 0)
-  const requiredXp = requirements[level]
+  const requiredXp = requirements
+    .slice(0, level + 1)
+    .reduce((total, levelRequiredXp) => total + levelRequiredXp, 0)
 
   return {
     level,
-    currentXp: Math.max(0, Math.min(requiredXp, skill.xp - completedLevelXp)),
+    currentXp,
     requiredXp,
     overflowXp: 0,
     maxed: false
