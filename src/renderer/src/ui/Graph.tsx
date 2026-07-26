@@ -69,7 +69,10 @@ export function Graph(): ReactElement {
   const nodes = useMemo<Node<MasteryNodeData>[]>(() => {
     const rootNodes = roots.map((root) => {
       const rootSkills = skills.filter((skill) => skill.rootId === root.id)
-      const rootLevel = Math.min(10, rootSkills.reduce((sum, skill) => sum + levelFor(skill), 0))
+      const rootLevel = Math.min(
+        10,
+        rootSkills.reduce((sum, skill) => sum + levelFor(skill), 0)
+      )
       const rootHeat =
         rootSkills.length > 0
           ? Math.round(rootSkills.reduce((sum, skill) => sum + skill.heat, 0) / rootSkills.length)
