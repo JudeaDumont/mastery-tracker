@@ -22,7 +22,12 @@ import {
   toCandidateIds,
   useMastery
 } from '../store'
-import { isLocked, levelFor, levelProgressFor } from '../xp'
+import {
+  currentLevelProgressFor,
+  isLocked,
+  levelFor,
+  levelProgressFor
+} from '../xp'
 import { MasteryNode, type MasteryNodeData, type NodeVisual } from './MasteryNode'
 
 const nodeTypes = { mastery: MasteryNode }
@@ -90,6 +95,7 @@ export function Graph(): ReactElement {
         maxed: false,
         levelXpTargets: [],
         levelReachedAt: [],
+        currentLevelProgress: 0,
         updateHistory: root.updateHistory,
         activitySelected: pickedIds.includes(root.id),
         visual: visualFor(
@@ -119,6 +125,7 @@ export function Graph(): ReactElement {
         maxed: progress.maxed,
         levelXpTargets: cumulativeXpTargets(skill.levelXpRequirements, skill.maxLevel),
         levelReachedAt: skill.levelReachedAt ?? [],
+        currentLevelProgress: currentLevelProgressFor(skill),
         updateHistory: skill.updateHistory,
         activitySelected: pickedIds.includes(skill.id),
         visual: visualFor(
@@ -148,6 +155,7 @@ export function Graph(): ReactElement {
             locked: false,
             root: preview.root,
             updateHistory: [],
+            currentLevelProgress: 0,
             visual: 'preview'
           })
         ]

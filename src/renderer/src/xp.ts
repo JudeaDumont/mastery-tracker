@@ -73,6 +73,26 @@ export function levelProgressFor(
   }
 }
 
+export function currentLevelProgressFor(
+  skill: Pick<Skill, 'xp' | 'levelXpRequirements' | 'maxLevel'>
+): number {
+  const requirements = requirementsFor(skill)
+  const currentXp = Math.max(0, skill.xp)
+  let completedXp = 0
+
+  for (const requiredXp of requirements) {
+    const nextTarget = completedXp + requiredXp
+    if (currentXp >= nextTarget) {
+      completedXp = nextTarget
+      continue
+    }
+
+    return Math.max(0, Math.min(1, (currentXp - completedXp) / requiredXp))
+  }
+
+  return 1
+}
+
 export function uniformLevelStepXp(
   skill: Pick<Skill, 'levelXpRequirements' | 'maxLevel'>
 ): number | null {

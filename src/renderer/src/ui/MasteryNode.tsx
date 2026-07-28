@@ -26,6 +26,7 @@ export interface MasteryNodeData extends Record<string, unknown> {
   maxed?: boolean
   levelXpTargets?: number[]
   levelReachedAt?: Array<string | null>
+  currentLevelProgress?: number
   updateHistory?: ActivityEntry[]
   visual: NodeVisual
 }
@@ -66,10 +67,17 @@ function Ring({
   locked,
   root,
   levelXpTargets = [],
-  levelReachedAt = []
+  levelReachedAt = [],
+  currentLevelProgress = 0
 }: Pick<
   MasteryNodeData,
-  'level' | 'maxLevel' | 'locked' | 'root' | 'levelXpTargets' | 'levelReachedAt'
+  | 'level'
+  | 'maxLevel'
+  | 'locked'
+  | 'root'
+  | 'levelXpTargets'
+  | 'levelReachedAt'
+  | 'currentLevelProgress'
 >): ReactElement {
   const radius = 47
   const circumference = 2 * Math.PI * radius
@@ -84,9 +92,18 @@ function Ring({
       {Array.from({ length: maxLevel }, (_, index) => {
         const rotation = -90 - dashDegrees / 2 + index * sectorDegrees
         const reached = index < level && !locked
+        const active = index === level && level < maxLevel && !locked
+        const fillRatio = reached
+          ? 1
+          : active
+            ? Math.max(0, Math.min(1, currentLevelProgress))
+            : 0
+        const filledLength = dashLength * fillRatio
         const tooltip = ringSegmentTooltip(
           index,
           reached,
+          active,
+          fillRatio,
           root,
           levelXpTargets[index],
           levelReachedAt[index]
@@ -96,13 +113,27 @@ function Ring({
           <g key={index} className="ring-segment-hit">
             <title>{tooltip}</title>
             <circle
-              className={reached ? 'ring-segment ring-segment--on' : 'ring-segment'}
+              className="ring-segment ring-segment--track"
               cx="56"
               cy="56"
               r={radius}
               strokeDasharray={`${dashLength} ${circumference - dashLength}`}
               transform={`rotate(${rotation} 56 56)`}
             />
+            {fillRatio > 0 && (
+              <circle
+                className={
+                  fillRatio < 1
+                    ? 'ring-segment ring-segment--on ring-segment--partial'
+                    : 'ring-segment ring-segment--on'
+                }
+                cx="56"
+                cy="56"
+                r={radius}
+                strokeDasharray={`${filledLength} ${circumference - filledLength}`}
+                transform={`rotate(${rotation} 56 56)`}
+              />
+            )}
           </g>
         )
       })}
@@ -211,6 +242,7 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
         root={data.root}
         levelXpTargets={data.levelXpTargets}
         levelReachedAt={data.levelReachedAt}
+        currentLevelProgress={data.currentLevelProgress}
       />
 
       <div className="node-core">
@@ -309,6 +341,8 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
 function ringSegmentTooltip(
   index: number,
   reached: boolean,
+  active: boolean,
+  fillRatio: number,
   root: boolean | undefined,
   cumulativeXp: number | undefined,
   reachedAt: string | null | undefined
@@ -318,6 +352,9 @@ function ringSegmentTooltip(
     ? ` · ${Number(cumulativeXp).toLocaleString()} cumulative XP`
     : ''
 
+  if (active && fillRatio > 0) {
+    return `${levelLabel}${xpLabel} · ${Math.round(fillRatio * 100)}% complete`
+  }
   if (!reached) return `${levelLabel}${xpLabel} · Not reached`
   if (!reachedAt) return `${levelLabel}${xpLabel} · Reached before date tracking began`
 
