@@ -84,6 +84,10 @@ button { color: inherit; }
 }
 .workspace > * { min-height: 0; }
 .graph-panel { min-width: 0; position: relative; border-right: 1px solid var(--line); }
+.graph-flow-host {
+  width: 100%;
+  height: 100%;
+}
 .graph-panel::before {
   content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
   background: linear-gradient(to bottom, rgba(5,8,20,.46), transparent 18%, transparent 78%, rgba(5,8,20,.42));
@@ -897,7 +901,8 @@ button { color: inherit; }
   background: rgba(6, 11, 23, .98);
   transform: translate(-50%, -4px) rotate(45deg);
 }
-.mastery-node:hover .node-update-history-tooltip {
+.mastery-node:hover .node-update-history-tooltip,
+.mastery-node.node--history-pinned .node-update-history-tooltip {
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, 0);
@@ -1292,7 +1297,8 @@ button { color: inherit; }
 /* Keep an open node-history hover card above every other graph node.
    Each mastery node uses filter effects, which create independent stacking contexts;
    newly appended nodes could otherwise paint over a tooltip from an earlier node. */
-.react-flow__node:hover {
+.react-flow__node:hover,
+.react-flow__node.react-flow-node--history-pinned {
   z-index: 10000 !important;
 }
 
@@ -1422,3 +1428,95 @@ button { color: inherit; }
   white-space: nowrap;
 }
 
+
+.logs-menu {
+  position: relative;
+  display: flex;
+}
+
+.logs-menu__trigger {
+  min-width: 58px;
+}
+
+.logs-popover {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 30000;
+  width: min(560px, calc(100vw - 32px));
+  padding-top: 10px;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-5px);
+  transition: opacity .14s ease, transform .14s ease, visibility 0s linear .14s;
+}
+
+.logs-menu:hover .logs-popover,
+.logs-menu:focus-within .logs-popover {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s;
+}
+
+.logs-popover__surface {
+  overflow: hidden;
+  border: 1px solid rgba(92, 201, 255, .55);
+  border-radius: 10px;
+  background: rgba(3, 9, 22, .97);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .58);
+  color: #d9f2ff;
+}
+
+.logs-popover__surface > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 11px;
+  border-bottom: 1px solid rgba(92, 201, 255, .2);
+}
+
+.logs-popover__surface > header strong {
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.top-actions .logs-popover__surface > header button {
+  padding: 4px 10px;
+  border: 1px solid rgba(92, 201, 255, .45);
+  border-radius: 6px;
+  background: rgba(92, 201, 255, .12);
+  color: #d9f2ff;
+}
+
+.top-actions .logs-popover__surface > header button:disabled {
+  cursor: default;
+  opacity: .42;
+}
+
+.logs-popover__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: min(360px, calc(100vh - 120px));
+  overflow: auto;
+  padding: 9px 11px 11px;
+}
+
+.logs-popover__body code {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 11px/1.38 Consolas, "Courier New", monospace;
+  color: #b8deef;
+}
+
+.logs-popover__empty {
+  padding: 8px 2px;
+  color: var(--muted);
+  font-size: 12px;
+}

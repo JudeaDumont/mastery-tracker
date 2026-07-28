@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactElement } from 'react'
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react'
-import type { ActivityEntry, RootAccent } from '../model'
+import type { ActivityEntry, RootAccent, RootId } from '../model'
 import { useMastery } from '../store'
 
 export type NodeVisual =
@@ -16,6 +16,8 @@ export type NodeVisual =
 
 export interface MasteryNodeData extends Record<string, unknown> {
   title: string
+  rootId?: RootId
+  historyPinned?: boolean
   level: number
   maxLevel: number
   momentum: number
@@ -165,6 +167,14 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
     })
   }
 
+  useEffect(() => {
+    if (!data.historyPinned) return
+    requestAnimationFrame(() => {
+      const history = historyRef.current
+      if (history) history.scrollTop = history.scrollHeight
+    })
+  }, [data.historyPinned])
+
   const beginNoteEdit = (entry: ActivityEntry): void => {
     setConfirmingEntryId(null)
     setEditingEntryId(entry.id)
@@ -203,6 +213,7 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
     data.root ? 'node--root' : '',
     data.maxed && !data.root ? 'node--maxed' : '',
     data.activitySelected ? 'node--activity' : '',
+    data.historyPinned ? 'node--history-pinned' : '',
     `node--${data.visual}`
   ]
     .filter(Boolean)

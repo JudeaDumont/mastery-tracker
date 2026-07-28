@@ -1,8 +1,13 @@
+import { useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
-import { Graph } from './ui/Graph'
+import type { RootId } from './model'
+import { Graph, type GraphViewRequest } from './ui/Graph'
 import { Updates } from './ui/Updates'
 import { useMastery } from './store'
 import { isLocked, levelFor } from './xp'
+
+const CAMERA_DEBUG_EVENT = 'mastery-camera-debug'
+const CAMERA_DEBUG_MAX_LINES = 100
 
 function App(): ReactElement {
   const roots = useMastery((state) => state.roots)
@@ -10,6 +15,35 @@ function App(): ReactElement {
   const todayXp = useMastery((state) => state.todayXp)
   const lastResult = useMastery((state) => state.lastResult)
   const create = useMastery((state) => state.create)
+  const [graphView, setGraphView] = useState<GraphViewRequest>({
+    requestId: 0
+  })
+  const [cameraDebugLines, setCameraDebugLines] = useState<string[]>([])
+
+  useEffect(() => {
+    const onCameraDebug = (event: Event): void => {
+      const line = (event as CustomEvent<string>).detail
+      if (!line) return
+      setCameraDebugLines((current) =>
+        [...current, line].slice(-CAMERA_DEBUG_MAX_LINES)
+      )
+    }
+
+    window.addEventListener(CAMERA_DEBUG_EVENT, onCameraDebug)
+    return () => window.removeEventListener(CAMERA_DEBUG_EVENT, onCameraDebug)
+  }, [])
+
+  const copyCameraLogs = (): void => {
+    void navigator.clipboard.writeText(cameraDebugLines.join('\n'))
+  }
+
+  const requestGraphView = (rootId?: RootId): void => {
+    console.info('[camera-debug]', 'header-view-request', { rootId: rootId ?? 'full-view' })
+    setGraphView((current) => ({
+      rootId,
+      requestId: current.requestId + 1
+    }))
+  }
 
   const totalXp = skills.reduce((sum, skill) => sum + skill.xp, 0)
   const graphMomentum =
@@ -31,7 +65,7 @@ function App(): ReactElement {
         </div>
 
         <nav className="view-tabs" aria-label="Graph view">
-          {roots.slice(0, 3).map((root, index) => {
+          {roots.slice(0, 3).map((root) => {
             const level = Math.min(
               10,
               skills
@@ -41,20 +75,58 @@ function App(): ReactElement {
             return (
               <button
                 key={root.id}
-                className={`view-tab ${index === 0 ? 'view-tab--active' : ''}`}
+                className={`view-tab ${graphView.rootId === root.id ? 'view-tab--active' : ''}`}
                 type="button"
+                onClick={() => requestGraphView(root.id)}
               >
                 {root.title} {level}
               </button>
             )
           })}
-          <button className="view-tab" type="button">
+          <button
+            className={`view-tab ${graphView.rootId === undefined ? 'view-tab--active' : ''}`}
+            type="button"
+            onClick={() => requestGraphView()}
+          >
             Full view
           </button>
         </nav>
 
         <div className="top-actions">
           <button type="button">Search</button>
+          <div className="logs-menu">
+            <button
+              className="logs-menu__trigger"
+              type="button"
+              aria-haspopup="true"
+              aria-label="Show camera logs"
+            >
+              Logs
+            </button>
+            <div className="logs-popover" role="log" aria-live="polite">
+              <div className="logs-popover__surface">
+                <header>
+                  <strong>Camera logs</strong>
+                  <button
+                    type="button"
+                    onClick={copyCameraLogs}
+                    disabled={cameraDebugLines.length === 0}
+                  >
+                    Copy
+                  </button>
+                </header>
+                <div className="logs-popover__body">
+                  {cameraDebugLines.length === 0 ? (
+                    <span className="logs-popover__empty">No camera logs yet.</span>
+                  ) : (
+                    [...cameraDebugLines].reverse().map((line, index) => (
+                      <code key={`${cameraDebugLines.length - index}-${line}`}>{line}</code>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
           <button type="button">•••</button>
         </div>
       </header>
@@ -71,7 +143,7 @@ function App(): ReactElement {
                   : 'Automatic mastery lattice'}
             </strong>
           </div>
-          <Graph />
+          <Graph viewRequest={graphView} />
           <div className="graph-legend">
             {create ? (
               <>

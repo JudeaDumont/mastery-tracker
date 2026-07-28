@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import type { CSSProperties, ReactElement } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactElement } from 'react'
 import {
   Background,
   BackgroundVariant,
@@ -10,7 +10,8 @@ import {
   getBezierPath,
   type Edge,
   type EdgeProps,
-  type Node
+  type Node,
+  type ReactFlowInstance
 } from '@xyflow/react'
 import { graphLayout, type PreviewNode } from '../layout'
 import type { CreateDraft, Link, NodeId, Root, RootAccent, RootId, Skill } from '../model'
@@ -33,8 +34,29 @@ import { MasteryNode, type MasteryNodeData, type NodeVisual } from './MasteryNod
 const nodeTypes = { mastery: MasteryNode }
 const edgeTypes = { mastery: MasteryEdge }
 const PREVIEW_ID = '__new__'
+const HISTORY_FOCUS_HORIZONTAL_MARGIN = 32
+const HISTORY_FOCUS_VERTICAL_MARGIN = 32
+const HISTORY_FOCUS_PREFERRED_ZOOM = 1.2
+const HISTORY_FOCUS_MIN_ZOOM = 0.35
+const HISTORY_FOCUS_FALLBACK_TOOLTIP_WIDTH = 390
+const HISTORY_FOCUS_FALLBACK_TOOLTIP_HEIGHT = 410
+const HISTORY_FOCUS_FALLBACK_GAP = 18
+const NODE_MULTI_CLICK_WINDOW_MS = 600
+const RETARGETED_SECOND_CLICK_MAX_DISTANCE_PX = 36
+const HISTORY_FOCUS_ANIMATION_MS = 300
+const CAMERA_DEBUG_PREFIX = '[camera-debug]'
+const CAMERA_DEBUG_EVENT = 'mastery-camera-debug'
 
-export function Graph(): ReactElement {
+export interface GraphViewRequest {
+  rootId?: RootId
+  requestId: number
+}
+
+interface GraphProps {
+  viewRequest: GraphViewRequest
+}
+
+export function Graph({ viewRequest }: GraphProps): ReactElement {
   const roots = useMastery((state) => state.roots)
   const skills = useMastery((state) => state.skills)
   const links = useMastery((state) => state.links)
@@ -42,6 +64,170 @@ export function Graph(): ReactElement {
   const create = useMastery((state) => state.create)
   const togglePicked = useMastery((state) => state.togglePicked)
   const toggleCreateNode = useMastery((state) => state.toggleCreateNode)
+  const [flowInstance, setFlowInstance] = useState<
+    ReactFlowInstance<Node<MasteryNodeData>, Edge> | null
+  >(null)
+  const [focusedHistoryNodeId, setFocusedHistoryNodeId] = useState<NodeId | null>(null)
+  const [pendingFocusNodeId, setPendingFocusNodeId] = useState<NodeId | null>(null)
+  const flowHostRef = useRef<HTMLDivElement>(null)
+  const suppressNextClickRef = useRef(false)
+  const lastNodeClickRef = useRef<{
+    nodeId: NodeId
+    occurredAt: number
+    clientX: number
+    clientY: number
+  } | null>(null)
+  const cameraDebug = useCallback((step: string, details?: unknown): void => {
+    const time = new Date().toLocaleTimeString()
+    const serialized = debugSerialize(details)
+    const line = `${time} ${step}${serialized ? ` ${serialized}` : ''}`
+    console.info(CAMERA_DEBUG_PREFIX, step, details ?? '')
+    window.dispatchEvent(new CustomEvent<string>(CAMERA_DEBUG_EVENT, { detail: line }))
+  }, [])
+
+  const requestNodeFocus = useCallback((nodeId: NodeId): void => {
+    cameraDebug('request-node-focus', {
+      nodeId,
+      preview: nodeId === PREVIEW_ID,
+      flowReady: Boolean(flowInstance),
+      hostReady: Boolean(flowHostRef.current)
+    })
+    if (nodeId === PREVIEW_ID) return
+
+    const host = flowHostRef.current
+    const node = flowInstance?.getNode(nodeId)
+    if (flowInstance && host && node) {
+      cameraDebug('request-node-focus-immediate', {
+        nodeId,
+        viewport: flowInstance.getViewport()
+      })
+      focusNodeWithHistory(flowInstance, host, node, cameraDebug)
+      return
+    }
+
+    // Keep the deferred path only as a fallback for the brief period before
+    // React Flow finishes initialization.
+    setPendingFocusNodeId(nodeId)
+  }, [cameraDebug, flowInstance])
+
+  const focusRetargetedSecondClick = useCallback(
+    (
+      event: {
+        clientX: number
+        clientY: number
+        detail: number
+        preventDefault: () => void
+        stopPropagation: () => void
+      },
+      source: string
+    ): boolean => {
+      const previous = lastNodeClickRef.current
+      const elapsedMs = previous ? performance.now() - previous.occurredAt : Number.POSITIVE_INFINITY
+      const distancePx = previous
+        ? Math.hypot(event.clientX - previous.clientX, event.clientY - previous.clientY)
+        : Number.POSITIVE_INFINITY
+      const accepted =
+        !create &&
+        event.detail >= 2 &&
+        previous !== null &&
+        elapsedMs <= NODE_MULTI_CLICK_WINDOW_MS &&
+        distancePx <= RETARGETED_SECOND_CLICK_MAX_DISTANCE_PX
+
+      cameraDebug('retargeted-second-click-check', {
+        source,
+        detail: event.detail,
+        previous,
+        elapsedMs: Number.isFinite(elapsedMs) ? Math.round(elapsedMs) : null,
+        distancePx: Number.isFinite(distancePx) ? Math.round(distancePx) : null,
+        accepted
+      })
+
+      if (!accepted || !previous) return false
+
+      event.preventDefault()
+      event.stopPropagation()
+      lastNodeClickRef.current = null
+      cameraDebug('retargeted-second-click-focus', {
+        source,
+        nodeId: previous.nodeId
+      })
+      requestNodeFocus(previous.nodeId)
+      return true
+    },
+    [cameraDebug, create, requestNodeFocus]
+  )
+
+  const focusRetargetedSecondPointerDown = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>): boolean => {
+      const target = event.target instanceof Element ? event.target : null
+      const targetIsPane = Boolean(target?.closest('.react-flow__pane'))
+      const targetNodeId = target?.closest<HTMLElement>('.react-flow__node')?.dataset.id
+      const previous = lastNodeClickRef.current
+      const elapsedMs = previous ? performance.now() - previous.occurredAt : Number.POSITIVE_INFINITY
+      const distancePx = previous
+        ? Math.hypot(event.clientX - previous.clientX, event.clientY - previous.clientY)
+        : Number.POSITIVE_INFINITY
+      const accepted =
+        event.button === 0 &&
+        !create &&
+        previous !== null &&
+        (targetIsPane || targetNodeId === previous.nodeId) &&
+        elapsedMs <= NODE_MULTI_CLICK_WINDOW_MS &&
+        distancePx <= RETARGETED_SECOND_CLICK_MAX_DISTANCE_PX
+
+      cameraDebug('retargeted-second-pointer-down-check', {
+        targetIsPane,
+        targetNodeId,
+        previous,
+        elapsedMs: Number.isFinite(elapsedMs) ? Math.round(elapsedMs) : null,
+        distancePx: Number.isFinite(distancePx) ? Math.round(distancePx) : null,
+        accepted
+      })
+
+      if (!accepted || !previous) return false
+
+      event.preventDefault()
+      event.stopPropagation()
+      suppressNextClickRef.current = true
+      window.setTimeout(() => {
+        suppressNextClickRef.current = false
+      }, NODE_MULTI_CLICK_WINDOW_MS)
+      lastNodeClickRef.current = null
+      cameraDebug('retargeted-second-pointer-down-focus', {
+        nodeId: previous.nodeId
+      })
+      requestNodeFocus(previous.nodeId)
+      return true
+    },
+    [cameraDebug, create, requestNodeFocus]
+  )
+
+  useEffect(() => {
+    cameraDebug('graph-mounted', {
+      roots: roots.length,
+      skills: skills.length,
+      createMode: Boolean(create),
+      location: window.location.href
+    })
+
+    const onDocumentDoubleClick = (event: MouseEvent): void => {
+      cameraDebug('document-dblclick-capture', {
+        detail: event.detail,
+        target: debugTarget(event.target)
+      })
+    }
+
+    document.addEventListener('dblclick', onDocumentDoubleClick, true)
+    return () => document.removeEventListener('dblclick', onDocumentDoubleClick, true)
+  }, [cameraDebug])
+
+  useEffect(() => {
+    cameraDebug('focus-state-changed', {
+      focusedHistoryNodeId,
+      pendingFocusNodeId,
+      flowReady: Boolean(flowInstance)
+    })
+  }, [cameraDebug, flowInstance, focusedHistoryNodeId, pendingFocusNodeId])
 
   const preview = useMemo<PreviewNode | undefined>(() => {
     if (!create) return undefined
@@ -86,6 +272,8 @@ export function Graph(): ReactElement {
 
       return masteryNode(root.id, positions[root.id], {
         title: root.title,
+        rootId: root.id,
+        historyPinned: focusedHistoryNodeId === root.id,
         level: rootLevel,
         maxLevel: 10,
         momentum: rootMomentum,
@@ -117,6 +305,8 @@ export function Graph(): ReactElement {
       const locked = isLocked(skill, skills)
       return masteryNode(skill.id, positions[skill.id], {
         title: skill.title,
+        rootId: skill.rootId,
+        historyPinned: focusedHistoryNodeId === skill.id,
         level: progress.level,
         maxLevel: skill.maxLevel,
         momentum: skill.momentum,
@@ -146,6 +336,8 @@ export function Graph(): ReactElement {
       ? [
           masteryNode(PREVIEW_ID, positions[PREVIEW_ID], {
             title: create?.title.trim() || 'New mastery',
+            rootId: preview.root ? undefined : preview.rootId,
+            historyPinned: false,
             level: 0,
             maxLevel: preview.root ? 10 : 3,
             momentum: 0,
@@ -162,7 +354,19 @@ export function Graph(): ReactElement {
       : []
 
     return [...rootNodes, ...skillNodes, ...previewNode]
-  }, [create, links, pickedIds, positions, preview, roots, skills, toCandidates, toFull])
+  }, [
+    create,
+    focusedHistoryNodeId,
+    requestNodeFocus,
+    links,
+    pickedIds,
+    positions,
+    preview,
+    roots,
+    skills,
+    toCandidates,
+    toFull
+  ])
 
   const edges = useMemo<Edge[]>(() => {
     const allLinks = [...links, ...previewLinks]
@@ -226,36 +430,460 @@ export function Graph(): ReactElement {
     [links, roots, skills]
   )
 
+  useEffect(() => {
+    if (!flowInstance) {
+      cameraDebug('view-request-skipped-no-flow', viewRequest)
+      return undefined
+    }
+
+    cameraDebug('view-request-start', viewRequest)
+    const frame = window.requestAnimationFrame(() => {
+      const viewNodes = flowInstance
+        .getNodes()
+        .filter((node) => node.id !== PREVIEW_ID)
+        .filter((node) =>
+          viewRequest.rootId === undefined ? true : node.data.rootId === viewRequest.rootId
+        )
+      const bounds = boundsForNodes(viewNodes)
+      cameraDebug('view-request-measured', {
+        rootId: viewRequest.rootId,
+        nodeIds: viewNodes.map((node) => node.id),
+        bounds
+      })
+
+      if (!bounds) return
+      setFocusedHistoryNodeId(null)
+      setPendingFocusNodeId(null)
+      void flowInstance
+        .fitBounds(bounds, {
+          padding: 0.16,
+          duration: 500,
+          minZoom: 0.35,
+          maxZoom: 1.35
+        })
+        .then(() => cameraDebug('view-request-complete', flowInstance.getViewport()))
+        .catch((error: unknown) => cameraDebug('view-request-error', debugError(error)))
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [cameraDebug, flowInstance, viewRequest.requestId, viewRequest.rootId])
+
+  useEffect(() => {
+    cameraDebug('focus-effect-check', {
+      flowReady: Boolean(flowInstance),
+      pendingFocusNodeId,
+      hostReady: Boolean(flowHostRef.current)
+    })
+    if (!flowInstance || !pendingFocusNodeId || !flowHostRef.current) return undefined
+
+    let measurementFrame = 0
+    const renderFrame = window.requestAnimationFrame(() => {
+      measurementFrame = window.requestAnimationFrame(() => {
+        const host = flowHostRef.current
+        const node = flowInstance.getNode(pendingFocusNodeId)
+        cameraDebug('focus-effect-measure-frame', {
+          pendingFocusNodeId,
+          hostFound: Boolean(host),
+          nodeFound: Boolean(node),
+          currentViewport: flowInstance.getViewport()
+        })
+        if (!host || !node) return
+
+        focusNodeWithHistory(flowInstance, host, node, cameraDebug)
+        // The pinned state exists only long enough to render and measure the
+        // history card. Once the camera target has been calculated, return the
+        // card to normal hover-only behavior so moving off the node hides it.
+        setFocusedHistoryNodeId((current) =>
+          current === pendingFocusNodeId ? null : current
+        )
+        cameraDebug('focus-history-measurement-unpinned', {
+          nodeId: pendingFocusNodeId
+        })
+        setPendingFocusNodeId((current) =>
+          current === pendingFocusNodeId ? null : current
+        )
+      })
+    })
+
+    return () => {
+      window.cancelAnimationFrame(renderFrame)
+      window.cancelAnimationFrame(measurementFrame)
+    }
+  }, [cameraDebug, flowInstance, pendingFocusNodeId])
+
   return (
-    <ReactFlow
-      key={`graph-${graphStructureKey}-${create?.step ?? 'inspect'}-${create?.fromIds.join(',') ?? ''}-${create?.toIds.join(',') ?? ''}`}
-      nodes={nodes}
-      edges={edges}
-      nodeTypes={nodeTypes}
-      edgeTypes={edgeTypes}
-      nodesDraggable={false}
-      nodesConnectable={false}
-      elementsSelectable={false}
-      fitView
-      fitViewOptions={{ padding: 0.2 }}
-      minZoom={0.35}
-      maxZoom={1.8}
-      onNodeClick={(_event: unknown, node: Node<MasteryNodeData>) => {
-        if (node.id === PREVIEW_ID) return
-        if (create) toggleCreateNode(node.id)
-        else togglePicked(node.id)
+    <div
+      ref={flowHostRef}
+      className="graph-flow-host"
+      onPointerDownCapture={(event) => {
+        cameraDebug('host-pointer-down-capture', {
+          button: event.button,
+          detail: event.detail,
+          target: debugTarget(event.target)
+        })
+        focusRetargetedSecondPointerDown(event)
       }}
-      proOptions={{ hideAttribution: true }}
+      onClickCapture={(event) => {
+        const target = event.target instanceof Element ? event.target : null
+        const targetIsPane = Boolean(target?.closest('.react-flow__pane'))
+        cameraDebug('host-click-capture', {
+          detail: event.detail,
+          target: debugTarget(event.target),
+          targetIsPane
+        })
+
+        if (suppressNextClickRef.current) {
+          suppressNextClickRef.current = false
+          event.preventDefault()
+          event.stopPropagation()
+          cameraDebug('second-click-suppressed-after-pointer-down', {
+            target: debugTarget(event.target)
+          })
+          return
+        }
+
+        if (targetIsPane) {
+          focusRetargetedSecondClick(event, 'host-click-capture-pane')
+        }
+      }}
+      onDoubleClickCapture={(event) => {
+        const target = event.target
+        cameraDebug('host-dblclick-capture', {
+          detail: event.detail,
+          target: debugTarget(target),
+          createMode: Boolean(create)
+        })
+        if (!(target instanceof Element)) {
+          cameraDebug('host-dblclick-rejected', 'target-not-element')
+          return
+        }
+        if (target.closest('.node-update-history-tooltip')) {
+          cameraDebug('host-dblclick-rejected', 'inside-history-tooltip')
+          return
+        }
+
+        const nodeElement = target.closest<HTMLElement>('.react-flow__node')
+        const nodeId = nodeElement?.dataset.id
+        cameraDebug('host-dblclick-node-resolution', {
+          nodeFound: Boolean(nodeElement),
+          nodeId
+        })
+        if (!nodeId) {
+          cameraDebug('host-dblclick-rejected', 'missing-node-id')
+          return
+        }
+        if (nodeId === PREVIEW_ID) {
+          cameraDebug('host-dblclick-rejected', 'preview-node')
+          return
+        }
+        if (create) {
+          cameraDebug('host-dblclick-rejected', 'creation-mode')
+          return
+        }
+
+        event.preventDefault()
+        event.stopPropagation()
+        lastNodeClickRef.current = null
+        requestNodeFocus(nodeId)
+      }}
     >
-      <Background
-        variant={BackgroundVariant.Dots}
-        gap={28}
-        size={1.2}
-        color="rgba(112, 168, 255, .13)"
-      />
-      <Controls showInteractive={false} />
-    </ReactFlow>
+      <ReactFlow
+        key={`graph-${graphStructureKey}-${create?.step ?? 'inspect'}-${create?.fromIds.join(',') ?? ''}-${create?.toIds.join(',') ?? ''}`}
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
+        zoomOnDoubleClick={false}
+        minZoom={0.35}
+        maxZoom={1.8}
+        onInit={(instance) => {
+          cameraDebug('react-flow-on-init', {
+            nodeCount: instance.getNodes().length,
+            viewport: instance.getViewport()
+          })
+          setFlowInstance(instance)
+        }}
+        onPaneClick={(event) => {
+          cameraDebug('react-flow-pane-click', {
+            detail: event.detail,
+            clientX: event.clientX,
+            clientY: event.clientY
+          })
+          if (suppressNextClickRef.current) {
+            suppressNextClickRef.current = false
+            event.preventDefault()
+            event.stopPropagation()
+            cameraDebug('react-flow-pane-click-suppressed-after-pointer-down')
+            return
+          }
+          if (focusRetargetedSecondClick(event, 'react-flow-pane-click')) return
+
+          lastNodeClickRef.current = null
+          setFocusedHistoryNodeId(null)
+          setPendingFocusNodeId(null)
+        }}
+        onNodeClick={(event, node: Node<MasteryNodeData>) => {
+          cameraDebug('react-flow-node-click', {
+            nodeId: node.id,
+            detail: event.detail,
+            createMode: Boolean(create),
+            target: debugTarget(event.target)
+          })
+          if (node.id === PREVIEW_ID) return
+
+          const now = performance.now()
+          const previous = lastNodeClickRef.current
+          const repeatedClick =
+            !create &&
+            previous?.nodeId === node.id &&
+            now - previous.occurredAt <= NODE_MULTI_CLICK_WINDOW_MS
+
+          cameraDebug('react-flow-node-click-evaluated', {
+            nodeId: node.id,
+            previous,
+            elapsedMs: previous ? Math.round(now - previous.occurredAt) : null,
+            repeatedClick
+          })
+
+          if (repeatedClick) {
+            cameraDebug('react-flow-multi-click-focus', { nodeId: node.id })
+            event.preventDefault()
+            event.stopPropagation()
+            lastNodeClickRef.current = null
+            requestNodeFocus(node.id)
+            return
+          }
+
+          lastNodeClickRef.current = {
+            nodeId: node.id,
+            occurredAt: now,
+            clientX: event.clientX,
+            clientY: event.clientY
+          }
+          if (focusedHistoryNodeId && focusedHistoryNodeId !== node.id) {
+            setFocusedHistoryNodeId(null)
+            setPendingFocusNodeId(null)
+          }
+          if (create) toggleCreateNode(node.id)
+          else togglePicked(node.id)
+        }}
+        proOptions={{ hideAttribution: true }}
+      >
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={28}
+          size={1.2}
+          color="rgba(112, 168, 255, .13)"
+        />
+        <Controls showInteractive={false} />
+      </ReactFlow>
+
+    </div>
   )
+}
+
+interface ViewBounds {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+function boundsForNodes(nodes: Node<MasteryNodeData>[]): ViewBounds | undefined {
+  if (nodes.length === 0) return undefined
+
+  let minimumX = Number.POSITIVE_INFINITY
+  let minimumY = Number.POSITIVE_INFINITY
+  let maximumX = Number.NEGATIVE_INFINITY
+  let maximumY = Number.NEGATIVE_INFINITY
+
+  nodes.forEach((node) => {
+    const size = renderedNodeSize(node)
+    minimumX = Math.min(minimumX, node.position.x)
+    minimumY = Math.min(minimumY, node.position.y)
+    maximumX = Math.max(maximumX, node.position.x + size)
+    maximumY = Math.max(maximumY, node.position.y + size)
+  })
+
+  return {
+    x: minimumX,
+    y: minimumY,
+    width: Math.max(1, maximumX - minimumX),
+    height: Math.max(1, maximumY - minimumY)
+  }
+}
+
+function focusNodeWithHistory(
+  flowInstance: ReactFlowInstance<Node<MasteryNodeData>, Edge>,
+  host: HTMLDivElement,
+  node: Node<MasteryNodeData>,
+  cameraDebug: (step: string, details?: unknown) => void
+): void {
+  const hostRect = host.getBoundingClientRect()
+  cameraDebug('focus-function-start', {
+    nodeId: node.id,
+    nodePosition: node.position,
+    hostRect: debugRect(hostRect),
+    viewport: flowInstance.getViewport()
+  })
+  if (hostRect.width <= 0 || hostRect.height <= 0) {
+    cameraDebug('focus-function-aborted', 'host-has-zero-size')
+    return
+  }
+
+  const currentZoom = Math.max(flowInstance.getViewport().zoom, 0.0001)
+  const nodeElement = Array.from(
+    host.querySelectorAll<HTMLElement>('.react-flow__node')
+  ).find((element) => element.dataset.id === node.id)
+  const tooltipElement = nodeElement?.querySelector<HTMLElement>(
+    '.node-update-history-tooltip'
+  )
+  const nodeRect = nodeElement?.getBoundingClientRect()
+  const tooltipRect = tooltipElement?.getBoundingClientRect()
+  const nodeSize = renderedNodeSize(node)
+  cameraDebug('focus-elements-measured', {
+    nodeId: node.id,
+    nodeElementFound: Boolean(nodeElement),
+    tooltipElementFound: Boolean(tooltipElement),
+    nodeRect: debugRect(nodeRect),
+    tooltipRect: debugRect(tooltipRect),
+    nodeSize
+  })
+
+  const nodeWidthInFlow =
+    nodeRect && nodeRect.width > 0 ? nodeRect.width / currentZoom : nodeSize
+  const nodeHeightInFlow =
+    nodeRect && nodeRect.height > 0 ? nodeRect.height / currentZoom : nodeSize
+  const tooltipWidthInFlow =
+    tooltipRect && tooltipRect.width > 0
+      ? tooltipRect.width / currentZoom
+      : HISTORY_FOCUS_FALLBACK_TOOLTIP_WIDTH
+  const tooltipHeightInFlow =
+    tooltipRect && tooltipRect.height > 0
+      ? tooltipRect.height / currentZoom
+      : HISTORY_FOCUS_FALLBACK_TOOLTIP_HEIGHT
+
+  const nodeCenterOnScreenX = nodeRect
+    ? nodeRect.left + nodeRect.width / 2
+    : hostRect.left + hostRect.width / 2
+  const nodeCenterOnScreenY = nodeRect
+    ? nodeRect.top + nodeRect.height / 2
+    : hostRect.top + hostRect.height / 2
+
+  const leftDistanceInFlow =
+    tooltipRect && nodeRect
+      ? Math.max(0, nodeCenterOnScreenX - Math.min(nodeRect.left, tooltipRect.left)) /
+        currentZoom
+      : Math.max(nodeWidthInFlow, tooltipWidthInFlow) / 2
+  const rightDistanceInFlow =
+    tooltipRect && nodeRect
+      ? Math.max(0, Math.max(nodeRect.right, tooltipRect.right) - nodeCenterOnScreenX) /
+        currentZoom
+      : Math.max(nodeWidthInFlow, tooltipWidthInFlow) / 2
+  const aboveDistanceInFlow =
+    tooltipRect && nodeRect
+      ? Math.max(0, nodeCenterOnScreenY - Math.min(nodeRect.top, tooltipRect.top)) /
+        currentZoom
+      : tooltipHeightInFlow + HISTORY_FOCUS_FALLBACK_GAP + nodeHeightInFlow / 2
+  const belowDistanceInFlow =
+    tooltipRect && nodeRect
+      ? Math.max(0, Math.max(nodeRect.bottom, tooltipRect.bottom) - nodeCenterOnScreenY) /
+        currentZoom
+      : nodeHeightInFlow / 2
+
+  const compositionWidthInFlow = Math.max(1, leftDistanceInFlow + rightDistanceInFlow)
+  const compositionHeightInFlow = Math.max(1, aboveDistanceInFlow + belowDistanceInFlow)
+  const widthZoom =
+    (hostRect.width - HISTORY_FOCUS_HORIZONTAL_MARGIN * 2) / compositionWidthInFlow
+  const heightZoom =
+    (hostRect.height - HISTORY_FOCUS_VERTICAL_MARGIN * 2) / compositionHeightInFlow
+  const zoom = clampNumber(
+    Math.min(HISTORY_FOCUS_PREFERRED_ZOOM, widthZoom, heightZoom),
+    HISTORY_FOCUS_MIN_ZOOM,
+    1.8
+  )
+
+  // Center the complete node + notes composition. The node itself naturally sits
+  // below viewport center because the notes card occupies the space above it.
+  const targetNodeCenterX =
+    hostRect.width / 2 + ((leftDistanceInFlow - rightDistanceInFlow) * zoom) / 2
+  const targetNodeCenterY =
+    hostRect.height / 2 + ((aboveDistanceInFlow - belowDistanceInFlow) * zoom) / 2
+  const nodeCenterX = node.position.x + nodeSize / 2
+  const nodeCenterY = node.position.y + nodeSize / 2
+
+  const nextViewport = {
+    x: targetNodeCenterX - nodeCenterX * zoom,
+    y: targetNodeCenterY - nodeCenterY * zoom,
+    zoom
+  }
+  cameraDebug('focus-viewport-calculated', {
+    currentZoom,
+    compositionWidthInFlow,
+    compositionHeightInFlow,
+    widthZoom,
+    heightZoom,
+    targetNodeCenterX,
+    targetNodeCenterY,
+    nodeCenterX,
+    nodeCenterY,
+    nextViewport
+  })
+
+  void flowInstance
+    .setViewport(nextViewport, { duration: HISTORY_FOCUS_ANIMATION_MS })
+    .then(() => cameraDebug('focus-set-viewport-complete', flowInstance.getViewport()))
+    .catch((error: unknown) => cameraDebug('focus-set-viewport-error', debugError(error)))
+}
+
+function debugTarget(target: EventTarget | null): string {
+  if (!(target instanceof Element)) return String(target)
+  const parts: string[] = [target.tagName.toLowerCase()]
+  if (target.id) parts.push(`#${target.id}`)
+  if (target.classList.length > 0) {
+    parts.push(`.${Array.from(target.classList).join('.')}`)
+  }
+  const flowNode = target.closest<HTMLElement>('.react-flow__node')
+  if (flowNode?.dataset.id) parts.push(`[node=${flowNode.dataset.id}]`)
+  return parts.join('')
+}
+
+function debugRect(rect: DOMRect | undefined): Record<string, number> | null {
+  if (!rect) return null
+  return {
+    left: Math.round(rect.left),
+    top: Math.round(rect.top),
+    right: Math.round(rect.right),
+    bottom: Math.round(rect.bottom),
+    width: Math.round(rect.width),
+    height: Math.round(rect.height)
+  }
+}
+
+function debugSerialize(value: unknown): string {
+  if (value === undefined || value === '') return ''
+  try {
+    return JSON.stringify(value)
+  } catch {
+    return String(value)
+  }
+}
+
+function debugError(error: unknown): Record<string, string> {
+  return error instanceof Error
+    ? { name: error.name, message: error.message, stack: error.stack ?? '' }
+    : { name: 'UnknownError', message: String(error), stack: '' }
+}
+
+function clampNumber(value: number, minimum: number, maximum: number): number {
+  return Math.min(maximum, Math.max(minimum, value))
+}
+
+function renderedNodeSize(node: Node<MasteryNodeData>): number {
+  return node.data.root ? 130 : 112
 }
 
 function MasteryEdge({
@@ -380,6 +1008,7 @@ function masteryNode(
     id,
     type: 'mastery',
     position: position ?? { x: 0, y: 0 },
+    className: data.historyPinned ? 'react-flow-node--history-pinned' : undefined,
     data
   }
 }
