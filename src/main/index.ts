@@ -1,10 +1,78 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { copyFile, mkdir, readFile, rename, rm, writeFile } from 'fs/promises'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { GRAPH_PERSISTENCE_CHANNELS } from '../shared/persistenceChannels'
 import icon from '../../resources/icon.png?asset'
 
+const GRAPH_STATE_FILENAME = 'mastery-graph.json'
+let graphSaveQueue: Promise<void> = Promise.resolve()
+
+function graphStatePath(): string {
+  return join(app.getPath('userData'), GRAPH_STATE_FILENAME)
+}
+
+async function loadGraphState(): Promise<unknown | null> {
+  const filePath = graphStatePath()
+
+  try {
+    return JSON.parse(await readFile(filePath, 'utf8')) as unknown
+  } catch (error) {
+    if (isMissingFile(error)) return null
+
+    if (error instanceof SyntaxError) {
+      const corruptPath = `${filePath}.corrupt-${Date.now()}`
+      await rename(filePath, corruptPath).catch(() => undefined)
+      console.error(`Invalid graph state moved to ${corruptPath}`, error)
+      return null
+    }
+
+    throw error
+  }
+}
+
+async function saveGraphState(document: unknown): Promise<void> {
+  const filePath = graphStatePath()
+  const tempPath = `${filePath}.tmp`
+  const backupPath = `${filePath}.backup`
+
+  await mkdir(app.getPath('userData'), { recursive: true })
+
+  try {
+    await copyFile(filePath, backupPath)
+  } catch (error) {
+    if (!isMissingFile(error)) throw error
+  }
+
+  await writeFile(tempPath, `${JSON.stringify(document, null, 2)}\n`, 'utf8')
+
+  try {
+    await rename(tempPath, filePath)
+  } catch {
+    await rm(filePath, { force: true })
+    await rename(tempPath, filePath)
+  }
+}
+
+function isMissingFile(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: string }).code === 'ENOENT'
+  )
+}
+
+function registerGraphPersistence(): void {
+  ipcMain.handle(GRAPH_PERSISTENCE_CHANNELS.load, loadGraphState)
+  ipcMain.handle(GRAPH_PERSISTENCE_CHANNELS.save, (_event, document: unknown) => {
+    graphSaveQueue = graphSaveQueue.catch(() => undefined).then(() => saveGraphState(document))
+    return graphSaveQueue
+  })
+  ipcMain.handle(GRAPH_PERSISTENCE_CHANNELS.path, () => graphStatePath())
+}
+
 function createWindow(): void {
-  // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
@@ -29,8 +97,6 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
@@ -38,40 +104,25 @@ function createWindow(): void {
   }
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
+  registerGraphPersistence()
 
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
   createWindow()
 
   app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.

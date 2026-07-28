@@ -66,3 +66,11 @@ export interface CreateDraft {
   fromIds: NodeId[]
   toIds: NodeId[]
 }
+
+export interface GraphStateSnapshot {
+  roots: Root[]
+  skills: Skill[]
+  links: Link[]
+  history: ActivityEntry[]
+  todayXp: number
+}

@@ -1,12 +1,16 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import { GRAPH_PERSISTENCE_CHANNELS } from '../shared/persistenceChannels'
 
-// Custom APIs for renderer
-const api = {}
+const api = {
+  graphPersistence: {
+    load: (): Promise<unknown | null> => ipcRenderer.invoke(GRAPH_PERSISTENCE_CHANNELS.load),
+    save: (document: unknown): Promise<void> =>
+      ipcRenderer.invoke(GRAPH_PERSISTENCE_CHANNELS.save, document),
+    getPath: (): Promise<string> => ipcRenderer.invoke(GRAPH_PERSISTENCE_CHANNELS.path)
+  }
+}
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)

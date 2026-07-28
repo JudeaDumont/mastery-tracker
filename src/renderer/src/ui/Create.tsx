@@ -1,6 +1,26 @@
 import React, { useEffect, useMemo } from 'react'
 import type { ReactElement } from 'react'
-import { NODE_CAPACITY, createSelectionFull, nodeTitle, toCandidateIds, useMastery } from '../store'
+import type { RootAccent } from '../model'
+import {
+  MAX_INCOMING_RELATIONSHIPS,
+  MAX_OUTGOING_RELATIONSHIPS,
+  ROOT_ACCENTS,
+  canUseFromNode,
+  createSelectionFull,
+  nodeRootId,
+  nodeTitle,
+  toCandidateIds,
+  useMastery
+} from '../store'
+
+const ACCENT_LABELS: Record<RootAccent, string> = {
+  teal: 'Teal',
+  violet: 'Violet',
+  amber: 'Amber',
+  rose: 'Rose',
+  green: 'Green',
+  blue: 'Blue'
+}
 
 export function Create(): ReactElement | null {
   const roots = useMastery((state) => state.roots)
@@ -8,6 +28,8 @@ export function Create(): ReactElement | null {
   const links = useMastery((state) => state.links)
   const draft = useMastery((state) => state.create)
   const setTitle = useMastery((state) => state.setCreateTitle)
+  const setAccent = useMastery((state) => state.setCreateAccent)
+  const selectRoot = useMastery((state) => state.selectCreateRoot)
   const clear = useMastery((state) => state.clearCreateSelection)
   const next = useMastery((state) => state.continueCreate)
   const escape = useMastery((state) => state.escapeCreate)
@@ -32,21 +54,32 @@ export function Create(): ReactElement | null {
 
   if (!draft) return null
 
+  const creatingRoot = draft.fromIds.length === 0
+  const selectedRootId = draft.fromIds[0]
+    ? nodeRootId(draft.fromIds[0], roots, skills)
+    : undefined
+  const selectedRoot = roots.find((root) => root.id === selectedRootId)
   const ids = draft.step === 'from' ? draft.fromIds : draft.toIds
   const label =
     ids.length > 0
       ? ids.map((id) => nodeTitle(id, roots, skills)).join(' · ')
       : draft.step === 'from'
-        ? 'Root — create a new category'
-        : 'None — create a terminal node'
+        ? 'New root — no parent relationship'
+        : 'None — terminal node'
   const full = createSelectionFull(draft)
-  const used = draft.fromIds.length + draft.toIds.length
+  const used = draft.step === 'from' ? draft.fromIds.length : draft.toIds.length
+  const capacity =
+    draft.step === 'from' ? MAX_INCOMING_RELATIONSHIPS : MAX_OUTGOING_RELATIONSHIPS
+  const relationshipDirection = draft.step === 'from' ? 'incoming' : 'outgoing'
+  const stepCount = creatingRoot ? 1 : 2
 
   return (
     <section className="create-card" aria-label="Create node wizard">
       <div className="create-card__step">
-        <span>{draft.step === 'from' ? '1' : '2'} of 2</span>
-        <strong>{draft.step === 'from' ? 'Choose From nodes' : 'Choose To nodes'}</strong>
+        <span>{draft.step === 'from' ? '1' : '2'} of {stepCount}</span>
+        <strong>
+          {draft.step === 'from' ? 'Choose parent relationships' : 'Choose To relationships'}
+        </strong>
       </div>
 
       <label className="create-name">
@@ -58,29 +91,108 @@ export function Create(): ReactElement | null {
         />
       </label>
 
+      {draft.step === 'from' && (
+        <>
+          <div className="create-root-picker" role="group" aria-label="Parent root">
+            <span className="create-field-label">Parent root</span>
+            <div className="create-root-options">
+              <button
+                className={`create-root-option ${creatingRoot ? 'create-root-option--selected' : ''}`}
+                type="button"
+                aria-pressed={creatingRoot}
+                onClick={() => selectRoot(null)}
+              >
+                <i className="create-root-option__new" aria-hidden="true">+</i>
+                <span>
+                  <strong>New root</strong>
+                  <small>No parent</small>
+                </span>
+              </button>
+
+              {roots.map((root) => {
+                const available = canUseFromNode(root.id, links)
+                const selected = selectedRootId === root.id
+                return (
+                  <button
+                    key={root.id}
+                    className={`create-root-option create-root-option--accent-${root.accent ?? 'teal'} ${selected ? 'create-root-option--selected' : ''}`}
+                    type="button"
+                    disabled={!available && !selected}
+                    aria-pressed={selected}
+                    title={
+                      available || selected
+                        ? `Create a child under ${root.title}`
+                        : `${root.title} has ${MAX_OUTGOING_RELATIONSHIPS} outgoing relationships`
+                    }
+                    onClick={() => selectRoot(root.id)}
+                  >
+                    <i className="create-root-option__swatch" aria-hidden="true" />
+                    <span>
+                      <strong>{root.title}</strong>
+                      <small>{available || selected ? 'Create child' : 'Outgoing full'}</small>
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {creatingRoot && (
+            <div className="create-color-picker" role="group" aria-label="Root color">
+              <span className="create-field-label">
+                Root color · <strong>{ACCENT_LABELS[draft.accent]}</strong>
+              </span>
+              <div className="create-color-options">
+                {ROOT_ACCENTS.map((accent) => (
+                  <button
+                    key={accent}
+                    className={`create-color-option create-color-option--${accent} ${draft.accent === accent ? 'create-color-option--selected' : ''}`}
+                    type="button"
+                    aria-label={ACCENT_LABELS[accent]}
+                    aria-pressed={draft.accent === accent}
+                    title={`${ACCENT_LABELS[accent]} — UI-safe root family color`}
+                    onClick={() => setAccent(accent)}
+                  >
+                    <span aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
       <p className="create-copy">
         {draft.step === 'from'
-          ? 'Click nodes in the grid to choose where this mastery comes from. Clear everything to create a new root.'
-          : 'Green nodes are legal destinations. The grid chooses and previews the final placement for you.'}
+          ? creatingRoot
+            ? 'Choose a UI-safe family color, then create the root. Root nodes do not have From or To relationships during creation.'
+            : `This node will belong to ${selectedRoot?.title ?? 'the selected root'}. Select any additional From nodes on the graph, then continue to choose every To relationship.`
+          : 'Select every node this new node should point To. Green nodes have incoming capacity; red nodes already have 8 incoming relationships. Leave To empty only for a terminal node.'}
       </p>
 
-      <div className={`selection-log ${full && draft.step === 'to' ? 'selection-log--full' : ''}`}>
+      <div className={`selection-log ${full && !creatingRoot ? 'selection-log--full' : ''}`}>
         <span>{draft.step === 'from' ? 'From' : 'To'}</span>
         <strong title={label}>{label}</strong>
       </div>
 
-      {draft.step === 'to' && (
+      {!creatingRoot && (
         <div className="create-capacity">
           <span>
-            {used}/{NODE_CAPACITY} structural connections
+            {used}/{capacity} {relationshipDirection} relationships
           </span>
-          <span>{full ? 'Capacity reached' : `${candidateCount} candidates`}</span>
+          <span>
+            {full
+              ? `${relationshipDirection === 'incoming' ? 'Incoming' : 'Outgoing'} capacity reached`
+              : draft.step === 'to'
+                ? `${candidateCount} candidates`
+                : `${capacity - used} remaining`}
+          </span>
         </div>
       )}
 
       <div className="create-actions">
         <button type="button" onClick={clear}>
-          Clear
+          {draft.step === 'from' ? 'New root' : 'Clear To'}
         </button>
         <button
           className="create-continue"
@@ -88,12 +200,16 @@ export function Create(): ReactElement | null {
           disabled={!draft.title.trim()}
           onClick={next}
         >
-          Continue
+          {draft.step === 'from'
+            ? creatingRoot
+              ? 'Create Root'
+              : 'Choose To Relationships'
+            : 'Create Node'}
         </button>
       </div>
 
       <small className="create-escape">
-        Esc {draft.step === 'from' ? 'cancels creation' : 'returns to From selection'}
+        Esc {draft.step === 'from' ? 'cancels creation' : 'returns to parent selection'}
       </small>
     </section>
   )

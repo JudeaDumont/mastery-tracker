@@ -16,15 +16,19 @@ const effortLabels: Record<Effort, string> = {
 export function Updates(): ReactElement {
   const roots = useMastery((state) => state.roots)
   const skills = useMastery((state) => state.skills)
+  const links = useMastery((state) => state.links)
+  const history = useMastery((state) => state.history)
   const draft = useMastery((state) => state.draft)
   const pickedIds = useMastery((state) => state.pickedIds)
   const create = useMastery((state) => state.create)
   const edit = useMastery((state) => state.edit)
   const submit = useMastery((state) => state.submit)
   const beginCreate = useMastery((state) => state.beginCreate)
+  const deleteNode = useMastery((state) => state.deleteNode)
   const lastResult = useMastery((state) => state.lastResult)
   const lastCreated = useMastery((state) => state.lastCreated)
   const [expandedIds, setExpandedIds] = useState<Set<NodeId>>(new Set())
+  const [pendingDeleteId, setPendingDeleteId] = useState<NodeId | null>(null)
   const previousPickedIds = useRef<Set<NodeId>>(new Set())
 
   useEffect(() => {
@@ -43,6 +47,17 @@ export function Updates(): ReactElement {
 
     previousPickedIds.current = selectedIds
   }, [pickedIds])
+
+  useEffect(() => {
+    if (!pendingDeleteId) return
+
+    const closeOnEscape = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') setPendingDeleteId(null)
+    }
+
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [pendingDeleteId])
 
   const toggleExpanded = (id: NodeId): void => {
     setExpandedIds((current) => {
@@ -63,26 +78,71 @@ export function Updates(): ReactElement {
     0
   )
   const totalMinutes = updatable.reduce((sum, skill) => sum + draft[skill.id].minutes, 0)
+  const deletion = useMemo(() => {
+    if (!pendingDeleteId) return null
+
+    const root = roots.find((candidate) => candidate.id === pendingDeleteId)
+    if (root) {
+      const childIds = new Set(
+        skills.filter((skill) => skill.rootId === root.id).map((skill) => skill.id)
+      )
+      const deletedIds = new Set<NodeId>([root.id, ...childIds])
+
+      return {
+        id: root.id,
+        title: root.title,
+        kind: 'root' as const,
+        childCount: childIds.size,
+        relationshipCount: links.filter(
+          (link) => deletedIds.has(link.from) || deletedIds.has(link.to)
+        ).length,
+        activityCount: history.filter((entry) => childIds.has(entry.nodeId)).length,
+        dependentCount: 0
+      }
+    }
+
+    const skill = skills.find((candidate) => candidate.id === pendingDeleteId)
+    if (!skill) return null
+
+    return {
+      id: skill.id,
+      title: skill.title,
+      kind: 'node' as const,
+      childCount: 0,
+      relationshipCount: links.filter(
+        (link) => link.from === skill.id || link.to === skill.id
+      ).length,
+      activityCount: history.filter((entry) => entry.nodeId === skill.id).length,
+      dependentCount: skills.filter((candidate) =>
+        candidate.gates.some((gate) => gate.nodeId === skill.id)
+      ).length
+    }
+  }, [history, links, pendingDeleteId, roots, skills])
+
+  const confirmDelete = (): void => {
+    if (!deletion) return
+    deleteNode(deletion.id)
+    setPendingDeleteId(null)
+  }
 
   return (
-    <aside className="updates-panel">
+    <>
+      <aside className="updates-panel">
       <div className="panel-heading">
         <div>
           <span className="eyebrow">Daily command center</span>
           <h2>{create ? 'Node builder' : 'Updates'}</h2>
         </div>
         <button
-          className="icon-button"
+          className="create-node-button"
           type="button"
-          title="Create node"
           disabled={Boolean(create)}
           onClick={beginCreate}
         >
-          +
+          Create New Node
         </button>
       </div>
 
-      <Create />
 
       {lastCreated && !create && (
         <div className="created-banner">
@@ -91,7 +151,9 @@ export function Updates(): ReactElement {
         </div>
       )}
 
-      <div className={`node-list ${create ? 'node-list--paused' : ''}`}>
+      <div className="node-list">
+        {create && <Create />}
+
         {selectedCount === 0 && !create && (
           <div className="node-list-empty">
             <strong>No nodes selected</strong>
@@ -99,7 +161,7 @@ export function Updates(): ReactElement {
           </div>
         )}
 
-        {selectedRoots.map((root) => {
+        {!create && selectedRoots.map((root) => {
           const rootSkills = skills.filter((skill) => skill.rootId === root.id)
           const rank = Math.min(
             10,
@@ -150,13 +212,20 @@ export function Updates(): ReactElement {
               {expanded && !create && (
                 <div className="root-update-details">
                   <span>Root rank is derived from its connected mastery nodes.</span>
+                  <button
+                    className="node-delete-button"
+                    type="button"
+                    onClick={() => setPendingDeleteId(root.id)}
+                  >
+                    Delete root
+                  </button>
                 </div>
               )}
             </section>
           )
         })}
 
-        {selectedSkills.map((skill) => {
+        {!create && selectedSkills.map((skill) => {
           const update = draft[skill.id]
           const locked = isLocked(skill, skills)
           const progress = levelProgressFor(skill)
@@ -255,13 +324,26 @@ export function Updates(): ReactElement {
                   </label>
                 </div>
               )}
+
+              {expanded && !create && (
+                <div className="update-row-actions">
+                  <button
+                    className="node-delete-button"
+                    type="button"
+                    onClick={() => setPendingDeleteId(skill.id)}
+                  >
+                    Delete node
+                  </button>
+                </div>
+              )}
             </section>
           )
         })}
       </div>
 
-      <div className={`submit-zone ${create ? 'submit-zone--paused' : ''}`}>
-        {lastResult && !create && (
+      {!create && (
+        <div className="submit-zone">
+        {lastResult && (
           <div className="result-banner">
             <strong>+{lastResult.totalXp} XP applied</strong>
             <span>
@@ -281,12 +363,60 @@ export function Updates(): ReactElement {
         <button
           className="submit-button"
           type="button"
-          disabled={updatable.length === 0 || totalProjectedXp <= 0 || Boolean(create)}
+          disabled={updatable.length === 0 || totalProjectedXp <= 0}
           onClick={submit}
         >
           Submit updates
         </button>
-      </div>
-    </aside>
+        </div>
+      )}
+      </aside>
+
+      {deletion && (
+        <div
+          className="confirmation-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setPendingDeleteId(null)
+          }}
+        >
+          <section
+            className="confirmation-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-dialog-title"
+            aria-describedby="delete-dialog-description"
+          >
+            <span className="confirmation-dialog__eyebrow">Permanent graph change</span>
+            <h3 id="delete-dialog-title">Delete {deletion.title}?</h3>
+            <p id="delete-dialog-description">
+              {deletion.kind === 'root'
+                ? `This deletes the root, ${deletion.childCount} child node${deletion.childCount === 1 ? '' : 's'}, ${deletion.relationshipCount} relationship${deletion.relationshipCount === 1 ? '' : 's'}, and ${deletion.activityCount} activity entr${deletion.activityCount === 1 ? 'y' : 'ies'}.`
+                : `This deletes the node, ${deletion.relationshipCount} relationship${deletion.relationshipCount === 1 ? '' : 's'}, and ${deletion.activityCount} activity entr${deletion.activityCount === 1 ? 'y' : 'ies'}. ${deletion.dependentCount > 0 ? `${deletion.dependentCount} dependent node${deletion.dependentCount === 1 ? '' : 's'} will have this prerequisite removed.` : ''}`}
+            </p>
+            <p className="confirmation-dialog__warning">
+              This is saved immediately and cannot be undone from inside the app.
+            </p>
+            <div className="confirmation-dialog__actions">
+              <button
+                className="confirmation-cancel-button"
+                type="button"
+                autoFocus
+                onClick={() => setPendingDeleteId(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="confirmation-delete-button"
+                type="button"
+                onClick={confirmDelete}
+              >
+                Delete {deletion.kind === 'root' ? 'root' : 'node'}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+    </>
   )
 }

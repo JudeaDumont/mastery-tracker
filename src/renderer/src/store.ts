@@ -3,6 +3,7 @@ import type {
   ActivityEntry,
   CreateDraft,
   DraftUpdate,
+  GraphStateSnapshot,
   Link,
   NodeId,
   Root,
@@ -14,8 +15,8 @@ import type {
 } from './model'
 import { earnedXp, isLocked, levelFor } from './xp'
 
-export const NODE_CAPACITY = 4
-export const ROOT_CAPACITY = 8
+export const MAX_INCOMING_RELATIONSHIPS = 8
+export const MAX_OUTGOING_RELATIONSHIPS = 8
 
 export const ROOT_ACCENTS: RootAccent[] = ['teal', 'violet', 'amber', 'rose', 'green', 'blue']
 
@@ -245,8 +246,11 @@ interface MasteryStore {
   edit: (id: SkillId, patch: Partial<DraftUpdate>) => void
   submit: () => void
   togglePicked: (id: NodeId) => void
+  deleteNode: (id: NodeId) => void
   beginCreate: () => void
   setCreateTitle: (title: string) => void
+  setCreateAccent: (accent: RootAccent) => void
+  selectCreateRoot: (rootId: RootId | null) => void
   toggleCreateNode: (id: NodeId) => void
   clearCreateSelection: () => void
   continueCreate: () => void
@@ -365,11 +369,64 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       }
     }),
 
+  deleteNode: (id) =>
+    set((state) => {
+      const root = state.roots.find((candidate) => candidate.id === id)
+      const skill = state.skills.find((candidate) => candidate.id === id)
+      if (!root && !skill) return state
+
+      const deletedSkillIds = new Set<SkillId>(
+        root
+          ? state.skills
+              .filter((candidate) => candidate.rootId === root.id)
+              .map((candidate) => candidate.id)
+          : [id as SkillId]
+      )
+      const deletedNodeIds = new Set<NodeId>(
+        root ? [root.id, ...deletedSkillIds] : deletedSkillIds
+      )
+      const removedHistory = state.history.filter((entry) => deletedSkillIds.has(entry.nodeId))
+      const removedTodayXp = removedHistory
+        .filter((entry) => isSameLocalDay(entry.occurredAt, new Date()))
+        .reduce((sum, entry) => sum + entry.xp, 0)
+      const draft = Object.fromEntries(
+        Object.entries(state.draft).filter(([skillId]) => !deletedSkillIds.has(skillId))
+      ) as Record<SkillId, DraftUpdate>
+      const create = state.create
+        ? {
+            ...state.create,
+            fromIds: state.create.fromIds.filter((nodeId) => !deletedNodeIds.has(nodeId)),
+            toIds: state.create.toIds.filter((nodeId) => !deletedNodeIds.has(nodeId))
+          }
+        : null
+
+      return {
+        roots: root ? state.roots.filter((candidate) => candidate.id !== root.id) : state.roots,
+        skills: state.skills
+          .filter((candidate) => !deletedSkillIds.has(candidate.id))
+          .map((candidate) => ({
+            ...candidate,
+            gates: candidate.gates.filter((gate) => !deletedSkillIds.has(gate.nodeId))
+          })),
+        links: state.links.filter(
+          (link) => !deletedNodeIds.has(link.from) && !deletedNodeIds.has(link.to)
+        ),
+        history: state.history.filter((entry) => !deletedSkillIds.has(entry.nodeId)),
+        todayXp: Math.max(0, state.todayXp - removedTodayXp),
+        draft,
+        pickedIds: state.pickedIds.filter((pickedId) => !deletedNodeIds.has(pickedId)),
+        create,
+        lastResult: null,
+        lastCreated: null
+      }
+    }),
+
   beginCreate: () =>
     set((state) => ({
       create: {
         step: 'from',
         title: 'New mastery',
+        accent: ROOT_ACCENTS[state.roots.length % ROOT_ACCENTS.length],
         fromIds: normalizedInitialFrom(state.pickedIds, state.roots, state.skills, state.links),
         toIds: []
       },
@@ -380,6 +437,24 @@ export const useMastery = create<MasteryStore>((set, get) => ({
     set((state) => ({
       create: state.create ? { ...state.create, title } : null
     })),
+
+  setCreateAccent: (accent) =>
+    set((state) => ({
+      create: state.create ? { ...state.create, accent } : null
+    })),
+
+  selectCreateRoot: (rootId) =>
+    set((state) => {
+      const draft = state.create
+      if (!draft || draft.step !== 'from') return state
+      if (rootId === null) {
+        return { create: { ...draft, fromIds: [], toIds: [] } }
+      }
+
+      const root = state.roots.find((candidate) => candidate.id === rootId)
+      if (!root || !canUseFromNode(root.id, state.links)) return state
+      return { create: { ...draft, fromIds: [root.id], toIds: [] } }
+    }),
 
   toggleCreateNode: (id) =>
     set((state) => {
@@ -418,12 +493,13 @@ export const useMastery = create<MasteryStore>((set, get) => ({
     const draft = state.create
     if (!draft || !draft.title.trim()) return
 
+    const id = uniqueId(draft.title, allNodeIds(state.roots, state.skills))
+
     if (draft.step === 'from' && draft.fromIds.length === 0) {
-      const id = uniqueId(draft.title, allNodeIds(state.roots, state.skills))
       const root: Root = {
         id,
         title: draft.title.trim(),
-        accent: ROOT_ACCENTS[state.roots.length % ROOT_ACCENTS.length]
+        accent: draft.accent
       }
       set({
         roots: [...state.roots, root],
@@ -441,8 +517,11 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
     const rootId = rootForIds(draft.fromIds, state.roots, state.skills)
     if (!rootId) return
+    if (draft.fromIds.length > MAX_INCOMING_RELATIONSHIPS) return
+    if (draft.toIds.length > MAX_OUTGOING_RELATIONSHIPS) return
+    if (draft.fromIds.some((from) => !canUseFromNode(from, state.links))) return
+    if (draft.toIds.some((to) => !canUseToNode(to, state.links))) return
 
-    const id = uniqueId(draft.title, allNodeIds(state.roots, state.skills))
     const skill: Skill = {
       id,
       rootId,
@@ -483,6 +562,32 @@ export const useMastery = create<MasteryStore>((set, get) => ({
     })
 }))
 
+export function graphStateSnapshot(): GraphStateSnapshot {
+  const state = useMastery.getState()
+  return {
+    roots: state.roots,
+    skills: state.skills,
+    links: state.links,
+    history: state.history,
+    todayXp: state.todayXp
+  }
+}
+
+export function applyPersistedSnapshot(snapshot: GraphStateSnapshot): void {
+  useMastery.setState({
+    roots: snapshot.roots,
+    skills: snapshot.skills,
+    links: snapshot.links,
+    history: snapshot.history,
+    todayXp: snapshot.todayXp,
+    draft: draftFor(snapshot.skills),
+    pickedIds: [],
+    create: null,
+    lastResult: null,
+    lastCreated: null
+  })
+}
+
 function recordReachedLevels(
   skill: Skill,
   previousLevel: number,
@@ -517,12 +622,17 @@ export function nodeRootId(id: NodeId, roots: Root[], skills: Skill[]): RootId |
 }
 
 export function createSelectionFull(draft: CreateDraft): boolean {
-  return draft.fromIds.length + draft.toIds.length >= NODE_CAPACITY
+  return draft.step === 'from'
+    ? draft.fromIds.length >= MAX_INCOMING_RELATIONSHIPS
+    : draft.toIds.length >= MAX_OUTGOING_RELATIONSHIPS
 }
 
-export function canUseFromNode(id: NodeId, roots: Root[], links: Link[]): boolean {
-  const capacity = roots.some((root) => root.id === id) ? ROOT_CAPACITY : NODE_CAPACITY
-  return degreeFor(id, links) < capacity
+export function canUseFromNode(id: NodeId, links: Link[]): boolean {
+  return outgoingRelationshipCount(id, links) < MAX_OUTGOING_RELATIONSHIPS
+}
+
+export function canUseToNode(id: NodeId, links: Link[]): boolean {
+  return incomingRelationshipCount(id, links) < MAX_INCOMING_RELATIONSHIPS
 }
 
 export function toCandidateIds(
@@ -539,9 +649,19 @@ export function toCandidateIds(
     skills
       .filter((skill) => skill.rootId === rootId)
       .filter((skill) => !draft.fromIds.includes(skill.id))
-      .filter((skill) => degreeFor(skill.id, links) < NODE_CAPACITY)
+      .filter((skill) => canUseToNode(skill.id, links))
       .filter((skill) => !draft.fromIds.some((source) => hasPath(skill.id, source, links)))
       .map((skill) => skill.id)
+  )
+}
+
+function isSameLocalDay(occurredAt: string, day: Date): boolean {
+  const occurred = new Date(occurredAt)
+  return (
+    Number.isFinite(occurred.getTime()) &&
+    occurred.getFullYear() === day.getFullYear() &&
+    occurred.getMonth() === day.getMonth() &&
+    occurred.getDate() === day.getDate()
   )
 }
 
@@ -556,8 +676,8 @@ function normalizedInitialFrom(
   if (!rootId) return []
   return ids
     .filter((id) => nodeRootId(id, roots, skills) === rootId)
-    .filter((id) => canUseFromNode(id, roots, links))
-    .slice(0, NODE_CAPACITY)
+    .filter((id) => canUseFromNode(id, links))
+    .slice(0, MAX_INCOMING_RELATIONSHIPS)
 }
 
 function toggleFromId(
@@ -570,11 +690,11 @@ function toggleFromId(
   if (current.includes(id)) return current.filter((nodeId) => nodeId !== id)
 
   const rootId = nodeRootId(id, roots, skills)
-  if (!rootId || !canUseFromNode(id, roots, links)) return current
+  if (!rootId || !canUseFromNode(id, links)) return current
   const currentRoot = current.length > 0 ? nodeRootId(current[0], roots, skills) : rootId
 
   if (currentRoot !== rootId) return [id]
-  if (current.length >= NODE_CAPACITY) return current
+  if (current.length >= MAX_INCOMING_RELATIONSHIPS) return current
   return [...current, id]
 }
 
@@ -582,8 +702,12 @@ function rootForIds(ids: NodeId[], roots: Root[], skills: Skill[]): RootId | und
   return ids.length > 0 ? nodeRootId(ids[0], roots, skills) : undefined
 }
 
-function degreeFor(id: NodeId, links: Link[]): number {
-  return links.filter((link) => link.from === id || link.to === id).length
+export function incomingRelationshipCount(id: NodeId, links: Link[]): number {
+  return links.filter((link) => link.to === id).length
+}
+
+export function outgoingRelationshipCount(id: NodeId, links: Link[]): number {
+  return links.filter((link) => link.from === id).length
 }
 
 function hasPath(from: NodeId, to: NodeId, links: Link[]): boolean {

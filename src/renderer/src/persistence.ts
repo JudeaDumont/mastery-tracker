@@ -1,0 +1,281 @@
+import type {
+  ActivityEntry,
+  Effort,
+  Gate,
+  GraphStateSnapshot,
+  Link,
+  Root,
+  RootAccent,
+  Skill
+} from './model'
+import { ROOT_ACCENTS, applyPersistedSnapshot, graphStateSnapshot, useMastery } from './store'
+
+export const GRAPH_FILE_FORMAT = 'mastery-tracker.graph'
+export const GRAPH_FILE_VERSION = 1
+
+interface GraphFileV1 {
+  format: typeof GRAPH_FILE_FORMAT
+  schemaVersion: typeof GRAPH_FILE_VERSION
+  savedAt: string
+  data: GraphStateSnapshot
+}
+
+class UnsupportedGraphVersionError extends Error {
+  constructor(version: number) {
+    super(`Graph file version ${version} is newer than supported version ${GRAPH_FILE_VERSION}.`)
+  }
+}
+
+let persistenceStarted = false
+let lastSerialized = ''
+
+export async function initializeMasteryPersistence(): Promise<void> {
+  if (persistenceStarted) return
+  persistenceStarted = true
+
+  try {
+    const raw = await window.api.graphPersistence.load()
+    const migrated = raw === null ? null : migrateGraphFile(raw)
+
+    if (migrated) applyPersistedSnapshot(migrated)
+
+    await persistCurrentState()
+    lastSerialized = JSON.stringify(graphStateSnapshot())
+
+    useMastery.subscribe((state) => {
+      const snapshot: GraphStateSnapshot = {
+        roots: state.roots,
+        skills: state.skills,
+        links: state.links,
+        history: state.history,
+        todayXp: state.todayXp
+      }
+      const serialized = JSON.stringify(snapshot)
+      if (serialized === lastSerialized) return
+
+      lastSerialized = serialized
+      void saveSnapshot(snapshot).catch((error) => {
+        console.error('Mastery graph save failed.', error)
+      })
+    })
+
+    const filePath = await window.api.graphPersistence.getPath()
+    console.info(`Mastery graph persistence ready: ${filePath}`)
+  } catch (error) {
+    if (error instanceof UnsupportedGraphVersionError) {
+      console.error(`${error.message} The file was not overwritten.`)
+      return
+    }
+
+    console.error('Mastery graph persistence could not be initialized.', error)
+  }
+}
+
+function persistCurrentState(): Promise<void> {
+  return saveSnapshot(graphStateSnapshot())
+}
+
+function saveSnapshot(snapshot: GraphStateSnapshot): Promise<void> {
+  const document: GraphFileV1 = {
+    format: GRAPH_FILE_FORMAT,
+    schemaVersion: GRAPH_FILE_VERSION,
+    savedAt: new Date().toISOString(),
+    data: snapshot
+  }
+
+  return window.api.graphPersistence.save(document)
+}
+
+export function migrateGraphFile(raw: unknown): GraphStateSnapshot | null {
+  const object = asObject(raw)
+  if (!object) return null
+
+  if (object.format === GRAPH_FILE_FORMAT) {
+    const version = finiteInteger(object.schemaVersion, 0)
+    if (version > GRAPH_FILE_VERSION) throw new UnsupportedGraphVersionError(version)
+
+    if (version === 1) return normalizeSnapshot(object.data)
+    return normalizeSnapshot(object.data ?? object.state ?? object)
+  }
+
+  // Backwards compatibility for pre-version files and Zustand persist wrappers.
+  return normalizeSnapshot(object.state ?? object.data ?? object)
+}
+
+function normalizeSnapshot(raw: unknown): GraphStateSnapshot | null {
+  const source = asObject(raw)
+  if (!source) return null
+
+  const roots = normalizeRoots(source.roots)
+  if (roots.length === 0) return null
+
+  const rootIds = new Set(roots.map((root) => root.id))
+  const skills = normalizeSkills(source.skills, rootIds)
+  const allIds = new Set([...rootIds, ...skills.map((skill) => skill.id)])
+  const links = normalizeLinks(source.links, allIds)
+  const skillIds = new Set(skills.map((skill) => skill.id))
+  const history = normalizeHistory(source.history, skillIds)
+
+  return {
+    roots,
+    skills,
+    links,
+    history,
+    todayXp: finiteNumber(source.todayXp, 0)
+  }
+}
+
+function normalizeRoots(raw: unknown): Root[] {
+  if (!Array.isArray(raw)) return []
+
+  return raw.flatMap((value, index) => {
+    const root = asObject(value)
+    const id = stringValue(root?.id)
+    if (!root || !id) return []
+
+    return [
+      {
+        id,
+        title: stringValue(root.title) || id,
+        accent: rootAccent(root.accent) ?? ROOT_ACCENTS[index % ROOT_ACCENTS.length]
+      }
+    ]
+  })
+}
+
+function normalizeSkills(raw: unknown, rootIds: Set<string>): Skill[] {
+  if (!Array.isArray(raw)) return []
+
+  return raw.flatMap((value) => {
+    const skill = asObject(value)
+    const id = stringValue(skill?.id)
+    const rootId = stringValue(skill?.rootId)
+    if (!skill || !id || !rootId || !rootIds.has(rootId)) return []
+
+    const requirements = normalizeRequirements(skill)
+    const maxLevel = Math.max(1, finiteInteger(skill.maxLevel, requirements.length || 3))
+    while (requirements.length < maxLevel) {
+      requirements.push(requirements.at(-1) ?? 100)
+    }
+
+    return [
+      {
+        id,
+        rootId,
+        title: stringValue(skill.title) || id,
+        xp: Math.max(0, finiteNumber(skill.xp, 0)),
+        maxLevel,
+        levelXpRequirements: requirements.slice(0, maxLevel),
+        levelReachedAt: normalizeReachedDates(skill.levelReachedAt, maxLevel),
+        momentum: clamp(finiteNumber(skill.momentum ?? skill.heat, 0), 0, 100),
+        gates: normalizeGates(skill.gates)
+      }
+    ]
+  })
+}
+
+function normalizeRequirements(skill: Record<string, unknown>): number[] {
+  if (Array.isArray(skill.levelXpRequirements)) {
+    const values = skill.levelXpRequirements
+      .map((value) => Math.max(1, finiteNumber(value, 0)))
+      .filter((value) => Number.isFinite(value))
+    if (values.length > 0) return values
+  }
+
+  // Old prototypes stored cumulative thresholds. Convert them to per-level costs.
+  if (Array.isArray(skill.thresholds)) {
+    let previous = 0
+    const values = skill.thresholds.map((value) => {
+      const cumulative = Math.max(previous, finiteNumber(value, previous))
+      const cost = Math.max(1, cumulative - previous)
+      previous = cumulative
+      return cost
+    })
+    if (values.length > 0) return values
+  }
+
+  return [100, 200, 300]
+}
+
+function normalizeReachedDates(raw: unknown, maxLevel: number): Array<string | null> {
+  if (!Array.isArray(raw)) return []
+  return raw.slice(0, maxLevel).map((value) => (typeof value === 'string' ? value : null))
+}
+
+function normalizeGates(raw: unknown): Gate[] {
+  if (!Array.isArray(raw)) return []
+  return raw.flatMap((value) => {
+    const gate = asObject(value)
+    const nodeId = stringValue(gate?.nodeId)
+    if (!gate || !nodeId) return []
+    return [{ nodeId, level: Math.max(0, finiteInteger(gate.level, 0)) }]
+  })
+}
+
+function normalizeLinks(raw: unknown, allIds: Set<string>): Link[] {
+  if (!Array.isArray(raw)) return []
+
+  return raw.flatMap((value, index) => {
+    const link = asObject(value)
+    const from = stringValue(link?.from ?? link?.source)
+    const to = stringValue(link?.to ?? link?.target)
+    if (!link || !from || !to || !allIds.has(from) || !allIds.has(to)) return []
+
+    return [{ id: stringValue(link.id) || `${from}-${to}-${index}`, from, to }]
+  })
+}
+
+function normalizeHistory(raw: unknown, skillIds: Set<string>): ActivityEntry[] {
+  if (!Array.isArray(raw)) return []
+
+  return raw.flatMap((value, index) => {
+    const entry = asObject(value)
+    const nodeId = stringValue(entry?.nodeId)
+    if (!entry || !nodeId || !skillIds.has(nodeId)) return []
+
+    return [
+      {
+        id: stringValue(entry.id) || `legacy-entry-${index}`,
+        nodeId,
+        occurredAt: stringValue(entry.occurredAt) || new Date(0).toISOString(),
+        minutes: Math.max(0, finiteNumber(entry.minutes, 0)),
+        effort: effortValue(entry.effort),
+        xp: Math.max(0, finiteNumber(entry.xp, 0)),
+        note: stringValue(entry.note)
+      }
+    ]
+  })
+}
+
+function rootAccent(value: unknown): RootAccent | undefined {
+  return ROOT_ACCENTS.includes(value as RootAccent) ? (value as RootAccent) : undefined
+}
+
+function effortValue(value: unknown): Effort {
+  return ['recovery', 'light', 'moderate', 'hard', 'maximum'].includes(String(value))
+    ? (value as Effort)
+    : 'moderate'
+}
+
+function asObject(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null
+}
+
+function stringValue(value: unknown): string {
+  return typeof value === 'string' ? value : ''
+}
+
+function finiteNumber(value: unknown, fallback: number): number {
+  const number = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(number) ? number : fallback
+}
+
+function finiteInteger(value: unknown, fallback: number): number {
+  return Math.trunc(finiteNumber(value, fallback))
+}
+
+function clamp(value: number, minimum: number, maximum: number): number {
+  return Math.min(maximum, Math.max(minimum, value))
+}

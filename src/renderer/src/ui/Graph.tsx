@@ -19,7 +19,6 @@ import {
   createSelectionFull,
   nodeRootId,
   nodeTitle,
-  ROOT_ACCENTS,
   toCandidateIds,
   useMastery
 } from '../store'
@@ -172,7 +171,7 @@ export function Graph(): ReactElement {
             maxLevel: preview.root ? 10 : 3,
             momentum: 0,
             accent: preview.root
-              ? ROOT_ACCENTS[roots.length % ROOT_ACCENTS.length]
+              ? create?.accent ?? 'teal'
               : rootAccentFor(preview.rootId, roots),
             locked: false,
             root: preview.root,
@@ -666,16 +665,18 @@ function visualFor(
   if (id === PREVIEW_ID) return 'preview'
   if (create?.step === 'from') {
     if (create.fromIds.includes(id)) return 'from'
+    if (full) return 'unavailable'
     const selectedRoot = create.fromIds[0]
       ? nodeRootId(create.fromIds[0], roots, skills)
       : undefined
     const sameRoot = !selectedRoot || selectedRoot === rootId
-    const ok = sameRoot && canUseFromNode(id, roots, links)
+    const ok = sameRoot && canUseFromNode(id, links)
     return ok ? 'candidate' : 'unavailable'
   }
   if (create?.step === 'to') {
     if (create.toIds.includes(id)) return full ? 'to-full' : 'to'
     if (create.fromIds.includes(id)) return 'from'
+    if (full) return 'unavailable'
     return candidates.has(id) ? 'candidate' : 'unavailable'
   }
   if (pickedIds.includes(id)) return 'picked'
