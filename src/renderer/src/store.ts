@@ -250,7 +250,6 @@ interface MasteryStore {
   beginCreate: () => void
   setCreateTitle: (title: string) => void
   setCreateAccent: (accent: RootAccent) => void
-  selectCreateRoot: (rootId: RootId | null) => void
   toggleCreateNode: (id: NodeId) => void
   clearCreateSelection: () => void
   continueCreate: () => void
@@ -442,19 +441,6 @@ export const useMastery = create<MasteryStore>((set, get) => ({
     set((state) => ({
       create: state.create ? { ...state.create, accent } : null
     })),
-
-  selectCreateRoot: (rootId) =>
-    set((state) => {
-      const draft = state.create
-      if (!draft || draft.step !== 'from') return state
-      if (rootId === null) {
-        return { create: { ...draft, fromIds: [], toIds: [] } }
-      }
-
-      const root = state.roots.find((candidate) => candidate.id === rootId)
-      if (!root || !canUseFromNode(root.id, state.links)) return state
-      return { create: { ...draft, fromIds: [root.id], toIds: [] } }
-    }),
 
   toggleCreateNode: (id) =>
     set((state) => {

@@ -63,6 +63,7 @@ export type CreateStep = 'from' | 'to'
 export interface CreateDraft {
   step: CreateStep
   title: string
+  accent: RootAccent
   fromIds: NodeId[]
   toIds: NodeId[]
 }

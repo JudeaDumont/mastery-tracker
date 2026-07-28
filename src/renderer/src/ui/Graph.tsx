@@ -233,9 +233,21 @@ export function Graph(): ReactElement {
     return [...structural, ...temporary]
   }, [create, links, positions, previewLinks, roots, skills])
 
+  const graphStructureKey = useMemo(
+    () =>
+      [
+        ...roots.map((root) => `r:${root.id}`),
+        ...skills.map((skill) => `n:${skill.id}:${skill.rootId}`),
+        ...links.map((link) => `e:${link.from}>${link.to}`)
+      ]
+        .sort()
+        .join('|'),
+    [links, roots, skills]
+  )
+
   return (
     <ReactFlow
-      key={`graph-${roots.length}-${skills.length}-${create?.step ?? 'inspect'}-${create?.fromIds.length ?? 0}-${create?.toIds.length ?? 0}`}
+      key={`graph-${graphStructureKey}-${create?.step ?? 'inspect'}-${create?.fromIds.join(',') ?? ''}-${create?.toIds.join(',') ?? ''}`}
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}

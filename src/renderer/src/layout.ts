@@ -26,6 +26,8 @@ const END_ANGLE = radians(30)
 const ROOT_SIZE = 130
 const NODE_SIZE = 112
 const NODE_CLEARANCE = 14
+const BRANCH_EDGE_CLEARANCE = 56
+const ANGLE_EPSILON = radians(0.1)
 
 export function graphLayout({ roots, skills, links, preview }: LayoutInput): Record<NodeId, Point> {
   const allRoots = preview?.root
@@ -40,7 +42,7 @@ export function graphLayout({ roots, skills, links, preview }: LayoutInput): Rec
     const center = { x: 500 + rootIndex * ROOT_GAP, y: 195 }
     const rootSkills = allSkills.filter((skill) => skill.rootId === root.id)
     const depth = depthsFor(root.id, rootSkills, links)
-    const angles = new Map<NodeId, number>()
+    const angles = new Map<NodeId, number>([[root.id, Math.PI / 2]])
     const groups = new Map<number, Skill[]>()
 
     positions[root.id] = centeredPosition(center, ROOT_SIZE)
@@ -54,35 +56,141 @@ export function graphLayout({ roots, skills, links, preview }: LayoutInput): Rec
     Array.from(groups.entries())
       .sort(([a], [b]) => a - b)
       .forEach(([ring, ringSkills]) => {
-        const sorted = [...ringSkills].sort((a, b) => a.id.localeCompare(b.id))
         const minimumDepthRadius = ring === 1 ? BASE_RING_RADIUS : previousRadius + RING_DEPTH_GAP
-        const radius = Math.max(minimumDepthRadius, minimumRadiusForCount(sorted.length))
-        previousRadius = radius
+        const ordered = orderRing(ring, ringSkills, links, angles)
+        const radius = Math.max(minimumDepthRadius, minimumRadiusForCount(ringSkills.length))
+        const ringAngles = anglesForRing(ring, ordered, links, angles, radius)
+        const siblingGroups = singleParentSiblingGroups(ordered, links, positions)
+        let furthestRadius = 0
 
-        sorted.forEach((skill, index) => {
-          const parentAngles = links
-            .filter((link) => link.to === skill.id)
-            .map((link) => angles.get(link.from))
-            .filter((angle): angle is number => angle !== undefined)
-          const fallback = distributedAngle(index, sorted.length)
-          const angle =
-            parentAngles.length > 1
-              ? sorted.length > 1
-                ? convergenceAngle(index, sorted.length, radius)
-                : clamp(circularMean(parentAngles), radians(15), radians(165))
-              : fallback
-          const nodeCenter = {
-            x: center.x + Math.cos(angle) * radius,
-            y: center.y + Math.sin(angle) * radius
+        ordered.forEach((skill, index) => {
+          const branchPosition =
+            ring > 1
+              ? singleParentBranchCenter(skill.id, siblingGroups, links, positions, root.id)
+              : undefined
+          const nodeCenter = branchPosition ?? {
+            x: center.x + Math.cos(ringAngles[index]) * radius,
+            y: center.y + Math.sin(ringAngles[index]) * radius
           }
+          const angle = Math.atan2(nodeCenter.y - center.y, nodeCenter.x - center.x)
 
+          furthestRadius = Math.max(
+            furthestRadius,
+            Math.hypot(nodeCenter.x - center.x, nodeCenter.y - center.y)
+          )
           angles.set(skill.id, angle)
           positions[skill.id] = centeredPosition(nodeCenter, NODE_SIZE)
         })
+
+        previousRadius = Math.max(previousRadius, furthestRadius)
       })
   })
 
   return positions
+}
+
+function orderRing(
+  ring: number,
+  skills: Skill[],
+  links: Link[],
+  angles: Map<NodeId, number>
+): Skill[] {
+  if (ring === 1) return [...skills].sort((a, b) => a.id.localeCompare(b.id))
+
+  return [...skills].sort((left, right) => {
+    const leftAnchor = parentAnchor(left.id, links, angles)
+    const rightAnchor = parentAnchor(right.id, links, angles)
+
+    if (leftAnchor !== undefined && rightAnchor !== undefined) {
+      const delta = rightAnchor - leftAnchor
+      if (Math.abs(delta) > ANGLE_EPSILON) return delta
+    } else if (leftAnchor !== undefined) {
+      return -1
+    } else if (rightAnchor !== undefined) {
+      return 1
+    }
+
+    return left.id.localeCompare(right.id)
+  })
+}
+
+function anglesForRing(
+  ring: number,
+  ordered: Skill[],
+  links: Link[],
+  parentAngles: Map<NodeId, number>,
+  radius: number
+): number[] {
+  if (ordered.length === 0) return []
+  if (ring === 1) {
+    return ordered.map((_skill, index) => distributedAngle(index, ordered.length))
+  }
+
+  const minimumStep = minimumAngleStep(radius)
+  const desired = ordered.map((skill, index) => {
+    return parentAnchor(skill.id, links, parentAngles) ?? distributedAngle(index, ordered.length)
+  })
+
+  // Nodes with the same parent anchor are siblings or convergence peers. Spread them
+  // symmetrically around that anchor before enforcing global ring spacing.
+  let runStart = 0
+  while (runStart < desired.length) {
+    let runEnd = runStart + 1
+    while (
+      runEnd < desired.length &&
+      Math.abs(desired[runEnd] - desired[runStart]) <= ANGLE_EPSILON
+    ) {
+      runEnd += 1
+    }
+
+    const count = runEnd - runStart
+    if (count > 1) {
+      const anchor = desired[runStart]
+      for (let index = 0; index < count; index += 1) {
+        desired[runStart + index] = anchor + ((count - 1) / 2 - index) * minimumStep
+      }
+    }
+
+    runStart = runEnd
+  }
+
+  return constrainDescendingAngles(desired, minimumStep)
+}
+
+function constrainDescendingAngles(desired: number[], minimumStep: number): number[] {
+  const count = desired.length
+  if (count === 1) return [clamp(desired[0], END_ANGLE, START_ANGLE)]
+
+  const result = desired.map((angle, index) => {
+    const upper = START_ANGLE - index * minimumStep
+    const lower = END_ANGLE + (count - 1 - index) * minimumStep
+    return clamp(angle, lower, upper)
+  })
+
+  for (let index = 1; index < count; index += 1) {
+    result[index] = Math.min(result[index], result[index - 1] - minimumStep)
+  }
+
+  for (let index = count - 2; index >= 0; index -= 1) {
+    result[index] = Math.max(result[index], result[index + 1] + minimumStep)
+  }
+
+  return result
+}
+
+function parentAnchor(
+  nodeId: NodeId,
+  links: Link[],
+  angles: Map<NodeId, number>
+): number | undefined {
+  const values = links
+    .filter((link) => link.to === nodeId)
+    .map((link) => angles.get(link.from))
+    .filter((angle): angle is number => angle !== undefined)
+
+  if (values.length === 0) return undefined
+  if (values.length === 1) return values[0]
+  return clamp(circularMean(values), END_ANGLE, START_ANGLE)
 }
 
 function previewSkill(id: NodeId, rootId: RootId): Skill {
@@ -129,6 +237,73 @@ function depthsFor(rootId: RootId, skills: Skill[], links: Link[]): Map<NodeId, 
   return depth
 }
 
+
+interface SingleParentSiblingGroup {
+  parentId: NodeId
+  childIds: NodeId[]
+}
+
+function singleParentSiblingGroups(
+  ordered: Skill[],
+  links: Link[],
+  positions: Record<NodeId, Point>
+): Map<NodeId, SingleParentSiblingGroup> {
+  const groups = new Map<NodeId, SingleParentSiblingGroup>()
+
+  ordered.forEach((skill) => {
+    const parentIds = positionedParentIds(skill.id, links, positions)
+    if (parentIds.length !== 1) return
+
+    const parentId = parentIds[0]
+    const group = groups.get(parentId) ?? { parentId, childIds: [] }
+    group.childIds.push(skill.id)
+    groups.set(parentId, group)
+  })
+
+  groups.forEach((group) => group.childIds.sort((left, right) => left.localeCompare(right)))
+  return groups
+}
+
+function singleParentBranchCenter(
+  nodeId: NodeId,
+  siblingGroups: Map<NodeId, SingleParentSiblingGroup>,
+  links: Link[],
+  positions: Record<NodeId, Point>,
+  rootId: RootId
+): Point | undefined {
+  const parentIds = positionedParentIds(nodeId, links, positions)
+  if (parentIds.length !== 1) return undefined
+
+  const parentId = parentIds[0]
+  const parentPosition = positions[parentId]
+  const siblingGroup = siblingGroups.get(parentId)
+  if (!parentPosition || !siblingGroup) return undefined
+
+  const siblingIndex = siblingGroup.childIds.indexOf(nodeId)
+  if (siblingIndex < 0) return undefined
+
+  const parentSize = parentId === rootId ? ROOT_SIZE : NODE_SIZE
+  const parentCenterX = parentPosition.x + parentSize / 2
+  const parentCenterY = parentPosition.y + parentSize / 2
+  const siblingOffset =
+    (siblingIndex - (siblingGroup.childIds.length - 1) / 2) * (NODE_SIZE + NODE_CLEARANCE)
+
+  return {
+    x: parentCenterX + siblingOffset,
+    y: parentCenterY + parentSize / 2 + NODE_SIZE / 2 + BRANCH_EDGE_CLEARANCE
+  }
+}
+
+function positionedParentIds(
+  nodeId: NodeId,
+  links: Link[],
+  positions: Record<NodeId, Point>
+): NodeId[] {
+  return links
+    .filter((link) => link.to === nodeId && positions[link.from] !== undefined)
+    .map((link) => link.from)
+}
+
 function minimumRadiusForCount(count: number): number {
   if (count <= 1) return BASE_RING_RADIUS
 
@@ -138,22 +313,14 @@ function minimumRadiusForCount(count: number): number {
   return centerSpacing / (2 * Math.sin(angleStep / 2))
 }
 
+function minimumAngleStep(radius: number): number {
+  const spacingRatio = Math.min(1, (NODE_SIZE + NODE_CLEARANCE) / (2 * radius))
+  return 2 * Math.asin(spacingRatio)
+}
+
 function distributedAngle(index: number, count: number): number {
   if (count <= 1) return Math.PI / 2
   return START_ANGLE + ((END_ANGLE - START_ANGLE) * index) / (count - 1)
-}
-
-function convergenceAngle(index: number, count: number, radius: number): number {
-  if (count <= 1) return Math.PI / 2
-
-  const spacingRatio = Math.min(1, (NODE_SIZE + NODE_CLEARANCE) / (2 * radius))
-  const minimumStep = 2 * Math.asin(spacingRatio)
-  const spread = Math.min(
-    radians(70),
-    Math.max(radians(28), minimumStep * (count - 1))
-  )
-
-  return Math.PI / 2 + spread / 2 - (spread * index) / (count - 1)
 }
 
 function circularMean(angles: number[]): number {
