@@ -8,7 +8,9 @@ batch wizard:
 
 
 - each node needs to have a task list associated with it
-- each node should have a "recurring expected task" associated with it
+- each node should have a "recurring expected tasks" associated with it
+- visual for this should be little unfilled orbs attached to the node, on hover would show the task that recurred
+
 - each node should have "parallelized stacks" associated with it
 - each node needs update history
 
@@ -36,8 +38,6 @@ batch wizard:
 
 - need to be able to put deadlines on nodes, and their should be alerts based on upcoming deadlines (d < 7 days out) every 24 hours.
 
-- level settings and other node settings need to be in a separate display, the expanded update display should have a gear icon where settings display can be acccessed.
-
 - selecting a node should have some kind of highlighting effect on its attached edges all the way down to leaves.
 
 - tabs should be able to grow past 4, and should have horizontal arrows to select more.
@@ -45,6 +45,12 @@ batch wizard:
 - max level should be capped at like 30 or something, otherwise the visual is indescipherable
 - root node notch overlaps notes display
 
+- switching to the create node mode changes all the colors of all the graphs in that mode.
+- visuals
+
+- level settings and other node settings need to be in a separate display,
+- the expanded update display should have a gear icon where settings display can be acccessed.
+- there should be a "clear button" on the updates pane that clears the current selection
 
 ==================FINISHED============================================
 

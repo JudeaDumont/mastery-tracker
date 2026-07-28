@@ -269,6 +269,7 @@ interface MasteryStore {
   configureLevelDefaults: (patch: Partial<LevelDefaults>) => void
   submit: () => void
   togglePicked: (id: NodeId) => void
+  clearPicked: () => void
   deleteNode: (id: NodeId) => void
   beginCreate: () => void
   setCreateTitle: (title: string) => void
@@ -529,6 +530,17 @@ export const useMastery = create<MasteryStore>((set, get) => ({
         }
       }
     }),
+
+  clearPicked: () =>
+    set((state) => ({
+      pickedIds: [],
+      draft: Object.fromEntries(
+        Object.entries(state.draft).map(([id, update]) => [
+          id,
+          { ...update, selected: false }
+        ])
+      ) as Record<SkillId, DraftUpdate>
+    })),
 
   deleteNode: (id) =>
     set((state) => {

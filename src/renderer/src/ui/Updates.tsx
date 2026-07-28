@@ -23,12 +23,14 @@ export function Updates(): ReactElement {
   const create = useMastery((state) => state.create)
   const edit = useMastery((state) => state.edit)
   const submit = useMastery((state) => state.submit)
+  const clearPicked = useMastery((state) => state.clearPicked)
   const beginCreate = useMastery((state) => state.beginCreate)
   const deleteNode = useMastery((state) => state.deleteNode)
   const lastResult = useMastery((state) => state.lastResult)
   const lastCreated = useMastery((state) => state.lastCreated)
   const [expandedIds, setExpandedIds] = useState<Set<NodeId>>(new Set())
   const [pendingDeleteId, setPendingDeleteId] = useState<NodeId | null>(null)
+  const [settingsNodeId, setSettingsNodeId] = useState<NodeId | null>(null)
   const [submitWarning, setSubmitWarning] = useState<{
     id: number
     message: string
@@ -66,6 +68,25 @@ export function Updates(): ReactElement {
   }, [pendingDeleteId])
 
   useEffect(() => {
+    if (!settingsNodeId) return
+
+    const closeOnEscape = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') setSettingsNodeId(null)
+    }
+
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [settingsNodeId])
+
+  useEffect(() => {
+    if (!settingsNodeId) return
+    const exists =
+      roots.some((root) => root.id === settingsNodeId) ||
+      skills.some((skill) => skill.id === settingsNodeId)
+    if (!exists) setSettingsNodeId(null)
+  }, [roots, settingsNodeId, skills])
+
+  useEffect(() => {
     setSubmitWarning(null)
   }, [draft])
 
@@ -92,6 +113,12 @@ export function Updates(): ReactElement {
     .map((id) => skills.find((skill) => skill.id === id))
     .filter((skill): skill is (typeof skills)[number] => Boolean(skill))
   const selectedCount = selectedRoots.length + selectedSkills.length
+  const settingsRoot = settingsNodeId
+    ? roots.find((root) => root.id === settingsNodeId) ?? null
+    : null
+  const settingsSkill = settingsNodeId
+    ? skills.find((skill) => skill.id === settingsNodeId) ?? null
+    : null
   const updatable = selectedSkills.filter((skill) => draft[skill.id]?.selected)
   const totalProjectedXp = updatable.reduce(
     (sum, skill) => sum + projectedXp(draft[skill.id], skill),
@@ -185,14 +212,27 @@ export function Updates(): ReactElement {
           <span className="eyebrow">Daily command center</span>
           <h2>{create ? 'Node builder' : 'Updates'}</h2>
         </div>
-        <button
-          className="create-node-button"
-          type="button"
-          disabled={Boolean(create)}
-          onClick={beginCreate}
-        >
-          Create New Node
-        </button>
+        <div className="panel-heading__actions">
+          <button
+            className="clear-selection-button"
+            type="button"
+            disabled={Boolean(create) || selectedCount === 0}
+            onClick={() => {
+              clearPicked()
+              setSettingsNodeId(null)
+            }}
+          >
+            Clear
+          </button>
+          <button
+            className="create-node-button"
+            type="button"
+            disabled={Boolean(create)}
+            onClick={beginCreate}
+          >
+            Create New Node
+          </button>
+        </div>
       </div>
 
 
@@ -270,11 +310,13 @@ export function Updates(): ReactElement {
                 <div className="root-update-details">
                   <span>Root rank is derived from its connected mastery nodes.</span>
                   <button
-                    className="node-delete-button"
+                    className="node-settings-button"
                     type="button"
-                    onClick={() => setPendingDeleteId(root.id)}
+                    title={`Open ${root.title} settings`}
+                    aria-label={`Open ${root.title} settings`}
+                    onClick={() => setSettingsNodeId(root.id)}
                   >
-                    Delete root
+                    <GearIcon />
                   </button>
                 </div>
               )}
@@ -333,13 +375,26 @@ export function Updates(): ReactElement {
                 </span>
               </button>
 
+              {expanded && !create && (
+                <div className="update-row-toolbar">
+                  <span>Daily update</span>
+                  <button
+                    className="node-settings-button"
+                    type="button"
+                    title={`Open ${skill.title} settings`}
+                    aria-label={`Open ${skill.title} settings`}
+                    onClick={() => setSettingsNodeId(skill.id)}
+                  >
+                    <GearIcon />
+                  </button>
+                </div>
+              )}
+
               {expanded && locked && !create && (
                 <div className="update-row-message">
                   Complete this node&apos;s prerequisites before applying XP.
                 </div>
               )}
-
-              {expanded && !create && <LevelSettings skill={skill} />}
 
               {expanded && update?.selected && !locked && !create && (
                 <div className="update-fields">
@@ -389,17 +444,6 @@ export function Updates(): ReactElement {
                 </div>
               )}
 
-              {expanded && !create && (
-                <div className="update-row-actions">
-                  <button
-                    className="node-delete-button"
-                    type="button"
-                    onClick={() => setPendingDeleteId(skill.id)}
-                  >
-                    Delete node
-                  </button>
-                </div>
-              )}
             </section>
           )
         })}
@@ -446,6 +490,92 @@ export function Updates(): ReactElement {
           >
             <strong>Note has no XP</strong>
             <span>{submitWarning.message}</span>
+          </div>,
+          document.body
+        )}
+
+      {(settingsRoot || settingsSkill) &&
+        createPortal(
+          <div
+            className="node-settings-backdrop"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setSettingsNodeId(null)
+            }}
+          >
+            <section
+              className="node-settings-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="node-settings-title"
+            >
+              <header className="node-settings-dialog__header">
+                <div>
+                  <span className="node-settings-dialog__eyebrow">
+                    {settingsRoot ? 'Root settings' : 'Node settings'}
+                  </span>
+                  <h3 id="node-settings-title">
+                    {settingsRoot?.title ?? settingsSkill?.title}
+                  </h3>
+                </div>
+                <button
+                  className="node-settings-dialog__close"
+                  type="button"
+                  aria-label="Close node settings"
+                  onClick={() => setSettingsNodeId(null)}
+                >
+                  ×
+                </button>
+              </header>
+
+              {settingsSkill && (
+                <>
+                  <div className="node-settings-summary">
+                    <span>Current level</span>
+                    <strong>
+                      {levelFor(settingsSkill)}/{settingsSkill.maxLevel}
+                    </strong>
+                    <span>Lifetime XP</span>
+                    <strong>{settingsSkill.xp.toLocaleString()}</strong>
+                  </div>
+                  <LevelSettings skill={settingsSkill} />
+                </>
+              )}
+
+              {settingsRoot && (
+                <section className="node-settings-section">
+                  <div className="node-settings-section__heading">
+                    <div>
+                      <strong>Root behavior</strong>
+                      <span>Derived from connected mastery nodes</span>
+                    </div>
+                  </div>
+                  <p className="node-settings-copy">
+                    Root rank and momentum are calculated automatically. Level configuration is
+                    available on each connected mastery node.
+                  </p>
+                </section>
+              )}
+
+              <section className="node-settings-danger">
+                <div>
+                  <strong>Delete {settingsRoot ? 'root' : 'node'}</strong>
+                  <span>This opens a confirmation before anything is removed.</span>
+                </div>
+                <button
+                  className="node-delete-button"
+                  type="button"
+                  onClick={() => {
+                    const id = settingsRoot?.id ?? settingsSkill?.id
+                    if (!id) return
+                    setSettingsNodeId(null)
+                    setPendingDeleteId(id)
+                  }}
+                >
+                  Delete {settingsRoot ? 'root' : 'node'}
+                </button>
+              </section>
+            </section>
           </div>,
           document.body
         )}
@@ -554,20 +684,22 @@ function LevelSettings({ skill }: { skill: Skill }): ReactElement {
   ): void => {
     if (event.key === 'Enter') {
       event.preventDefault()
+      event.stopPropagation()
       commit()
     } else if (event.key === 'Escape') {
       event.preventDefault()
+      event.stopPropagation()
       reset()
     }
   }
 
   return (
-    <section className="level-settings" aria-label={`${skill.title} level settings`}>
-      <div className="level-settings__heading">
+    <section className="node-settings-section node-settings-levels" aria-label={`${skill.title} level settings`}>
+      <div className="node-settings-section__heading">
         <strong>Level settings</strong>
         <span>Saved immediately</span>
       </div>
-      <div className="level-settings__fields">
+      <div className="node-settings-levels__fields">
         <label>
           Level step XP
           <div className="input-with-unit">
@@ -608,6 +740,15 @@ function LevelSettings({ skill }: { skill: Skill }): ReactElement {
           : `Each level adds another ${configuredStep.toLocaleString()} XP. Lifetime XP is never reset.`}
       </small>
     </section>
+  )
+}
+
+function GearIcon(): ReactElement {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 8.25a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5Z" />
+      <path d="M19.2 13.2c.04-.39.04-.81 0-1.2l2.03-1.58-1.92-3.32-2.39.96a7.9 7.9 0 0 0-2.08-1.2L14.48 4h-3.84l-.36 2.86a7.9 7.9 0 0 0-2.08 1.2l-2.39-.96-1.92 3.32L5.92 12a6.03 6.03 0 0 0 0 1.2l-2.03 1.58 1.92 3.32 2.39-.96c.63.5 1.33.91 2.08 1.2l.36 2.86h3.84l.36-2.86a7.9 7.9 0 0 0 2.08-1.2l2.39.96 1.92-3.32L19.2 13.2Z" />
+    </svg>
   )
 }
 
