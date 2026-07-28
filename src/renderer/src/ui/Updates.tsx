@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { CSSProperties, ReactElement } from 'react'
-import type { Effort, LevelDefaults, NodeId, RootAccent, Skill } from '../model'
+import { createPortal } from 'react-dom'
+import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactElement } from 'react'
+import type { Effort, NodeId, RootAccent, Skill } from '../model'
 import { MAX_LEVEL_LIMIT, projectedXp, useMastery } from '../store'
 import { isLocked, levelFor, levelProgressFor, uniformLevelStepXp } from '../xp'
 import { Create } from './Create'
@@ -26,10 +27,14 @@ export function Updates(): ReactElement {
   const deleteNode = useMastery((state) => state.deleteNode)
   const lastResult = useMastery((state) => state.lastResult)
   const lastCreated = useMastery((state) => state.lastCreated)
-  const levelDefaults = useMastery((state) => state.levelDefaults)
-  const configureLevelDefaults = useMastery((state) => state.configureLevelDefaults)
   const [expandedIds, setExpandedIds] = useState<Set<NodeId>>(new Set())
   const [pendingDeleteId, setPendingDeleteId] = useState<NodeId | null>(null)
+  const [submitWarning, setSubmitWarning] = useState<{
+    id: number
+    message: string
+    x: number
+    y: number
+  } | null>(null)
   const previousPickedIds = useRef<Set<NodeId>>(new Set())
 
   useEffect(() => {
@@ -60,6 +65,17 @@ export function Updates(): ReactElement {
     return () => document.removeEventListener('keydown', closeOnEscape)
   }, [pendingDeleteId])
 
+  useEffect(() => {
+    setSubmitWarning(null)
+  }, [draft])
+
+  useEffect(() => {
+    if (!submitWarning) return
+
+    const timeout = window.setTimeout(() => setSubmitWarning(null), 2600)
+    return () => window.clearTimeout(timeout)
+  }, [submitWarning])
+
   const toggleExpanded = (id: NodeId): void => {
     setExpandedIds((current) => {
       const next = new Set(current)
@@ -82,6 +98,12 @@ export function Updates(): ReactElement {
     0
   )
   const totalMinutes = updatable.reduce((sum, skill) => sum + draft[skill.id].minutes, 0)
+  const notesWithoutXp = updatable.filter((skill) => {
+    const update = draft[skill.id]
+    return update.note.trim().length > 0 && projectedXp(update, skill) <= 0
+  })
+  const canAttemptSubmit =
+    updatable.length > 0 && (totalProjectedXp > 0 || notesWithoutXp.length > 0)
   const deletion = useMemo(() => {
     if (!pendingDeleteId) return null
 
@@ -133,6 +155,28 @@ export function Updates(): ReactElement {
     setPendingDeleteId(null)
   }
 
+  const submitUpdates = (event: ReactMouseEvent<HTMLButtonElement>): void => {
+    if (notesWithoutXp.length > 0) {
+      const titles = notesWithoutXp.map((skill) => skill.title)
+      const message =
+        titles.length === 1
+          ? `${titles[0]} has a note but 0 XP. Add XP or remove the note before submitting.`
+          : `${titles.join(', ')} have notes but 0 XP. Add XP or remove the notes before submitting.`
+      const halfWidth = 190
+      const x = Math.min(
+        window.innerWidth - halfWidth - 12,
+        Math.max(halfWidth + 12, event.clientX)
+      )
+      const y = Math.max(96, event.clientY - 14)
+
+      setSubmitWarning({ id: Date.now(), message, x, y })
+      return
+    }
+
+    setSubmitWarning(null)
+    submit()
+  }
+
   return (
     <>
       <aside className="updates-panel">
@@ -161,13 +205,6 @@ export function Updates(): ReactElement {
 
       <div className="node-list">
         {create && <Create />}
-
-        {!create && (
-          <LevelDefaultsSettings
-            defaults={levelDefaults}
-            onChange={configureLevelDefaults}
-          />
-        )}
 
         {selectedCount === 0 && !create && (
           <div className="node-list-empty">
@@ -311,7 +348,7 @@ export function Updates(): ReactElement {
                     <div className="input-with-unit">
                       <input
                         type="number"
-                        min="1"
+                        min="0"
                         step="5"
                         value={update.minutes}
                         onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
@@ -390,14 +427,28 @@ export function Updates(): ReactElement {
         <button
           className="submit-button"
           type="button"
-          disabled={updatable.length === 0 || totalProjectedXp <= 0}
-          onClick={submit}
+          disabled={!canAttemptSubmit}
+          onClick={submitUpdates}
         >
           Submit updates
         </button>
         </div>
       )}
       </aside>
+
+      {submitWarning &&
+        createPortal(
+          <div
+            key={submitWarning.id}
+            className="cursor-warning-toast"
+            role="alert"
+            style={{ left: submitWarning.x, top: submitWarning.y }}
+          >
+            <strong>Note has no XP</strong>
+            <span>{submitWarning.message}</span>
+          </div>,
+          document.body
+        )}
 
       {deletion && (
         <div
@@ -445,112 +496,6 @@ export function Updates(): ReactElement {
         </div>
       )}
     </>
-  )
-}
-
-function LevelDefaultsSettings({
-  defaults,
-  onChange
-}: {
-  defaults: LevelDefaults
-  onChange: (patch: Partial<LevelDefaults>) => void
-}): ReactElement {
-  const [stepValue, setStepValue] = useState(String(defaults.levelStepXp))
-  const [maxLevelValue, setMaxLevelValue] = useState(String(defaults.maxLevel))
-
-  useEffect(() => {
-    setStepValue(String(defaults.levelStepXp))
-    setMaxLevelValue(String(defaults.maxLevel))
-  }, [defaults.levelStepXp, defaults.maxLevel])
-
-  const commitStep = (): void => {
-    const parsed = Number(stepValue)
-    if (!Number.isFinite(parsed) || parsed < 1) {
-      setStepValue(String(defaults.levelStepXp))
-      return
-    }
-
-    const levelStepXp = Math.max(1, Math.trunc(parsed))
-    setStepValue(String(levelStepXp))
-    onChange({ levelStepXp })
-  }
-
-  const commitMaxLevel = (): void => {
-    const parsed = Number(maxLevelValue)
-    if (!Number.isFinite(parsed) || parsed < 1) {
-      setMaxLevelValue(String(defaults.maxLevel))
-      return
-    }
-
-    const maxLevel = Math.min(MAX_LEVEL_LIMIT, Math.max(1, Math.trunc(parsed)))
-    setMaxLevelValue(String(maxLevel))
-    onChange({ maxLevel })
-  }
-
-  const handleKeyDown = (
-    event: React.KeyboardEvent<HTMLInputElement>,
-    commit: () => void,
-    reset: () => void
-  ): void => {
-    if (event.key === 'Enter') {
-      event.preventDefault()
-      commit()
-    } else if (event.key === 'Escape') {
-      event.preventDefault()
-      reset()
-    }
-  }
-
-  return (
-    <section className="level-defaults" aria-label="New node level defaults">
-      <div className="level-defaults__heading">
-        <div>
-          <strong>New node defaults</strong>
-          <span>Used automatically when a node is created</span>
-        </div>
-        <span>Saved immediately</span>
-      </div>
-      <div className="level-defaults__fields">
-        <label>
-          Level step
-          <div className="input-with-unit">
-            <input
-              type="number"
-              min="1"
-              step="10"
-              value={stepValue}
-              aria-label="Default XP required for each new node level"
-              onChange={(event) => setStepValue(event.target.value)}
-              onBlur={commitStep}
-              onKeyDown={(event) =>
-                handleKeyDown(event, commitStep, () =>
-                  setStepValue(String(defaults.levelStepXp))
-                )
-              }
-            />
-            <span>XP</span>
-          </div>
-        </label>
-        <label>
-          Max levels
-          <input
-            type="number"
-            min="1"
-            max={MAX_LEVEL_LIMIT}
-            step="1"
-            value={maxLevelValue}
-            aria-label="Default maximum levels for new nodes"
-            onChange={(event) => setMaxLevelValue(event.target.value)}
-            onBlur={commitMaxLevel}
-            onKeyDown={(event) =>
-              handleKeyDown(event, commitMaxLevel, () =>
-                setMaxLevelValue(String(defaults.maxLevel))
-              )
-            }
-          />
-        </label>
-      </div>
-    </section>
   )
 }
 

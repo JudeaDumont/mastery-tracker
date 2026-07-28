@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactElement } from 'react'
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react'
 import type { ActivityEntry, RootAccent } from '../model'
@@ -143,12 +143,20 @@ function Ring({
 
 export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement {
   const historyRef = useRef<HTMLDivElement>(null)
+  const confirmationRef = useRef<HTMLDivElement>(null)
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null)
+  const [confirmingEntryId, setConfirmingEntryId] = useState<string | null>(null)
   const [draftNote, setDraftNote] = useState('')
   const editUpdateNote = useMastery((state) => state.editUpdateNote)
+  const removeUpdate = useMastery((state) => state.removeUpdate)
   const updateHistory = [...(data.updateHistory ?? [])].sort(
     (left, right) => new Date(left.occurredAt).getTime() - new Date(right.occurredAt).getTime()
   )
+
+  useEffect(() => {
+    if (!confirmingEntryId) return
+    requestAnimationFrame(() => confirmationRef.current?.focus())
+  }, [confirmingEntryId])
 
   const scrollHistoryToLatest = (): void => {
     requestAnimationFrame(() => {
@@ -158,6 +166,7 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
   }
 
   const beginNoteEdit = (entry: ActivityEntry): void => {
+    setConfirmingEntryId(null)
     setEditingEntryId(entry.id)
     setDraftNote(entry.note)
   }
@@ -167,9 +176,24 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
     setDraftNote('')
   }
 
+  const stopHoverInteraction = (): void => {
+    stopNoteEdit()
+    setConfirmingEntryId(null)
+  }
+
   const saveNoteEdit = (entry: ActivityEntry): void => {
     editUpdateNote(entry.nodeId, entry.id, draftNote)
     stopNoteEdit()
+  }
+
+  const beginUpdateRemoval = (entry: ActivityEntry): void => {
+    stopNoteEdit()
+    setConfirmingEntryId(entry.id)
+  }
+
+  const confirmUpdateRemoval = (entry: ActivityEntry): void => {
+    removeUpdate(entry.nodeId, entry.id)
+    setConfirmingEntryId(null)
   }
 
   const classes = [
@@ -259,7 +283,11 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
           {data.root ? `Rank ${data.level}` : `Level ${data.level}/${data.maxLevel}`}
         </span>
 
-        <div className="node-update-history-tooltip nowheel nodrag" role="tooltip">
+        <div
+          className="node-update-history-tooltip nowheel nodrag"
+          role="tooltip"
+          onMouseLeave={stopHoverInteraction}
+        >
           <header className="node-update-history-tooltip__header">
             <b>{data.title}</b>
             <span>Update notes</span>
@@ -277,11 +305,79 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
             ) : (
               updateHistory.map((entry) => (
                 <article className="node-update-history-entry" key={entry.id}>
+                  <button
+                    className="node-update-history-entry__delete nowheel nodrag"
+                    type="button"
+                    aria-label={`Delete update from ${formatUpdateDate(entry.occurredAt)}`}
+                    title="Delete update"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      beginUpdateRemoval(entry)
+                    }}
+                    onPointerDown={(event) => event.stopPropagation()}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M4 7h16" />
+                      <path d="M9 7V4h6v3" />
+                      <path d="m6.5 7 1 13h9l1-13" />
+                      <path d="M10 11v5M14 11v5" />
+                    </svg>
+                  </button>
+
                   <header>
                     <time dateTime={entry.occurredAt}>{formatUpdateDate(entry.occurredAt)}</time>
                     <span>+{entry.xp.toLocaleString()} XP</span>
                   </header>
-                  {editingEntryId === entry.id ? (
+
+                  {confirmingEntryId === entry.id ? (
+                    <div
+                      ref={confirmationRef}
+                      className="node-update-history-entry__confirmation nowheel nodrag"
+                      role="alertdialog"
+                      aria-label="Confirm update deletion"
+                      tabIndex={-1}
+                      onClick={(event) => event.stopPropagation()}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onKeyDown={(event) => {
+                        event.stopPropagation()
+                        if (event.target !== event.currentTarget) return
+                        if (event.key === 'Enter') {
+                          event.preventDefault()
+                          confirmUpdateRemoval(entry)
+                        } else if (event.key === 'Escape') {
+                          event.preventDefault()
+                          setConfirmingEntryId(null)
+                        }
+                      }}
+                    >
+                      <strong>Delete this update?</strong>
+                      <span>
+                        This removes the note and subtracts {entry.xp.toLocaleString()} XP.
+                      </span>
+                      <div>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            setConfirmingEntryId(null)
+                          }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="node-update-history-entry__confirm-delete"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            confirmUpdateRemoval(entry)
+                          }}
+                        >
+                          Delete update
+                        </button>
+                      </div>
+                      <small>Press Enter to confirm · Escape to cancel</small>
+                    </div>
+                  ) : editingEntryId === entry.id ? (
                     <textarea
                       className="node-update-history-entry__editor nowheel nodrag"
                       value={draftNote}
@@ -325,9 +421,12 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
                       {entry.note.trim() || 'No note recorded.'}
                     </p>
                   )}
-                  <small>
-                    {entry.minutes.toLocaleString()} min · {formatEffort(entry.effort)}
-                  </small>
+
+                  {confirmingEntryId !== entry.id && (
+                    <small>
+                      {entry.minutes.toLocaleString()} min · {formatEffort(entry.effort)}
+                    </small>
+                  )}
                 </article>
               ))
             )}

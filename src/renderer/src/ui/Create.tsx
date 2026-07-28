@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import type { ReactElement } from 'react'
-import type { RootAccent } from '../model'
+import type { LevelDefaults, RootAccent } from '../model'
 import {
   MAX_INCOMING_RELATIONSHIPS,
+  MAX_LEVEL_LIMIT,
   MAX_OUTGOING_RELATIONSHIPS,
   ROOT_ACCENTS,
   createSelectionFull,
@@ -31,6 +32,8 @@ export function Create(): ReactElement | null {
   const clear = useMastery((state) => state.clearCreateSelection)
   const next = useMastery((state) => state.continueCreate)
   const escape = useMastery((state) => state.escapeCreate)
+  const levelDefaults = useMastery((state) => state.levelDefaults)
+  const configureLevelDefaults = useMastery((state) => state.configureLevelDefaults)
 
   useEffect(() => {
     if (!draft) return undefined
@@ -122,6 +125,13 @@ export function Create(): ReactElement | null {
           : 'Click graph nodes this new node should point To. Green nodes are available; red nodes are unavailable or at incoming capacity. Leave To empty for a terminal node.'}
       </p>
 
+      {!creatingRoot && (
+        <CreateLevelDefaults
+          defaults={levelDefaults}
+          onChange={configureLevelDefaults}
+        />
+      )}
+
       <div className={`selection-log ${full && !creatingRoot ? 'selection-log--full' : ''}`}>
         <span>{draft.step === 'from' ? 'From' : 'To'}</span>
         <strong title={label}>{label}</strong>
@@ -166,3 +176,115 @@ export function Create(): ReactElement | null {
     </section>
   )
 }
+
+function CreateLevelDefaults({
+  defaults,
+  onChange
+}: {
+  defaults: LevelDefaults
+  onChange: (patch: Partial<LevelDefaults>) => void
+}): ReactElement {
+  const [stepValue, setStepValue] = useState(String(defaults.levelStepXp))
+  const [maxLevelValue, setMaxLevelValue] = useState(String(defaults.maxLevel))
+
+  useEffect(() => {
+    setStepValue(String(defaults.levelStepXp))
+    setMaxLevelValue(String(defaults.maxLevel))
+  }, [defaults.levelStepXp, defaults.maxLevel])
+
+  const commitStep = (): void => {
+    const parsed = Number(stepValue)
+    if (!Number.isFinite(parsed) || parsed < 1) {
+      setStepValue(String(defaults.levelStepXp))
+      return
+    }
+
+    const levelStepXp = Math.max(1, Math.trunc(parsed))
+    setStepValue(String(levelStepXp))
+    onChange({ levelStepXp })
+  }
+
+  const commitMaxLevel = (): void => {
+    const parsed = Number(maxLevelValue)
+    if (!Number.isFinite(parsed) || parsed < 1) {
+      setMaxLevelValue(String(defaults.maxLevel))
+      return
+    }
+
+    const maxLevel = Math.min(MAX_LEVEL_LIMIT, Math.max(1, Math.trunc(parsed)))
+    setMaxLevelValue(String(maxLevel))
+    onChange({ maxLevel })
+  }
+
+  const handleKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+    commit: () => void,
+    reset: () => void
+  ): void => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      event.stopPropagation()
+      commit()
+    } else if (event.key === 'Escape') {
+      event.preventDefault()
+      event.stopPropagation()
+      reset()
+    }
+  }
+
+  return (
+    <section
+      className="level-defaults level-defaults--create"
+      aria-label="New node level setup"
+    >
+      <div className="level-defaults__heading">
+        <div>
+          <strong>Level setup</strong>
+          <span>Used for this node and remembered for the next one</span>
+        </div>
+        <span>Saved immediately</span>
+      </div>
+      <div className="level-defaults__fields">
+        <label>
+          Level step
+          <div className="input-with-unit">
+            <input
+              type="number"
+              min="1"
+              step="10"
+              value={stepValue}
+              aria-label="XP required for each level of the new node"
+              onChange={(event) => setStepValue(event.target.value)}
+              onBlur={commitStep}
+              onKeyDown={(event) =>
+                handleKeyDown(event, commitStep, () =>
+                  setStepValue(String(defaults.levelStepXp))
+                )
+              }
+            />
+            <span>XP</span>
+          </div>
+        </label>
+        <label>
+          Max levels
+          <input
+            type="number"
+            min="1"
+            max={MAX_LEVEL_LIMIT}
+            step="1"
+            value={maxLevelValue}
+            aria-label="Maximum levels for the new node"
+            onChange={(event) => setMaxLevelValue(event.target.value)}
+            onBlur={commitMaxLevel}
+            onKeyDown={(event) =>
+              handleKeyDown(event, commitMaxLevel, () =>
+                setMaxLevelValue(String(defaults.maxLevel))
+              )
+            }
+          />
+        </label>
+      </div>
+    </section>
+  )
+}
+

@@ -239,7 +239,7 @@ function draftFor(skills: Skill[]): Record<SkillId, DraftUpdate> {
       skill.id,
       {
         selected: false,
-        minutes: skill.id === 'running' ? 30 : 60,
+        minutes: 0,
         effort: 'moderate',
         note: ''
       }
@@ -261,6 +261,7 @@ interface MasteryStore {
   toggle: (id: SkillId) => void
   edit: (id: SkillId, patch: Partial<DraftUpdate>) => void
   editUpdateNote: (nodeId: NodeId, entryId: string, note: string) => void
+  removeUpdate: (nodeId: NodeId, entryId: string) => void
   configureLevels: (
     id: SkillId,
     patch: { levelStepXp?: number; maxLevel?: number }
@@ -340,6 +341,60 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       return changed ? { roots, skills } : state
     }),
 
+  removeUpdate: (nodeId, entryId) =>
+    set((state) => {
+      const root = state.roots.find((candidate) => candidate.id === nodeId)
+      const skill = state.skills.find((candidate) => candidate.id === nodeId)
+      const entry = root?.updateHistory.find((candidate) => candidate.id === entryId)
+        ?? skill?.updateHistory.find((candidate) => candidate.id === entryId)
+
+      if (!entry) return state
+
+      const removedTodayXp = isSameLocalDay(entry.occurredAt, new Date()) ? entry.xp : 0
+
+      if (root) {
+        return {
+          roots: state.roots.map((candidate) =>
+            candidate.id === nodeId
+              ? {
+                  ...candidate,
+                  updateHistory: candidate.updateHistory.filter(
+                    (historyEntry) => historyEntry.id !== entryId
+                  )
+                }
+              : candidate
+          ),
+          todayXp: Math.max(0, state.todayXp - removedTodayXp),
+          lastResult: null
+        }
+      }
+
+      if (!skill) return state
+
+      const updatedSkill = skillAfterUpdateRemoval(skill, entryId)
+      const skills = state.skills.map((candidate) =>
+        candidate.id === nodeId ? updatedSkill : candidate
+      )
+      const draft = Object.fromEntries(
+        Object.entries(state.draft).map(([skillId, update]) => {
+          const candidate = skills.find((item) => item.id === skillId)
+          return [
+            skillId,
+            candidate && isLocked(candidate, skills)
+              ? { ...update, selected: false }
+              : update
+          ]
+        })
+      ) as Record<SkillId, DraftUpdate>
+
+      return {
+        skills,
+        draft,
+        todayXp: Math.max(0, state.todayXp - removedTodayXp),
+        lastResult: null
+      }
+    }),
+
   configureLevels: (id, patch) =>
     set((state) => {
       const skill = state.skills.find((candidate) => candidate.id === id)
@@ -386,6 +441,17 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
   submit: () => {
     const before = get()
+    const hasNoteWithoutXp = before.skills.some((skill) => {
+      const update = before.draft[skill.id]
+      return (
+        update?.selected &&
+        !isLocked(skill, before.skills) &&
+        update.note.trim().length > 0 &&
+        earnedXp(update.minutes, update.effort) <= 0
+      )
+    })
+    if (hasNoteWithoutXp) return
+
     const oldLevels = new Map(before.skills.map((skill) => [skill.id, levelFor(skill)]))
     const previouslyLocked = new Map(
       before.skills.map((skill) => [skill.id, isLocked(skill, before.skills)])
@@ -403,21 +469,24 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
       totalXp += xp
       updatedNodes += 1
-      const entry: ActivityEntry = {
-        id: `${occurredAt}-${skill.id}`,
-        nodeId: skill.id,
-        occurredAt,
-        minutes: update.minutes,
-        effort: update.effort,
-        xp,
-        note: update.note.trim()
-      }
+      const note = update.note.trim()
+      const entry: ActivityEntry | null = note
+        ? {
+            id: `${occurredAt}-${skill.id}`,
+            nodeId: skill.id,
+            occurredAt,
+            minutes: update.minutes,
+            effort: update.effort,
+            xp,
+            note
+          }
+        : null
 
       const updatedSkill: Skill = {
         ...skill,
         xp: skill.xp + xp,
         momentum: Math.min(100, skill.momentum + Math.max(3, Math.round(xp / 12))),
-        updateHistory: [...skill.updateHistory, entry]
+        updateHistory: entry ? [...skill.updateHistory, entry] : skill.updateHistory
       }
 
       return recordReachedLevels(updatedSkill, oldLevels.get(skill.id) ?? 0, occurredAt)
@@ -631,7 +700,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       links,
       draft: {
         ...state.draft,
-        [id]: { selected: true, minutes: 60, effort: 'moderate', note: '' }
+        [id]: { selected: true, minutes: 0, effort: 'moderate', note: '' }
       },
       create: null,
       pickedIds: [id],
@@ -689,6 +758,53 @@ function recordReachedLevels(
   }
 
   return { ...skill, levelReachedAt }
+}
+
+function skillAfterUpdateRemoval(skill: Skill, entryId: string): Skill {
+  const removedEntry = skill.updateHistory.find((entry) => entry.id === entryId)
+  if (!removedEntry) return skill
+
+  const remainingHistory = skill.updateHistory
+    .filter((entry) => entry.id !== entryId)
+    .sort(
+      (left, right) =>
+        new Date(left.occurredAt).getTime() - new Date(right.occurredAt).getTime()
+    )
+  const trackedXp = skill.updateHistory.reduce(
+    (total, entry) => total + Math.max(0, entry.xp),
+    0
+  )
+  const baselineXp = Math.max(0, skill.xp - trackedXp)
+  const baselineLevel = levelFor({ ...skill, xp: baselineXp })
+  const levelReachedAt = Array.from({ length: skill.maxLevel }, (_, index) =>
+    index < baselineLevel ? skill.levelReachedAt?.[index] ?? null : null
+  )
+
+  let xp = baselineXp
+  let previousLevel = baselineLevel
+
+  for (const entry of remainingHistory) {
+    xp += Math.max(0, entry.xp)
+    const nextLevel = levelFor({ ...skill, xp })
+
+    for (let level = previousLevel + 1; level <= nextLevel; level += 1) {
+      levelReachedAt[level - 1] = entry.occurredAt
+    }
+
+    previousLevel = nextLevel
+  }
+
+  return {
+    ...skill,
+    xp,
+    momentum: Math.max(0, skill.momentum - momentumAwardForXp(removedEntry.xp)),
+    levelReachedAt,
+    updateHistory: remainingHistory
+  }
+}
+
+function momentumAwardForXp(xp: number): number {
+  return Math.max(3, Math.round(Math.max(0, xp) / 12))
 }
 
 function normalizeMaxLevel(value: number): number {

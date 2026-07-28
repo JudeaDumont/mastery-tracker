@@ -1,4 +1,3 @@
-selecting a node should have some kind of highlighting effect on its attached edges all the way down to leaves.
 
 batch wizard:
 - search assist with enter + arrow keys
@@ -6,8 +5,7 @@ batch wizard:
 - enter each one as you go along, and fill out as much as you want
 - new nodes go through the topology selection wizard per node until all are finished
 
-- clicking the notch icon of a root node should cause it to zoom to its subgraph
-- need the parentnode to be able to be non root nodes
+
 
 - each node needs to have a task list associated with it
 - each node should have a "recurring expected task" associated with it
@@ -36,8 +34,23 @@ batch wizard:
 
 - created banner needs to come in then fade out at the top, and should not be part of the right pane
 
+- need to be able to put deadlines on nodes, and their should be alerts based on upcoming deadlines (d < 7 days out) every 24 hours.
 
+- level settings and other node settings need to be in a separate display, the expanded update display should have a gear icon where settings display can be acccessed.
+
+- selecting a node should have some kind of highlighting effect on its attached edges all the way down to leaves.
+
+- double clicking a node should zoom to that node such that the full notes display could be viewed above
+- clicking on the tabs in the header should zoom to the full graph under that root node
+
+
+==================FINISHED============================================
 - need a way of setting "level steps", where in the update pane I can set the additional xp for another level,
   putting in 1000 would mean each level requires another 1000 xp, the default for a level up should be about 100
   the wizard should not ask for this value, but should offer a box in which the default can be changed  need to be able to change number of max levels as well etc.
 
+- need the parent node to be able to be non root nodes
+
+- xp should default to 0
+- updates without notes should not create an update in history (say if just level cap changed etc.)
+- if xp is at 0 and there is a note, show a warning that there was a note with no xp, and do not continue.
