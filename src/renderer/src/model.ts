@@ -9,6 +9,7 @@ export interface Root {
   id: RootId
   title: string
   accent?: RootAccent
+  updateHistory: ActivityEntry[]
 }
 
 export interface Link {
@@ -32,6 +33,7 @@ export interface Skill {
   levelReachedAt?: Array<string | null>
   momentum: number
   gates: Gate[]
+  updateHistory: ActivityEntry[]
 }
 
 export interface DraftUpdate {
@@ -43,7 +45,7 @@ export interface DraftUpdate {
 
 export interface ActivityEntry {
   id: string
-  nodeId: SkillId
+  nodeId: NodeId
   occurredAt: string
   minutes: number
   effort: Effort
@@ -72,6 +74,5 @@ export interface GraphStateSnapshot {
   roots: Root[]
   skills: Skill[]
   links: Link[]
-  history: ActivityEntry[]
   todayXp: number
 }

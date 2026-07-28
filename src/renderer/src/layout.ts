@@ -26,7 +26,6 @@ const END_ANGLE = radians(30)
 const ROOT_SIZE = 130
 const NODE_SIZE = 112
 const NODE_CLEARANCE = 14
-const BRANCH_EDGE_CLEARANCE = 56
 const ANGLE_EPSILON = radians(0.1)
 
 export function graphLayout({ roots, skills, links, preview }: LayoutInput): Record<NodeId, Point> {
@@ -57,32 +56,22 @@ export function graphLayout({ roots, skills, links, preview }: LayoutInput): Rec
       .sort(([a], [b]) => a - b)
       .forEach(([ring, ringSkills]) => {
         const minimumDepthRadius = ring === 1 ? BASE_RING_RADIUS : previousRadius + RING_DEPTH_GAP
-        const ordered = orderRing(ring, ringSkills, links, angles)
         const radius = Math.max(minimumDepthRadius, minimumRadiusForCount(ringSkills.length))
+        previousRadius = radius
+
+        const ordered = orderRing(ring, ringSkills, links, angles)
         const ringAngles = anglesForRing(ring, ordered, links, angles, radius)
-        const siblingGroups = singleParentSiblingGroups(ordered, links, positions)
-        let furthestRadius = 0
 
         ordered.forEach((skill, index) => {
-          const branchPosition =
-            ring > 1
-              ? singleParentBranchCenter(skill.id, siblingGroups, links, positions, root.id)
-              : undefined
-          const nodeCenter = branchPosition ?? {
-            x: center.x + Math.cos(ringAngles[index]) * radius,
-            y: center.y + Math.sin(ringAngles[index]) * radius
+          const angle = ringAngles[index]
+          const nodeCenter = {
+            x: center.x + Math.cos(angle) * radius,
+            y: center.y + Math.sin(angle) * radius
           }
-          const angle = Math.atan2(nodeCenter.y - center.y, nodeCenter.x - center.x)
 
-          furthestRadius = Math.max(
-            furthestRadius,
-            Math.hypot(nodeCenter.x - center.x, nodeCenter.y - center.y)
-          )
           angles.set(skill.id, angle)
           positions[skill.id] = centeredPosition(nodeCenter, NODE_SIZE)
         })
-
-        previousRadius = Math.max(previousRadius, furthestRadius)
       })
   })
 
@@ -202,7 +191,8 @@ function previewSkill(id: NodeId, rootId: RootId): Skill {
     maxLevel: 3,
     levelXpRequirements: [100, 200, 300],
     momentum: 0,
-    gates: []
+    gates: [],
+    updateHistory: []
   }
 }
 
@@ -235,73 +225,6 @@ function depthsFor(rootId: RootId, skills: Skill[], links: Link[]): Map<NodeId, 
   })
 
   return depth
-}
-
-
-interface SingleParentSiblingGroup {
-  parentId: NodeId
-  childIds: NodeId[]
-}
-
-function singleParentSiblingGroups(
-  ordered: Skill[],
-  links: Link[],
-  positions: Record<NodeId, Point>
-): Map<NodeId, SingleParentSiblingGroup> {
-  const groups = new Map<NodeId, SingleParentSiblingGroup>()
-
-  ordered.forEach((skill) => {
-    const parentIds = positionedParentIds(skill.id, links, positions)
-    if (parentIds.length !== 1) return
-
-    const parentId = parentIds[0]
-    const group = groups.get(parentId) ?? { parentId, childIds: [] }
-    group.childIds.push(skill.id)
-    groups.set(parentId, group)
-  })
-
-  groups.forEach((group) => group.childIds.sort((left, right) => left.localeCompare(right)))
-  return groups
-}
-
-function singleParentBranchCenter(
-  nodeId: NodeId,
-  siblingGroups: Map<NodeId, SingleParentSiblingGroup>,
-  links: Link[],
-  positions: Record<NodeId, Point>,
-  rootId: RootId
-): Point | undefined {
-  const parentIds = positionedParentIds(nodeId, links, positions)
-  if (parentIds.length !== 1) return undefined
-
-  const parentId = parentIds[0]
-  const parentPosition = positions[parentId]
-  const siblingGroup = siblingGroups.get(parentId)
-  if (!parentPosition || !siblingGroup) return undefined
-
-  const siblingIndex = siblingGroup.childIds.indexOf(nodeId)
-  if (siblingIndex < 0) return undefined
-
-  const parentSize = parentId === rootId ? ROOT_SIZE : NODE_SIZE
-  const parentCenterX = parentPosition.x + parentSize / 2
-  const parentCenterY = parentPosition.y + parentSize / 2
-  const siblingOffset =
-    (siblingIndex - (siblingGroup.childIds.length - 1) / 2) * (NODE_SIZE + NODE_CLEARANCE)
-
-  return {
-    x: parentCenterX + siblingOffset,
-    y: parentCenterY + parentSize / 2 + NODE_SIZE / 2 + BRANCH_EDGE_CLEARANCE
-  }
-}
-
-function positionedParentIds(
-  nodeId: NodeId,
-  links: Link[],
-  positions: Record<NodeId, Point>
-): NodeId[] {
-  return links
-    .filter((link) => link.to === nodeId && positions[link.from] !== undefined)
-    .map((link) => link.from)
 }
 
 function minimumRadiusForCount(count: number): number {

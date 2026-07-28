@@ -4,6 +4,7 @@ import type {
   Gate,
   GraphStateSnapshot,
   Link,
+  NodeId,
   Root,
   RootAccent,
   Skill
@@ -11,9 +12,9 @@ import type {
 import { ROOT_ACCENTS, applyPersistedSnapshot, graphStateSnapshot, useMastery } from './store'
 
 export const GRAPH_FILE_FORMAT = 'mastery-tracker.graph'
-export const GRAPH_FILE_VERSION = 1
+export const GRAPH_FILE_VERSION = 2
 
-interface GraphFileV1 {
+interface GraphFileV2 {
   format: typeof GRAPH_FILE_FORMAT
   schemaVersion: typeof GRAPH_FILE_VERSION
   savedAt: string
@@ -47,7 +48,6 @@ export async function initializeMasteryPersistence(): Promise<void> {
         roots: state.roots,
         skills: state.skills,
         links: state.links,
-        history: state.history,
         todayXp: state.todayXp
       }
       const serialized = JSON.stringify(snapshot)
@@ -76,7 +76,7 @@ function persistCurrentState(): Promise<void> {
 }
 
 function saveSnapshot(snapshot: GraphStateSnapshot): Promise<void> {
-  const document: GraphFileV1 = {
+  const document: GraphFileV2 = {
     format: GRAPH_FILE_FORMAT,
     schemaVersion: GRAPH_FILE_VERSION,
     savedAt: new Date().toISOString(),
@@ -94,7 +94,7 @@ export function migrateGraphFile(raw: unknown): GraphStateSnapshot | null {
     const version = finiteInteger(object.schemaVersion, 0)
     if (version > GRAPH_FILE_VERSION) throw new UnsupportedGraphVersionError(version)
 
-    if (version === 1) return normalizeSnapshot(object.data)
+    if (version === 2 || version === 1) return normalizeSnapshot(object.data)
     return normalizeSnapshot(object.data ?? object.state ?? object)
   }
 
@@ -106,21 +106,22 @@ function normalizeSnapshot(raw: unknown): GraphStateSnapshot | null {
   const source = asObject(raw)
   if (!source) return null
 
-  const roots = normalizeRoots(source.roots)
-  if (roots.length === 0) return null
+  const normalizedRoots = normalizeRoots(source.roots)
+  if (normalizedRoots.length === 0) return null
 
-  const rootIds = new Set(roots.map((root) => root.id))
-  const skills = normalizeSkills(source.skills, rootIds)
-  const allIds = new Set([...rootIds, ...skills.map((skill) => skill.id)])
+  const rootIds = new Set(normalizedRoots.map((root) => root.id))
+  const normalizedSkills = normalizeSkills(source.skills, rootIds)
+  const allIds = new Set<NodeId>([...rootIds, ...normalizedSkills.map((skill) => skill.id)])
   const links = normalizeLinks(source.links, allIds)
-  const skillIds = new Set(skills.map((skill) => skill.id))
-  const history = normalizeHistory(source.history, skillIds)
+
+  // Version 1 stored one global history array. Version 2 stores history on each node.
+  const legacyHistory = normalizeHistory(source.history, allIds)
+  const { roots, skills } = distributeHistory(normalizedRoots, normalizedSkills, legacyHistory)
 
   return {
     roots,
     skills,
     links,
-    history,
     todayXp: finiteNumber(source.todayXp, 0)
   }
 }
@@ -137,7 +138,8 @@ function normalizeRoots(raw: unknown): Root[] {
       {
         id,
         title: stringValue(root.title) || id,
-        accent: rootAccent(root.accent) ?? ROOT_ACCENTS[index % ROOT_ACCENTS.length]
+        accent: rootAccent(root.accent) ?? ROOT_ACCENTS[index % ROOT_ACCENTS.length],
+        updateHistory: normalizeNodeHistory(root.updateHistory, id)
       }
     ]
   })
@@ -168,7 +170,8 @@ function normalizeSkills(raw: unknown, rootIds: Set<string>): Skill[] {
         levelXpRequirements: requirements.slice(0, maxLevel),
         levelReachedAt: normalizeReachedDates(skill.levelReachedAt, maxLevel),
         momentum: clamp(finiteNumber(skill.momentum ?? skill.heat, 0), 0, 100),
-        gates: normalizeGates(skill.gates)
+        gates: normalizeGates(skill.gates),
+        updateHistory: normalizeNodeHistory(skill.updateHistory, id)
       }
     ]
   })
@@ -225,17 +228,25 @@ function normalizeLinks(raw: unknown, allIds: Set<string>): Link[] {
   })
 }
 
-function normalizeHistory(raw: unknown, skillIds: Set<string>): ActivityEntry[] {
+function normalizeNodeHistory(raw: unknown, nodeId: NodeId): ActivityEntry[] {
+  return normalizeHistory(raw, new Set([nodeId]), nodeId)
+}
+
+function normalizeHistory(
+  raw: unknown,
+  nodeIds: Set<NodeId>,
+  fallbackNodeId?: NodeId
+): ActivityEntry[] {
   if (!Array.isArray(raw)) return []
 
   return raw.flatMap((value, index) => {
     const entry = asObject(value)
-    const nodeId = stringValue(entry?.nodeId)
-    if (!entry || !nodeId || !skillIds.has(nodeId)) return []
+    const nodeId = stringValue(entry?.nodeId) || fallbackNodeId || ''
+    if (!entry || !nodeId || !nodeIds.has(nodeId)) return []
 
     return [
       {
-        id: stringValue(entry.id) || `legacy-entry-${index}`,
+        id: stringValue(entry.id) || `${nodeId}-legacy-entry-${index}`,
         nodeId,
         occurredAt: stringValue(entry.occurredAt) || new Date(0).toISOString(),
         minutes: Math.max(0, finiteNumber(entry.minutes, 0)),
@@ -245,6 +256,39 @@ function normalizeHistory(raw: unknown, skillIds: Set<string>): ActivityEntry[] 
       }
     ]
   })
+}
+
+function distributeHistory(
+  roots: Root[],
+  skills: Skill[],
+  legacyHistory: ActivityEntry[]
+): { roots: Root[]; skills: Skill[] } {
+  const byNode = new Map<NodeId, ActivityEntry[]>()
+  legacyHistory.forEach((entry) => {
+    const entries = byNode.get(entry.nodeId) ?? []
+    entries.push(entry)
+    byNode.set(entry.nodeId, entries)
+  })
+
+  return {
+    roots: roots.map((root) => ({
+      ...root,
+      updateHistory: mergeHistory(root.updateHistory, byNode.get(root.id) ?? [])
+    })),
+    skills: skills.map((skill) => ({
+      ...skill,
+      updateHistory: mergeHistory(skill.updateHistory, byNode.get(skill.id) ?? [])
+    }))
+  }
+}
+
+function mergeHistory(...groups: ActivityEntry[][]): ActivityEntry[] {
+  const byId = new Map<string, ActivityEntry>()
+  groups.flat().forEach((entry) => {
+    if (!byId.has(entry.id)) byId.set(entry.id, entry)
+  })
+
+  return [...byId.values()].sort((left, right) => left.occurredAt.localeCompare(right.occurredAt))
 }
 
 function rootAccent(value: unknown): RootAccent | undefined {

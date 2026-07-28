@@ -1,6 +1,8 @@
+import { useRef, useState } from 'react'
 import type { CSSProperties, ReactElement } from 'react'
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react'
-import type { RootAccent } from '../model'
+import type { ActivityEntry, RootAccent } from '../model'
+import { useMastery } from '../store'
 
 export type NodeVisual =
   | 'normal'
@@ -11,11 +13,6 @@ export type NodeVisual =
   | 'to-full'
   | 'unavailable'
   | 'preview'
-
-export interface NodeDetail {
-  label: string
-  value: string
-}
 
 export interface MasteryNodeData extends Record<string, unknown> {
   title: string
@@ -29,7 +26,7 @@ export interface MasteryNodeData extends Record<string, unknown> {
   maxed?: boolean
   levelXpTargets?: number[]
   levelReachedAt?: Array<string | null>
-  details?: NodeDetail[]
+  updateHistory?: ActivityEntry[]
   visual: NodeVisual
 }
 
@@ -114,6 +111,36 @@ function Ring({
 }
 
 export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement {
+  const historyRef = useRef<HTMLDivElement>(null)
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null)
+  const [draftNote, setDraftNote] = useState('')
+  const editUpdateNote = useMastery((state) => state.editUpdateNote)
+  const updateHistory = [...(data.updateHistory ?? [])].sort(
+    (left, right) => new Date(left.occurredAt).getTime() - new Date(right.occurredAt).getTime()
+  )
+
+  const scrollHistoryToLatest = (): void => {
+    requestAnimationFrame(() => {
+      const history = historyRef.current
+      if (history) history.scrollTop = history.scrollHeight
+    })
+  }
+
+  const beginNoteEdit = (entry: ActivityEntry): void => {
+    setEditingEntryId(entry.id)
+    setDraftNote(entry.note)
+  }
+
+  const stopNoteEdit = (): void => {
+    setEditingEntryId(null)
+    setDraftNote('')
+  }
+
+  const saveNoteEdit = (entry: ActivityEntry): void => {
+    editUpdateNote(entry.nodeId, entry.id, draftNote)
+    stopNoteEdit()
+  }
+
   const classes = [
     'mastery-node',
     `node--accent-${data.accent}`,
@@ -129,6 +156,7 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
   return (
     <div
       className={classes}
+      onMouseEnter={scrollHistoryToLatest}
       style={
         { '--momentum': Math.max(0, Math.min(100, data.momentum)) / 100 } as CSSProperties
       }
@@ -199,17 +227,80 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
           {data.root ? `Rank ${data.level}` : `Level ${data.level}/${data.maxLevel}`}
         </span>
 
-        {(data.details?.length ?? 0) > 0 && (
-          <div className="node-detail-tooltip" role="tooltip">
+        <div className="node-update-history-tooltip nowheel nodrag" role="tooltip">
+          <header className="node-update-history-tooltip__header">
             <b>{data.title}</b>
-            {data.details?.map((detail) => (
-              <div key={`${detail.label}-${detail.value}`}>
-                <span>{detail.label}</span>
-                <strong>{detail.value}</strong>
-              </div>
-            ))}
+            <span>Update notes</span>
+          </header>
+
+          <div
+            ref={historyRef}
+            className="node-update-history-tooltip__list"
+            onWheel={(event) => event.stopPropagation()}
+          >
+            {updateHistory.length === 0 ? (
+              <p className="node-update-history-tooltip__empty">
+                No updates recorded for this node.
+              </p>
+            ) : (
+              updateHistory.map((entry) => (
+                <article className="node-update-history-entry" key={entry.id}>
+                  <header>
+                    <time dateTime={entry.occurredAt}>{formatUpdateDate(entry.occurredAt)}</time>
+                    <span>+{entry.xp.toLocaleString()} XP</span>
+                  </header>
+                  {editingEntryId === entry.id ? (
+                    <textarea
+                      className="node-update-history-entry__editor nowheel nodrag"
+                      value={draftNote}
+                      autoFocus
+                      aria-label={`Edit note from ${formatUpdateDate(entry.occurredAt)}`}
+                      onChange={(event) => setDraftNote(event.target.value)}
+                      onClick={(event) => event.stopPropagation()}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onMouseLeave={stopNoteEdit}
+                      onBlur={stopNoteEdit}
+                      onKeyDown={(event) => {
+                        event.stopPropagation()
+                        if (event.key === 'Enter') {
+                          event.preventDefault()
+                          saveNoteEdit(entry)
+                        } else if (event.key === 'Escape') {
+                          event.preventDefault()
+                          stopNoteEdit()
+                        }
+                      }}
+                    />
+                  ) : (
+                    <p
+                      className="node-update-history-entry__note"
+                      role="button"
+                      tabIndex={0}
+                      title="Click to edit note"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        beginNoteEdit(entry)
+                      }}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          event.stopPropagation()
+                          beginNoteEdit(entry)
+                        }
+                      }}
+                    >
+                      {entry.note.trim() || 'No note recorded.'}
+                    </p>
+                  )}
+                  <small>
+                    {entry.minutes.toLocaleString()} min · {formatEffort(entry.effort)}
+                  </small>
+                </article>
+              ))
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   )
@@ -242,4 +333,21 @@ function formatReachedDate(value: string): string {
     month: 'short',
     day: 'numeric'
   }).format(date)
+}
+
+function formatUpdateDate(value: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  }).format(date)
+}
+
+function formatEffort(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1)
 }

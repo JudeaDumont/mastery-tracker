@@ -79,8 +79,6 @@ export function Graph(): ReactElement {
           ? Math.round(rootSkills.reduce((sum, skill) => sum + skill.momentum, 0) / rootSkills.length)
           : 0
 
-      const rootXp = rootSkills.reduce((sum, skill) => sum + Math.max(0, skill.xp), 0)
-
       return masteryNode(root.id, positions[root.id], {
         title: root.title,
         level: rootLevel,
@@ -92,13 +90,7 @@ export function Graph(): ReactElement {
         maxed: false,
         levelXpTargets: [],
         levelReachedAt: [],
-        details: [
-          { label: 'Type', value: 'Root category' },
-          { label: 'Rank', value: `${rootLevel}/10` },
-          { label: 'Connected nodes', value: String(rootSkills.length) },
-          { label: 'Total XP', value: rootXp.toLocaleString() },
-          { label: 'Momentum', value: String(rootMomentum) }
-        ],
+        updateHistory: root.updateHistory,
         activitySelected: pickedIds.includes(root.id),
         visual: visualFor(
           root.id,
@@ -117,13 +109,6 @@ export function Graph(): ReactElement {
     const skillNodes = skills.map((skill) => {
       const progress = levelProgressFor(skill)
       const locked = isLocked(skill, skills)
-      const root = roots.find((candidate) => candidate.id === skill.rootId)
-      const prerequisites = skill.gates.length > 0
-        ? skill.gates
-            .map((gate) => `${nodeTitle(gate.nodeId, roots, skills)} Lv ${gate.level}`)
-            .join(', ')
-        : 'None'
-
       return masteryNode(skill.id, positions[skill.id], {
         title: skill.title,
         level: progress.level,
@@ -134,20 +119,7 @@ export function Graph(): ReactElement {
         maxed: progress.maxed,
         levelXpTargets: cumulativeXpTargets(skill.levelXpRequirements, skill.maxLevel),
         levelReachedAt: skill.levelReachedAt ?? [],
-        details: [
-          { label: 'Root', value: root?.title ?? skill.rootId },
-          { label: 'Level', value: `${progress.level}/${skill.maxLevel}` },
-          {
-            label: 'XP',
-            value: `${progress.currentXp.toLocaleString()}/${progress.requiredXp.toLocaleString()}`
-          },
-          { label: 'Momentum', value: String(skill.momentum) },
-          {
-            label: 'Status',
-            value: locked ? 'Locked' : progress.maxed ? 'Current cap reached' : 'In progress'
-          },
-          { label: 'Prerequisites', value: prerequisites }
-        ],
+        updateHistory: skill.updateHistory,
         activitySelected: pickedIds.includes(skill.id),
         visual: visualFor(
           skill.id,
@@ -175,6 +147,7 @@ export function Graph(): ReactElement {
               : rootAccentFor(preview.rootId, roots),
             locked: false,
             root: preview.root,
+            updateHistory: [],
             visual: 'preview'
           })
         ]

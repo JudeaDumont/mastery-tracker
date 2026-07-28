@@ -20,7 +20,9 @@ export const MAX_OUTGOING_RELATIONSHIPS = 8
 
 export const ROOT_ACCENTS: RootAccent[] = ['teal', 'violet', 'amber', 'rose', 'green', 'blue']
 
-const initialRoots: Root[] = [{ id: 'lifter', title: 'Lifter', accent: 'teal' }]
+const initialRoots: Root[] = [
+  { id: 'lifter', title: 'Lifter', accent: 'teal', updateHistory: [] }
+]
 
 const levelXpRequirements = [100, 180, 275, 425, 650]
 
@@ -38,6 +40,7 @@ const initialSkills: Skill[] = [
       '2026-06-02T14:00:00.000Z'
     ),
     momentum: 6,
+    updateHistory: [],
     gates: []
   },
   {
@@ -54,6 +57,7 @@ const initialSkills: Skill[] = [
       '2026-06-28T14:00:00.000Z'
     ),
     momentum: 73,
+    updateHistory: [],
     gates: []
   },
   {
@@ -68,6 +72,7 @@ const initialSkills: Skill[] = [
       '2026-05-14T14:00:00.000Z'
     ),
     momentum: 28,
+    updateHistory: [],
     gates: []
   },
   {
@@ -83,6 +88,7 @@ const initialSkills: Skill[] = [
       '2026-06-11T14:00:00.000Z'
     ),
     momentum: 54,
+    updateHistory: [],
     gates: []
   },
   {
@@ -97,6 +103,7 @@ const initialSkills: Skill[] = [
       '2026-07-01T14:00:00.000Z'
     ),
     momentum: 15,
+    updateHistory: [],
     gates: []
   },
   {
@@ -113,6 +120,7 @@ const initialSkills: Skill[] = [
       '2026-07-10T14:00:00.000Z'
     ),
     momentum: 87,
+    updateHistory: [],
     gates: []
   },
   {
@@ -130,6 +138,7 @@ const initialSkills: Skill[] = [
       '2026-07-18T14:00:00.000Z'
     ),
     momentum: 41,
+    updateHistory: [],
     gates: []
   },
   {
@@ -146,6 +155,7 @@ const initialSkills: Skill[] = [
       '2026-07-14T14:00:00.000Z'
     ),
     momentum: 100,
+    updateHistory: [],
     gates: []
   },
   {
@@ -157,6 +167,7 @@ const initialSkills: Skill[] = [
     levelXpRequirements,
     levelReachedAt: [],
     momentum: 22,
+    updateHistory: [],
     gates: [
       { nodeId: 'a', level: 2 },
       { nodeId: 'b', level: 3 },
@@ -177,6 +188,7 @@ const initialSkills: Skill[] = [
     levelXpRequirements,
     levelReachedAt: [],
     momentum: 64,
+    updateHistory: [],
     gates: [
       { nodeId: 'a', level: 2 },
       { nodeId: 'b', level: 3 },
@@ -238,12 +250,12 @@ interface MasteryStore {
   pickedIds: NodeId[]
   create: CreateDraft | null
   draft: Record<SkillId, DraftUpdate>
-  history: ActivityEntry[]
   todayXp: number
   lastResult: SubmitResult | null
   lastCreated: string | null
   toggle: (id: SkillId) => void
   edit: (id: SkillId, patch: Partial<DraftUpdate>) => void
+  editUpdateNote: (nodeId: NodeId, entryId: string, note: string) => void
   submit: () => void
   togglePicked: (id: NodeId) => void
   deleteNode: (id: NodeId) => void
@@ -263,7 +275,6 @@ export const useMastery = create<MasteryStore>((set, get) => ({
   pickedIds: [],
   create: null,
   draft: draftFor(initialSkills),
-  history: [],
   todayXp: 0,
   lastResult: null,
   lastCreated: null,
@@ -289,6 +300,32 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       }
     })),
 
+  editUpdateNote: (nodeId, entryId, note) =>
+    set((state) => {
+      const nextNote = note.trim()
+      let changed = false
+      const updateHistory = (history: ActivityEntry[]): ActivityEntry[] =>
+        history.map((entry) => {
+          if (entry.id !== entryId || entry.nodeId !== nodeId || entry.note === nextNote) {
+            return entry
+          }
+
+          changed = true
+          return { ...entry, note: nextNote }
+        })
+
+      const roots = state.roots.map((root) =>
+        root.id === nodeId ? { ...root, updateHistory: updateHistory(root.updateHistory) } : root
+      )
+      const skills = state.skills.map((skill) =>
+        skill.id === nodeId
+          ? { ...skill, updateHistory: updateHistory(skill.updateHistory) }
+          : skill
+      )
+
+      return changed ? { roots, skills } : state
+    }),
+
   submit: () => {
     const before = get()
     const oldLevels = new Map(before.skills.map((skill) => [skill.id, levelFor(skill)]))
@@ -299,8 +336,6 @@ export const useMastery = create<MasteryStore>((set, get) => ({
     let totalXp = 0
     let updatedNodes = 0
     const occurredAt = new Date().toISOString()
-    const entries: ActivityEntry[] = []
-
     const skills = before.skills.map((skill) => {
       const update = before.draft[skill.id]
       if (!update?.selected || isLocked(skill, before.skills)) return skill
@@ -310,7 +345,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
       totalXp += xp
       updatedNodes += 1
-      entries.push({
+      const entry: ActivityEntry = {
         id: `${occurredAt}-${skill.id}`,
         nodeId: skill.id,
         occurredAt,
@@ -318,12 +353,13 @@ export const useMastery = create<MasteryStore>((set, get) => ({
         effort: update.effort,
         xp,
         note: update.note.trim()
-      })
+      }
 
       const updatedSkill: Skill = {
         ...skill,
         xp: skill.xp + xp,
-        momentum: Math.min(100, skill.momentum + Math.max(3, Math.round(xp / 12)))
+        momentum: Math.min(100, skill.momentum + Math.max(3, Math.round(xp / 12))),
+        updateHistory: [...skill.updateHistory, entry]
       }
 
       return recordReachedLevels(updatedSkill, oldLevels.get(skill.id) ?? 0, occurredAt)
@@ -341,7 +377,6 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       skills,
       draft: draftFor(skills),
       pickedIds: [],
-      history: [...before.history, ...entries],
       todayXp: before.todayXp + totalXp,
       lastResult: { totalXp, updatedNodes, levelUps, unlocked }
     })
@@ -352,7 +387,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       const picked = state.pickedIds.includes(id)
       const pickedIds = picked
         ? state.pickedIds.filter((pickedId) => pickedId !== id)
-        : [...state.pickedIds, id]
+        : [id, ...state.pickedIds]
       const skill = state.skills.find((candidate) => candidate.id === id)
 
       if (!skill) return { pickedIds }
@@ -384,7 +419,12 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       const deletedNodeIds = new Set<NodeId>(
         root ? [root.id, ...deletedSkillIds] : deletedSkillIds
       )
-      const removedHistory = state.history.filter((entry) => deletedSkillIds.has(entry.nodeId))
+      const removedHistory = [
+        ...(root?.updateHistory ?? []),
+        ...state.skills
+          .filter((candidate) => deletedSkillIds.has(candidate.id))
+          .flatMap((candidate) => candidate.updateHistory)
+      ]
       const removedTodayXp = removedHistory
         .filter((entry) => isSameLocalDay(entry.occurredAt, new Date()))
         .reduce((sum, entry) => sum + entry.xp, 0)
@@ -410,7 +450,6 @@ export const useMastery = create<MasteryStore>((set, get) => ({
         links: state.links.filter(
           (link) => !deletedNodeIds.has(link.from) && !deletedNodeIds.has(link.to)
         ),
-        history: state.history.filter((entry) => !deletedSkillIds.has(entry.nodeId)),
         todayXp: Math.max(0, state.todayXp - removedTodayXp),
         draft,
         pickedIds: state.pickedIds.filter((pickedId) => !deletedNodeIds.has(pickedId)),
@@ -485,7 +524,8 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       const root: Root = {
         id,
         title: draft.title.trim(),
-        accent: draft.accent
+        accent: draft.accent,
+        updateHistory: []
       }
       set({
         roots: [...state.roots, root],
@@ -517,7 +557,8 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       levelXpRequirements: [100, 200, 300],
       levelReachedAt: [],
       momentum: 0,
-      gates: []
+      gates: [],
+      updateHistory: []
     }
     const links = [
       ...state.links,
@@ -554,7 +595,6 @@ export function graphStateSnapshot(): GraphStateSnapshot {
     roots: state.roots,
     skills: state.skills,
     links: state.links,
-    history: state.history,
     todayXp: state.todayXp
   }
 }
@@ -564,7 +604,6 @@ export function applyPersistedSnapshot(snapshot: GraphStateSnapshot): void {
     roots: snapshot.roots,
     skills: snapshot.skills,
     links: snapshot.links,
-    history: snapshot.history,
     todayXp: snapshot.todayXp,
     draft: draftFor(snapshot.skills),
     pickedIds: [],
@@ -593,6 +632,17 @@ function recordReachedLevels(
 export function projectedXp(update: DraftUpdate, skill: Skill): number {
   if (!update.selected) return 0
   return earnedXp(update.minutes, update.effort)
+}
+
+
+export function nodeUpdateHistory(
+  id: NodeId,
+  roots: Root[],
+  skills: Skill[]
+): ActivityEntry[] {
+  return roots.find((root) => root.id === id)?.updateHistory
+    ?? skills.find((skill) => skill.id === id)?.updateHistory
+    ?? []
 }
 
 export function nodeTitle(id: NodeId, roots: Root[], skills: Skill[]): string {

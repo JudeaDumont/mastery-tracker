@@ -17,7 +17,6 @@ export function Updates(): ReactElement {
   const roots = useMastery((state) => state.roots)
   const skills = useMastery((state) => state.skills)
   const links = useMastery((state) => state.links)
-  const history = useMastery((state) => state.history)
   const draft = useMastery((state) => state.draft)
   const pickedIds = useMastery((state) => state.pickedIds)
   const create = useMastery((state) => state.create)
@@ -68,9 +67,12 @@ export function Updates(): ReactElement {
     })
   }
 
-  const ordered = useMemo(() => [...skills].sort((a, b) => b.momentum - a.momentum), [skills])
-  const selectedRoots = roots.filter((root) => pickedIds.includes(root.id))
-  const selectedSkills = ordered.filter((skill) => pickedIds.includes(skill.id))
+  const selectedRoots = pickedIds
+    .map((id) => roots.find((root) => root.id === id))
+    .filter((root): root is (typeof roots)[number] => Boolean(root))
+  const selectedSkills = pickedIds
+    .map((id) => skills.find((skill) => skill.id === id))
+    .filter((skill): skill is (typeof skills)[number] => Boolean(skill))
   const selectedCount = selectedRoots.length + selectedSkills.length
   const updatable = selectedSkills.filter((skill) => draft[skill.id]?.selected)
   const totalProjectedXp = updatable.reduce(
@@ -96,7 +98,11 @@ export function Updates(): ReactElement {
         relationshipCount: links.filter(
           (link) => deletedIds.has(link.from) || deletedIds.has(link.to)
         ).length,
-        activityCount: history.filter((entry) => childIds.has(entry.nodeId)).length,
+        activityCount:
+          root.updateHistory.length +
+          skills
+            .filter((skill) => childIds.has(skill.id))
+            .reduce((count, skill) => count + skill.updateHistory.length, 0),
         dependentCount: 0
       }
     }
@@ -112,12 +118,12 @@ export function Updates(): ReactElement {
       relationshipCount: links.filter(
         (link) => link.from === skill.id || link.to === skill.id
       ).length,
-      activityCount: history.filter((entry) => entry.nodeId === skill.id).length,
+      activityCount: skill.updateHistory.length,
       dependentCount: skills.filter((candidate) =>
         candidate.gates.some((gate) => gate.nodeId === skill.id)
       ).length
     }
-  }, [history, links, pendingDeleteId, roots, skills])
+  }, [links, pendingDeleteId, roots, skills])
 
   const confirmDelete = (): void => {
     if (!deletion) return
@@ -179,7 +185,12 @@ export function Updates(): ReactElement {
             <section
               key={root.id}
               className={`update-row update-row--selected update-row--root update-row--accent-${root.accent ?? 'teal'} ${expanded ? 'update-row--expanded' : ''}`}
-              style={{ '--momentum': momentum / 100 } as CSSProperties}
+              style={
+                {
+                  '--momentum': momentum / 100,
+                  order: pickedIds.indexOf(root.id)
+                } as CSSProperties
+              }
             >
               <button
                 className="update-row__header"
@@ -240,7 +251,12 @@ export function Updates(): ReactElement {
             <section
               key={skill.id}
               className={`update-row update-row--selected update-row--accent-${accent} ${locked ? 'update-row--locked' : ''} ${maxed ? 'update-row--maxed' : ''} ${expanded ? 'update-row--expanded' : ''}`}
-              style={{ '--momentum': skill.momentum / 100 } as CSSProperties}
+              style={
+                {
+                  '--momentum': skill.momentum / 100,
+                  order: pickedIds.indexOf(skill.id)
+                } as CSSProperties
+              }
             >
               <button
                 className="update-row__header"
