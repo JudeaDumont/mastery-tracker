@@ -4,17 +4,26 @@ import type {
   Gate,
   GraphStateSnapshot,
   Link,
+  LevelDefaults,
   NodeId,
   Root,
   RootAccent,
   Skill
 } from './model'
-import { ROOT_ACCENTS, applyPersistedSnapshot, graphStateSnapshot, useMastery } from './store'
+import {
+  DEFAULT_LEVEL_STEP_XP,
+  DEFAULT_MAX_LEVEL,
+  MAX_LEVEL_LIMIT,
+  ROOT_ACCENTS,
+  applyPersistedSnapshot,
+  graphStateSnapshot,
+  useMastery
+} from './store'
 
 export const GRAPH_FILE_FORMAT = 'mastery-tracker.graph'
-export const GRAPH_FILE_VERSION = 2
+export const GRAPH_FILE_VERSION = 3
 
-interface GraphFileV2 {
+interface GraphFileV3 {
   format: typeof GRAPH_FILE_FORMAT
   schemaVersion: typeof GRAPH_FILE_VERSION
   savedAt: string
@@ -48,7 +57,8 @@ export async function initializeMasteryPersistence(): Promise<void> {
         roots: state.roots,
         skills: state.skills,
         links: state.links,
-        todayXp: state.todayXp
+        todayXp: state.todayXp,
+        levelDefaults: state.levelDefaults
       }
       const serialized = JSON.stringify(snapshot)
       if (serialized === lastSerialized) return
@@ -76,7 +86,7 @@ function persistCurrentState(): Promise<void> {
 }
 
 function saveSnapshot(snapshot: GraphStateSnapshot): Promise<void> {
-  const document: GraphFileV2 = {
+  const document: GraphFileV3 = {
     format: GRAPH_FILE_FORMAT,
     schemaVersion: GRAPH_FILE_VERSION,
     savedAt: new Date().toISOString(),
@@ -94,7 +104,9 @@ export function migrateGraphFile(raw: unknown): GraphStateSnapshot | null {
     const version = finiteInteger(object.schemaVersion, 0)
     if (version > GRAPH_FILE_VERSION) throw new UnsupportedGraphVersionError(version)
 
-    if (version === 2 || version === 1) return normalizeSnapshot(object.data)
+    if (version === 3 || version === 2 || version === 1) {
+      return normalizeSnapshot(object.data)
+    }
     return normalizeSnapshot(object.data ?? object.state ?? object)
   }
 
@@ -122,8 +134,23 @@ function normalizeSnapshot(raw: unknown): GraphStateSnapshot | null {
     roots,
     skills,
     links,
-    todayXp: finiteNumber(source.todayXp, 0)
+    todayXp: finiteNumber(source.todayXp, 0),
+    levelDefaults: normalizeLevelDefaults(source)
   }
+}
+
+function normalizeLevelDefaults(source: Record<string, unknown>): LevelDefaults {
+  const raw = asObject(source.levelDefaults)
+  const levelStepXp = Math.max(
+    1,
+    finiteInteger(raw?.levelStepXp ?? source.defaultLevelStepXp, DEFAULT_LEVEL_STEP_XP)
+  )
+  const maxLevel = Math.min(
+    MAX_LEVEL_LIMIT,
+    Math.max(1, finiteInteger(raw?.maxLevel ?? source.defaultMaxLevel, DEFAULT_MAX_LEVEL))
+  )
+
+  return { levelStepXp, maxLevel }
 }
 
 function normalizeRoots(raw: unknown): Root[] {
@@ -197,7 +224,7 @@ function normalizeRequirements(skill: Record<string, unknown>): number[] {
     if (values.length > 0) return values
   }
 
-  return [100, 200, 300]
+  return [100, 100, 100]
 }
 
 function normalizeReachedDates(raw: unknown, maxLevel: number): Array<string | null> {

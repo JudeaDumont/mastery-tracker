@@ -31,11 +31,13 @@ batch wizard:
 
 - root nodes have shared experience, but parent nodes do not
 
-- need a way of setting "level steps", where in the update pane I can set the additional xp for another level, putting in 1000 would mean each level requires another 1000 xp
 
-- progress bar for each node should show small increments of xp as well, not just whole levels being satisfied.
+- progress bar for each node should show any xp update by filling current level bar proportionally, not just whole levels being satisfied.
 
 - created banner needs to come in then fade out at the top, and should not be part of the right pane
 
-- need to be able to change number of max levels etc.
+
+- need a way of setting "level steps", where in the update pane I can set the additional xp for another level,
+  putting in 1000 would mean each level requires another 1000 xp, the default for a level up should be about 100
+  the wizard should not ask for this value, but should offer a box in which the default can be changed  need to be able to change number of max levels as well etc.
 

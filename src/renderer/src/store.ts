@@ -5,6 +5,7 @@ import type {
   DraftUpdate,
   GraphStateSnapshot,
   Link,
+  LevelDefaults,
   NodeId,
   Root,
   RootAccent,
@@ -17,6 +18,9 @@ import { earnedXp, isLocked, levelFor } from './xp'
 
 export const MAX_INCOMING_RELATIONSHIPS = 8
 export const MAX_OUTGOING_RELATIONSHIPS = 8
+export const DEFAULT_LEVEL_STEP_XP = 100
+export const DEFAULT_MAX_LEVEL = 3
+export const MAX_LEVEL_LIMIT = 99
 
 export const ROOT_ACCENTS: RootAccent[] = ['teal', 'violet', 'amber', 'rose', 'green', 'blue']
 
@@ -251,11 +255,17 @@ interface MasteryStore {
   create: CreateDraft | null
   draft: Record<SkillId, DraftUpdate>
   todayXp: number
+  levelDefaults: LevelDefaults
   lastResult: SubmitResult | null
   lastCreated: string | null
   toggle: (id: SkillId) => void
   edit: (id: SkillId, patch: Partial<DraftUpdate>) => void
   editUpdateNote: (nodeId: NodeId, entryId: string, note: string) => void
+  configureLevels: (
+    id: SkillId,
+    patch: { levelStepXp?: number; maxLevel?: number }
+  ) => void
+  configureLevelDefaults: (patch: Partial<LevelDefaults>) => void
   submit: () => void
   togglePicked: (id: NodeId) => void
   deleteNode: (id: NodeId) => void
@@ -276,6 +286,10 @@ export const useMastery = create<MasteryStore>((set, get) => ({
   create: null,
   draft: draftFor(initialSkills),
   todayXp: 0,
+  levelDefaults: {
+    levelStepXp: DEFAULT_LEVEL_STEP_XP,
+    maxLevel: DEFAULT_MAX_LEVEL
+  },
   lastResult: null,
   lastCreated: null,
 
@@ -325,6 +339,50 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
       return changed ? { roots, skills } : state
     }),
+
+  configureLevels: (id, patch) =>
+    set((state) => {
+      const skill = state.skills.find((candidate) => candidate.id === id)
+      if (!skill) return state
+
+      const previousLevel = levelFor(skill)
+      const maxLevel = normalizeMaxLevel(patch.maxLevel ?? skill.maxLevel)
+      const levelXpRequirements = levelRequirementsForConfiguration(
+        skill.levelXpRequirements,
+        maxLevel,
+        patch.levelStepXp
+      )
+      const configured: Skill = {
+        ...skill,
+        maxLevel,
+        levelXpRequirements,
+        levelReachedAt: (skill.levelReachedAt ?? []).slice(0, maxLevel)
+      }
+      const configuredLevel = levelFor(configured)
+      configured.levelReachedAt = Array.from({ length: maxLevel }, (_, index) =>
+        index < configuredLevel ? configured.levelReachedAt?.[index] ?? null : null
+      )
+
+      const updated =
+        configuredLevel > previousLevel
+          ? recordReachedLevels(configured, previousLevel, new Date().toISOString())
+          : configured
+
+      return {
+        skills: state.skills.map((candidate) => (candidate.id === id ? updated : candidate))
+      }
+    }),
+
+  configureLevelDefaults: (patch) =>
+    set((state) => ({
+      levelDefaults: {
+        levelStepXp: normalizeLevelStepXp(
+          patch.levelStepXp ?? state.levelDefaults.levelStepXp
+        ),
+        maxLevel: normalizeMaxLevel(patch.maxLevel ?? state.levelDefaults.maxLevel)
+      }
+    })),
+
 
   submit: () => {
     const before = get()
@@ -553,8 +611,10 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       rootId,
       title: draft.title.trim(),
       xp: 0,
-      maxLevel: 3,
-      levelXpRequirements: [100, 200, 300],
+      maxLevel: state.levelDefaults.maxLevel,
+      levelXpRequirements: Array(state.levelDefaults.maxLevel).fill(
+        state.levelDefaults.levelStepXp
+      ),
       levelReachedAt: [],
       momentum: 0,
       gates: [],
@@ -595,7 +655,8 @@ export function graphStateSnapshot(): GraphStateSnapshot {
     roots: state.roots,
     skills: state.skills,
     links: state.links,
-    todayXp: state.todayXp
+    todayXp: state.todayXp,
+    levelDefaults: state.levelDefaults
   }
 }
 
@@ -605,6 +666,7 @@ export function applyPersistedSnapshot(snapshot: GraphStateSnapshot): void {
     skills: snapshot.skills,
     links: snapshot.links,
     todayXp: snapshot.todayXp,
+    levelDefaults: snapshot.levelDefaults,
     draft: draftFor(snapshot.skills),
     pickedIds: [],
     create: null,
@@ -627,6 +689,34 @@ function recordReachedLevels(
   }
 
   return { ...skill, levelReachedAt }
+}
+
+function normalizeMaxLevel(value: number): number {
+  if (!Number.isFinite(value)) return DEFAULT_MAX_LEVEL
+  return Math.min(MAX_LEVEL_LIMIT, Math.max(1, Math.trunc(value)))
+}
+
+function normalizeLevelStepXp(value: number): number {
+  if (!Number.isFinite(value)) return DEFAULT_LEVEL_STEP_XP
+  return Math.max(1, Math.trunc(value))
+}
+
+function levelRequirementsForConfiguration(
+  current: number[],
+  maxLevel: number,
+  levelStepXp?: number
+): number[] {
+  if (levelStepXp !== undefined) {
+    return Array(maxLevel).fill(normalizeLevelStepXp(levelStepXp))
+  }
+
+  const requirements = current
+    .slice(0, maxLevel)
+    .map((requiredXp) => normalizeLevelStepXp(requiredXp))
+  const extensionStep = requirements.at(-1) ?? DEFAULT_LEVEL_STEP_XP
+
+  while (requirements.length < maxLevel) requirements.push(extensionStep)
+  return requirements
 }
 
 export function projectedXp(update: DraftUpdate, skill: Skill): number {

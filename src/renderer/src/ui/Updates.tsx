@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ReactElement } from 'react'
-import type { Effort, NodeId, RootAccent } from '../model'
-import { projectedXp, useMastery } from '../store'
-import { isLocked, levelFor, levelProgressFor } from '../xp'
+import type { Effort, LevelDefaults, NodeId, RootAccent, Skill } from '../model'
+import { MAX_LEVEL_LIMIT, projectedXp, useMastery } from '../store'
+import { isLocked, levelFor, levelProgressFor, uniformLevelStepXp } from '../xp'
 import { Create } from './Create'
 
 const effortLabels: Record<Effort, string> = {
@@ -26,6 +26,8 @@ export function Updates(): ReactElement {
   const deleteNode = useMastery((state) => state.deleteNode)
   const lastResult = useMastery((state) => state.lastResult)
   const lastCreated = useMastery((state) => state.lastCreated)
+  const levelDefaults = useMastery((state) => state.levelDefaults)
+  const configureLevelDefaults = useMastery((state) => state.configureLevelDefaults)
   const [expandedIds, setExpandedIds] = useState<Set<NodeId>>(new Set())
   const [pendingDeleteId, setPendingDeleteId] = useState<NodeId | null>(null)
   const previousPickedIds = useRef<Set<NodeId>>(new Set())
@@ -160,6 +162,13 @@ export function Updates(): ReactElement {
       <div className="node-list">
         {create && <Create />}
 
+        {!create && (
+          <LevelDefaultsSettings
+            defaults={levelDefaults}
+            onChange={configureLevelDefaults}
+          />
+        )}
+
         {selectedCount === 0 && !create && (
           <div className="node-list-empty">
             <strong>No nodes selected</strong>
@@ -292,6 +301,8 @@ export function Updates(): ReactElement {
                   Complete this node&apos;s prerequisites before applying XP.
                 </div>
               )}
+
+              {expanded && !create && <LevelSettings skill={skill} />}
 
               {expanded && update?.selected && !locked && !create && (
                 <div className="update-fields">
@@ -436,3 +447,222 @@ export function Updates(): ReactElement {
     </>
   )
 }
+
+function LevelDefaultsSettings({
+  defaults,
+  onChange
+}: {
+  defaults: LevelDefaults
+  onChange: (patch: Partial<LevelDefaults>) => void
+}): ReactElement {
+  const [stepValue, setStepValue] = useState(String(defaults.levelStepXp))
+  const [maxLevelValue, setMaxLevelValue] = useState(String(defaults.maxLevel))
+
+  useEffect(() => {
+    setStepValue(String(defaults.levelStepXp))
+    setMaxLevelValue(String(defaults.maxLevel))
+  }, [defaults.levelStepXp, defaults.maxLevel])
+
+  const commitStep = (): void => {
+    const parsed = Number(stepValue)
+    if (!Number.isFinite(parsed) || parsed < 1) {
+      setStepValue(String(defaults.levelStepXp))
+      return
+    }
+
+    const levelStepXp = Math.max(1, Math.trunc(parsed))
+    setStepValue(String(levelStepXp))
+    onChange({ levelStepXp })
+  }
+
+  const commitMaxLevel = (): void => {
+    const parsed = Number(maxLevelValue)
+    if (!Number.isFinite(parsed) || parsed < 1) {
+      setMaxLevelValue(String(defaults.maxLevel))
+      return
+    }
+
+    const maxLevel = Math.min(MAX_LEVEL_LIMIT, Math.max(1, Math.trunc(parsed)))
+    setMaxLevelValue(String(maxLevel))
+    onChange({ maxLevel })
+  }
+
+  const handleKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+    commit: () => void,
+    reset: () => void
+  ): void => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      commit()
+    } else if (event.key === 'Escape') {
+      event.preventDefault()
+      reset()
+    }
+  }
+
+  return (
+    <section className="level-defaults" aria-label="New node level defaults">
+      <div className="level-defaults__heading">
+        <div>
+          <strong>New node defaults</strong>
+          <span>Used automatically when a node is created</span>
+        </div>
+        <span>Saved immediately</span>
+      </div>
+      <div className="level-defaults__fields">
+        <label>
+          Level step
+          <div className="input-with-unit">
+            <input
+              type="number"
+              min="1"
+              step="10"
+              value={stepValue}
+              aria-label="Default XP required for each new node level"
+              onChange={(event) => setStepValue(event.target.value)}
+              onBlur={commitStep}
+              onKeyDown={(event) =>
+                handleKeyDown(event, commitStep, () =>
+                  setStepValue(String(defaults.levelStepXp))
+                )
+              }
+            />
+            <span>XP</span>
+          </div>
+        </label>
+        <label>
+          Max levels
+          <input
+            type="number"
+            min="1"
+            max={MAX_LEVEL_LIMIT}
+            step="1"
+            value={maxLevelValue}
+            aria-label="Default maximum levels for new nodes"
+            onChange={(event) => setMaxLevelValue(event.target.value)}
+            onBlur={commitMaxLevel}
+            onKeyDown={(event) =>
+              handleKeyDown(event, commitMaxLevel, () =>
+                setMaxLevelValue(String(defaults.maxLevel))
+              )
+            }
+          />
+        </label>
+      </div>
+    </section>
+  )
+}
+
+function LevelSettings({ skill }: { skill: Skill }): ReactElement {
+  const configureLevels = useMastery((state) => state.configureLevels)
+  const configuredStep = uniformLevelStepXp(skill)
+  const [stepValue, setStepValue] = useState(
+    configuredStep === null ? '' : String(configuredStep)
+  )
+  const [maxLevelValue, setMaxLevelValue] = useState(String(skill.maxLevel))
+  useEffect(() => {
+    setStepValue(configuredStep === null ? '' : String(configuredStep))
+    setMaxLevelValue(String(skill.maxLevel))
+  }, [configuredStep, skill.id, skill.maxLevel])
+
+  const resetStep = (): void => {
+    const nextStep = uniformLevelStepXp(skill)
+    setStepValue(nextStep === null ? '' : String(nextStep))
+  }
+
+  const commitStep = (): void => {
+    if (stepValue.trim() === '') {
+      resetStep()
+      return
+    }
+
+    const parsed = Number(stepValue)
+    if (!Number.isFinite(parsed) || parsed < 1) {
+      resetStep()
+      return
+    }
+
+    const levelStepXp = Math.max(1, Math.trunc(parsed))
+    setStepValue(String(levelStepXp))
+    configureLevels(skill.id, { levelStepXp })
+  }
+
+  const resetMaxLevel = (): void => setMaxLevelValue(String(skill.maxLevel))
+
+  const commitMaxLevel = (): void => {
+    const parsed = Number(maxLevelValue)
+    if (!Number.isFinite(parsed) || parsed < 1) {
+      resetMaxLevel()
+      return
+    }
+
+    const maxLevel = Math.min(MAX_LEVEL_LIMIT, Math.max(1, Math.trunc(parsed)))
+    setMaxLevelValue(String(maxLevel))
+    configureLevels(skill.id, { maxLevel })
+  }
+
+  const handleNumericKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+    commit: () => void,
+    reset: () => void
+  ): void => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      commit()
+    } else if (event.key === 'Escape') {
+      event.preventDefault()
+      reset()
+    }
+  }
+
+  return (
+    <section className="level-settings" aria-label={`${skill.title} level settings`}>
+      <div className="level-settings__heading">
+        <strong>Level settings</strong>
+        <span>Saved immediately</span>
+      </div>
+      <div className="level-settings__fields">
+        <label>
+          Level step XP
+          <div className="input-with-unit">
+            <input
+              type="number"
+              min="1"
+              step="10"
+              value={stepValue}
+              placeholder="Custom"
+              aria-label="XP required for each level step"
+              onChange={(event) => setStepValue(event.target.value)}
+              onBlur={commitStep}
+              onKeyDown={(event) => handleNumericKeyDown(event, commitStep, resetStep)}
+            />
+            <span>XP</span>
+          </div>
+        </label>
+        <label>
+          Maximum levels
+          <input
+            type="number"
+            min="1"
+            max={MAX_LEVEL_LIMIT}
+            step="1"
+            value={maxLevelValue}
+            aria-label="Maximum levels"
+            onChange={(event) => setMaxLevelValue(event.target.value)}
+            onBlur={commitMaxLevel}
+            onKeyDown={(event) =>
+              handleNumericKeyDown(event, commitMaxLevel, resetMaxLevel)
+            }
+          />
+        </label>
+      </div>
+      <small>
+        {configuredStep === null
+          ? 'This node currently has custom level costs. Entering a value makes every level use the same XP step.'
+          : `Each level adds another ${configuredStep.toLocaleString()} XP. Lifetime XP is never reset.`}
+      </small>
+    </section>
+  )
+}
+

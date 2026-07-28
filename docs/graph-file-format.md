@@ -5,10 +5,11 @@ Mastery Tracker stores graph state in `mastery-graph.json` inside Electron's per
 ## Compatibility contract
 
 - `format` identifies the file independently from the application version.
-- `schemaVersion` is an integer and currently uses version `2`.
+- `schemaVersion` is an integer and currently uses version `3`.
 - Readers migrate older versions before hydrating the store.
-- Version 2 accepts version 1, the unversioned prototype shape, and Zustand-style `{ "state": ... }` wrappers.
+- Version 3 accepts version 2, version 1, the unversioned prototype shape, and Zustand-style `{ "state": ... }` wrappers.
 - Version 1's global `history` array is distributed into each matching node's `updateHistory` during migration.
+- Version 2 files receive default new-node level settings during migration.
 - Legacy `heat` values migrate to `momentum`.
 - Legacy cumulative `thresholds` migrate to independent `levelXpRequirements`.
 - Unknown fields are ignored, so additive fields remain backwards compatible.
@@ -16,12 +17,12 @@ Mastery Tracker stores graph state in `mastery-graph.json` inside Electron's per
 - Writes use a temporary file and keep `mastery-graph.json.backup` as the previous complete save.
 - Invalid JSON is moved aside with a `.corrupt-<timestamp>` suffix instead of being destroyed.
 
-## Version 2
+## Version 3
 
 ```json
 {
   "format": "mastery-tracker.graph",
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "savedAt": "2026-07-28T12:00:00.000Z",
   "data": {
     "roots": [
@@ -39,7 +40,7 @@ Mastery Tracker stores graph state in `mastery-graph.json` inside Electron's per
         "title": "Squat",
         "xp": 340,
         "maxLevel": 3,
-        "levelXpRequirements": [100, 200, 300],
+        "levelXpRequirements": [100, 100, 100],
         "levelReachedAt": ["2026-07-01T12:00:00.000Z"],
         "momentum": 42,
         "gates": [],
@@ -57,39 +58,44 @@ Mastery Tracker stores graph state in `mastery-graph.json` inside Electron's per
       }
     ],
     "links": [],
-    "todayXp": 60
+    "todayXp": 60,
+    "levelDefaults": {
+      "levelStepXp": 100,
+      "maxLevel": 3
+    }
   }
 }
 ```
 
-Every root and skill owns an `updateHistory` array. Entries are retained in chronological order and contain the submitted time, effort, XP, note, and timestamp for that node. Root histories currently remain empty because updates are submitted directly against mastery nodes, but the field is present so every node follows the same durable format.
+Every root and skill owns an `updateHistory` array. Entries are retained chronologically and contain the submitted time, effort, XP, note, and timestamp for that node.
 
-`roots`, `skills`, and `links` are the canonical graph. `todayXp` preserves the current prototype daily total. Transient UI state such as selections, open panels, and an unfinished create wizard is intentionally not persisted.
+`levelXpRequirements` remains the canonical per-node level-cost array. The expanded node card can replace it with one repeated step or change the node's maximum level without resetting lifetime XP.
 
-## Version 1 migration
+`levelDefaults` controls only newly created mastery nodes. The Updates pane edits these defaults directly. Existing nodes retain their own level configuration until edited individually.
 
-Version 1 stored activity in one top-level array:
+Transient UI state such as selections, open panels, unfinished updates, and an unfinished create wizard is intentionally not persisted.
+
+## Version 2 migration
+
+Version 2 already stores update history on each node but has no `levelDefaults` object. It migrates to version 3 with:
 
 ```json
 {
-  "schemaVersion": 1,
-  "data": {
-    "history": [
-      {
-        "nodeId": "squat",
-        "xp": 60
-      }
-    ]
-  }
+  "levelStepXp": 100,
+  "maxLevel": 3
 }
 ```
 
-When loaded by version 2, each entry is copied into the matching root or skill's `updateHistory`. Duplicate entry IDs are removed and entries are sorted chronologically before the file is saved back as version 2.
+Existing node-specific XP requirements and maximum levels remain unchanged.
 
-## Adding version 3
+## Version 1 migration
+
+Version 1 stores activity in one top-level `history` array. During migration, each entry is copied into the matching root or skill's `updateHistory`. Duplicate entry IDs are removed and entries are sorted chronologically.
+
+## Adding version 4
 
 1. Add a new versioned document type.
-2. Add a deterministic `v2 -> v3` migration.
+2. Add a deterministic migration to the new shape.
 3. Keep all existing migration paths.
 4. Normalize and validate the migrated result before applying it to the store.
 5. Write only the newest version after a successful load.

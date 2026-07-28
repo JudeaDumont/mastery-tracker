@@ -73,6 +73,15 @@ export function levelProgressFor(
   }
 }
 
+export function uniformLevelStepXp(
+  skill: Pick<Skill, 'levelXpRequirements' | 'maxLevel'>
+): number | null {
+  const requirements = requirementsFor(skill)
+  const first = requirements[0]
+  if (first === undefined) return null
+  return requirements.every((requiredXp) => requiredXp === first) ? first : null
+}
+
 export function totalXpRequired(
   skill: Pick<Skill, 'levelXpRequirements' | 'maxLevel'>
 ): number {

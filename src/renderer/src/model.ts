@@ -70,9 +70,15 @@ export interface CreateDraft {
   toIds: NodeId[]
 }
 
+export interface LevelDefaults {
+  levelStepXp: number
+  maxLevel: number
+}
+
 export interface GraphStateSnapshot {
   roots: Root[]
   skills: Skill[]
   links: Link[]
   todayXp: number
+  levelDefaults: LevelDefaults
 }
