@@ -36,3 +36,6 @@ batch wizard:
 - progress bar for each node should show small increments of xp as well, not just whole levels being satisfied.
 
 - created banner needs to come in then fade out at the top, and should not be part of the right pane
+
+- need to be able to change number of max levels etc.
+
