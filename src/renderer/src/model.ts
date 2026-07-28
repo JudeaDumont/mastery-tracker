@@ -79,6 +79,7 @@ export interface GraphStateSnapshot {
   roots: Root[]
   skills: Skill[]
   links: Link[]
+  xpLedger: ActivityEntry[]
   todayXp: number
   levelDefaults: LevelDefaults
 }

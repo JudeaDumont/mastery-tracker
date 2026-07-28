@@ -21,9 +21,9 @@ import {
 } from './store'
 
 export const GRAPH_FILE_FORMAT = 'mastery-tracker.graph'
-export const GRAPH_FILE_VERSION = 3
+export const GRAPH_FILE_VERSION = 4
 
-interface GraphFileV3 {
+interface GraphFileV4 {
   format: typeof GRAPH_FILE_FORMAT
   schemaVersion: typeof GRAPH_FILE_VERSION
   savedAt: string
@@ -57,6 +57,7 @@ export async function initializeMasteryPersistence(): Promise<void> {
         roots: state.roots,
         skills: state.skills,
         links: state.links,
+        xpLedger: state.xpLedger,
         todayXp: state.todayXp,
         levelDefaults: state.levelDefaults
       }
@@ -86,7 +87,7 @@ function persistCurrentState(): Promise<void> {
 }
 
 function saveSnapshot(snapshot: GraphStateSnapshot): Promise<void> {
-  const document: GraphFileV3 = {
+  const document: GraphFileV4 = {
     format: GRAPH_FILE_FORMAT,
     schemaVersion: GRAPH_FILE_VERSION,
     savedAt: new Date().toISOString(),
@@ -104,7 +105,7 @@ export function migrateGraphFile(raw: unknown): GraphStateSnapshot | null {
     const version = finiteInteger(object.schemaVersion, 0)
     if (version > GRAPH_FILE_VERSION) throw new UnsupportedGraphVersionError(version)
 
-    if (version === 3 || version === 2 || version === 1) {
+    if (version === 4 || version === 3 || version === 2 || version === 1) {
       return normalizeSnapshot(object.data)
     }
     return normalizeSnapshot(object.data ?? object.state ?? object)
@@ -126,14 +127,20 @@ function normalizeSnapshot(raw: unknown): GraphStateSnapshot | null {
   const allIds = new Set<NodeId>([...rootIds, ...normalizedSkills.map((skill) => skill.id)])
   const links = normalizeLinks(source.links, allIds)
 
-  // Version 1 stored one global history array. Version 2 stores history on each node.
+  // Version 1 stored one global history array. Version 2 stores note history on each node.
   const legacyHistory = normalizeHistory(source.history, allIds)
   const { roots, skills } = distributeHistory(normalizedRoots, normalizedSkills, legacyHistory)
+  const nodeHistory = [...roots, ...skills].flatMap((node) => node.updateHistory)
+  const xpLedger = mergeHistory(
+    normalizeHistory(source.xpLedger ?? source.dailyUpdates, allIds),
+    nodeHistory
+  )
 
   return {
     roots,
     skills,
     links,
+    xpLedger,
     todayXp: finiteNumber(source.todayXp, 0),
     levelDefaults: normalizeLevelDefaults(source)
   }

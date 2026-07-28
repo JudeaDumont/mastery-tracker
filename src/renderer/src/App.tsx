@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
 import type { RootId } from './model'
 import { Graph, type GraphViewRequest } from './ui/Graph'
 import { Updates } from './ui/Updates'
-import { useMastery } from './store'
+import { DailyUpdates } from './ui/DailyUpdates'
+import { dailyXpTotal, useMastery } from './store'
 import { isLocked, levelFor } from './xp'
 
 const CAMERA_DEBUG_EVENT = 'mastery-camera-debug'
@@ -12,13 +13,14 @@ const CAMERA_DEBUG_MAX_LINES = 100
 function App(): ReactElement {
   const roots = useMastery((state) => state.roots)
   const skills = useMastery((state) => state.skills)
-  const todayXp = useMastery((state) => state.todayXp)
+  const xpLedger = useMastery((state) => state.xpLedger)
   const lastResult = useMastery((state) => state.lastResult)
   const create = useMastery((state) => state.create)
   const [graphView, setGraphView] = useState<GraphViewRequest>({
     requestId: 0
   })
   const [cameraDebugLines, setCameraDebugLines] = useState<string[]>([])
+  const [dailyUpdatesOpen, setDailyUpdatesOpen] = useState(false)
 
   useEffect(() => {
     const onCameraDebug = (event: Event): void => {
@@ -31,6 +33,10 @@ function App(): ReactElement {
 
     window.addEventListener(CAMERA_DEBUG_EVENT, onCameraDebug)
     return () => window.removeEventListener(CAMERA_DEBUG_EVENT, onCameraDebug)
+  }, [])
+
+  const closeDailyUpdates = useCallback((): void => {
+    setDailyUpdatesOpen(false)
   }, [])
 
   const copyCameraLogs = (): void => {
@@ -46,6 +52,7 @@ function App(): ReactElement {
   }
 
   const totalXp = skills.reduce((sum, skill) => sum + skill.xp, 0)
+  const todayXp = dailyXpTotal(xpLedger)
   const graphMomentum =
     skills.length > 0
       ? Math.round(skills.reduce((sum, skill) => sum + skill.momentum, 0) / skills.length)
@@ -93,6 +100,14 @@ function App(): ReactElement {
         </nav>
 
         <div className="top-actions">
+          <button
+            className={dailyUpdatesOpen ? 'top-action--active' : ''}
+            type="button"
+            aria-expanded={dailyUpdatesOpen}
+            onClick={() => setDailyUpdatesOpen((open) => !open)}
+          >
+            Daily Updates
+          </button>
           <button type="button">Search</button>
           <div className="logs-menu">
             <button
@@ -144,6 +159,7 @@ function App(): ReactElement {
             </strong>
           </div>
           <Graph viewRequest={graphView} />
+          <DailyUpdates open={dailyUpdatesOpen} onClose={closeDailyUpdates} />
           <div className="graph-legend">
             {create ? (
               <>

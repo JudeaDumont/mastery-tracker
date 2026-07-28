@@ -251,6 +251,7 @@ interface MasteryStore {
   roots: Root[]
   skills: Skill[]
   links: Link[]
+  xpLedger: ActivityEntry[]
   pickedIds: NodeId[]
   create: CreateDraft | null
   draft: Record<SkillId, DraftUpdate>
@@ -284,6 +285,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
   roots: initialRoots,
   skills: initialSkills,
   links: initialLinks,
+  xpLedger: [],
   pickedIds: [],
   create: null,
   draft: draftFor(initialSkills),
@@ -320,8 +322,8 @@ export const useMastery = create<MasteryStore>((set, get) => ({
     set((state) => {
       const nextNote = note.trim()
       let changed = false
-      const updateHistory = (history: ActivityEntry[]): ActivityEntry[] =>
-        history.map((entry) => {
+      const updateEntries = (entries: ActivityEntry[]): ActivityEntry[] =>
+        entries.map((entry) => {
           if (entry.id !== entryId || entry.nodeId !== nodeId || entry.note === nextNote) {
             return entry
           }
@@ -331,27 +333,33 @@ export const useMastery = create<MasteryStore>((set, get) => ({
         })
 
       const roots = state.roots.map((root) =>
-        root.id === nodeId ? { ...root, updateHistory: updateHistory(root.updateHistory) } : root
+        root.id === nodeId ? { ...root, updateHistory: updateEntries(root.updateHistory) } : root
       )
       const skills = state.skills.map((skill) =>
         skill.id === nodeId
-          ? { ...skill, updateHistory: updateHistory(skill.updateHistory) }
+          ? { ...skill, updateHistory: updateEntries(skill.updateHistory) }
           : skill
       )
+      const xpLedger = updateEntries(state.xpLedger)
 
-      return changed ? { roots, skills } : state
+      return changed ? { roots, skills, xpLedger } : state
     }),
 
   removeUpdate: (nodeId, entryId) =>
     set((state) => {
       const root = state.roots.find((candidate) => candidate.id === nodeId)
       const skill = state.skills.find((candidate) => candidate.id === nodeId)
-      const entry = root?.updateHistory.find((candidate) => candidate.id === entryId)
+      const entry = state.xpLedger.find(
+        (candidate) => candidate.id === entryId && candidate.nodeId === nodeId
+      )
+        ?? root?.updateHistory.find((candidate) => candidate.id === entryId)
         ?? skill?.updateHistory.find((candidate) => candidate.id === entryId)
 
       if (!entry) return state
 
-      const removedTodayXp = isSameLocalDay(entry.occurredAt, new Date()) ? entry.xp : 0
+      const xpLedger = state.xpLedger.filter(
+        (candidate) => !(candidate.id === entryId && candidate.nodeId === nodeId)
+      )
 
       if (root) {
         return {
@@ -365,14 +373,15 @@ export const useMastery = create<MasteryStore>((set, get) => ({
                 }
               : candidate
           ),
-          todayXp: Math.max(0, state.todayXp - removedTodayXp),
+          xpLedger,
+          todayXp: dailyXpTotal(xpLedger),
           lastResult: null
         }
       }
 
       if (!skill) return state
 
-      const updatedSkill = skillAfterUpdateRemoval(skill, entryId)
+      const updatedSkill = skillAfterUpdateRemoval(skill, entryId, state.xpLedger)
       const skills = state.skills.map((candidate) =>
         candidate.id === nodeId ? updatedSkill : candidate
       )
@@ -391,7 +400,8 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       return {
         skills,
         draft,
-        todayXp: Math.max(0, state.todayXp - removedTodayXp),
+        xpLedger,
+        todayXp: dailyXpTotal(xpLedger),
         lastResult: null
       }
     }),
@@ -461,6 +471,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
     let totalXp = 0
     let updatedNodes = 0
     const occurredAt = new Date().toISOString()
+    const ledgerEntries: ActivityEntry[] = []
     const skills = before.skills.map((skill) => {
       const update = before.draft[skill.id]
       if (!update?.selected || isLocked(skill, before.skills)) return skill
@@ -471,23 +482,22 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       totalXp += xp
       updatedNodes += 1
       const note = update.note.trim()
-      const entry: ActivityEntry | null = note
-        ? {
-            id: `${occurredAt}-${skill.id}`,
-            nodeId: skill.id,
-            occurredAt,
-            minutes: update.minutes,
-            effort: update.effort,
-            xp,
-            note
-          }
-        : null
+      const entry: ActivityEntry = {
+        id: activityEntryId(occurredAt, skill.id),
+        nodeId: skill.id,
+        occurredAt,
+        minutes: update.minutes,
+        effort: update.effort,
+        xp,
+        note
+      }
+      ledgerEntries.push(entry)
 
       const updatedSkill: Skill = {
         ...skill,
         xp: skill.xp + xp,
-        momentum: Math.min(100, skill.momentum + Math.max(3, Math.round(xp / 12))),
-        updateHistory: entry ? [...skill.updateHistory, entry] : skill.updateHistory
+        momentum: Math.min(100, skill.momentum + momentumAwardForXp(xp)),
+        updateHistory: note ? [...skill.updateHistory, entry] : skill.updateHistory
       }
 
       return recordReachedLevels(updatedSkill, oldLevels.get(skill.id) ?? 0, occurredAt)
@@ -500,12 +510,14 @@ export const useMastery = create<MasteryStore>((set, get) => ({
     const unlocked = skills
       .filter((skill) => previouslyLocked.get(skill.id) && !isLocked(skill, skills))
       .map((skill) => skill.title)
+    const xpLedger = [...before.xpLedger, ...ledgerEntries]
 
     set({
       skills,
+      xpLedger,
       draft: draftFor(skills),
       pickedIds: [],
-      todayXp: before.todayXp + totalXp,
+      todayXp: dailyXpTotal(xpLedger),
       lastResult: { totalXp, updatedNodes, levelUps, unlocked }
     })
   },
@@ -558,15 +570,9 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       const deletedNodeIds = new Set<NodeId>(
         root ? [root.id, ...deletedSkillIds] : deletedSkillIds
       )
-      const removedHistory = [
-        ...(root?.updateHistory ?? []),
-        ...state.skills
-          .filter((candidate) => deletedSkillIds.has(candidate.id))
-          .flatMap((candidate) => candidate.updateHistory)
-      ]
-      const removedTodayXp = removedHistory
-        .filter((entry) => isSameLocalDay(entry.occurredAt, new Date()))
-        .reduce((sum, entry) => sum + entry.xp, 0)
+      const xpLedger = state.xpLedger.filter(
+        (entry) => !deletedNodeIds.has(entry.nodeId)
+      )
       const draft = Object.fromEntries(
         Object.entries(state.draft).filter(([skillId]) => !deletedSkillIds.has(skillId))
       ) as Record<SkillId, DraftUpdate>
@@ -589,7 +595,8 @@ export const useMastery = create<MasteryStore>((set, get) => ({
         links: state.links.filter(
           (link) => !deletedNodeIds.has(link.from) && !deletedNodeIds.has(link.to)
         ),
-        todayXp: Math.max(0, state.todayXp - removedTodayXp),
+        xpLedger,
+        todayXp: dailyXpTotal(xpLedger),
         draft,
         pickedIds: state.pickedIds.filter((pickedId) => !deletedNodeIds.has(pickedId)),
         create,
@@ -736,7 +743,8 @@ export function graphStateSnapshot(): GraphStateSnapshot {
     roots: state.roots,
     skills: state.skills,
     links: state.links,
-    todayXp: state.todayXp,
+    xpLedger: state.xpLedger,
+    todayXp: dailyXpTotal(state.xpLedger),
     levelDefaults: state.levelDefaults
   }
 }
@@ -746,7 +754,8 @@ export function applyPersistedSnapshot(snapshot: GraphStateSnapshot): void {
     roots: snapshot.roots,
     skills: snapshot.skills,
     links: snapshot.links,
-    todayXp: snapshot.todayXp,
+    xpLedger: snapshot.xpLedger,
+    todayXp: dailyXpTotal(snapshot.xpLedger),
     levelDefaults: snapshot.levelDefaults,
     draft: draftFor(snapshot.skills),
     pickedIds: [],
@@ -772,20 +781,22 @@ function recordReachedLevels(
   return { ...skill, levelReachedAt }
 }
 
-function skillAfterUpdateRemoval(skill: Skill, entryId: string): Skill {
-  const removedEntry = skill.updateHistory.find((entry) => entry.id === entryId)
-  if (!removedEntry) return skill
-
-  const remainingHistory = skill.updateHistory
-    .filter((entry) => entry.id !== entryId)
+function skillAfterUpdateRemoval(
+  skill: Skill,
+  entryId: string,
+  xpLedger: ActivityEntry[]
+): Skill {
+  const nodeLedger = xpLedger
+    .filter((entry) => entry.nodeId === skill.id)
     .sort(
       (left, right) =>
         new Date(left.occurredAt).getTime() - new Date(right.occurredAt).getTime()
     )
-  const trackedXp = skill.updateHistory.reduce(
-    (total, entry) => total + Math.max(0, entry.xp),
-    0
-  )
+  const removedEntry = nodeLedger.find((entry) => entry.id === entryId)
+  if (!removedEntry) return skill
+
+  const remainingLedger = nodeLedger.filter((entry) => entry.id !== entryId)
+  const trackedXp = nodeLedger.reduce((total, entry) => total + Math.max(0, entry.xp), 0)
   const baselineXp = Math.max(0, skill.xp - trackedXp)
   const baselineLevel = levelFor({ ...skill, xp: baselineXp })
   const levelReachedAt = Array.from({ length: skill.maxLevel }, (_, index) =>
@@ -795,7 +806,7 @@ function skillAfterUpdateRemoval(skill: Skill, entryId: string): Skill {
   let xp = baselineXp
   let previousLevel = baselineLevel
 
-  for (const entry of remainingHistory) {
+  for (const entry of remainingLedger) {
     xp += Math.max(0, entry.xp)
     const nextLevel = levelFor({ ...skill, xp })
 
@@ -811,8 +822,16 @@ function skillAfterUpdateRemoval(skill: Skill, entryId: string): Skill {
     xp,
     momentum: Math.max(0, skill.momentum - momentumAwardForXp(removedEntry.xp)),
     levelReachedAt,
-    updateHistory: remainingHistory
+    updateHistory: skill.updateHistory.filter((entry) => entry.id !== entryId)
   }
+}
+
+function activityEntryId(occurredAt: string, nodeId: NodeId): string {
+  const randomPart =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  return `${occurredAt}-${nodeId}-${randomPart}`
 }
 
 function momentumAwardForXp(xp: number): number {
@@ -907,6 +926,15 @@ export function toCandidateIds(
       .filter((skill) => !draft.fromIds.some((source) => hasPath(skill.id, source, links)))
       .map((skill) => skill.id)
   )
+}
+
+export function dailyXpTotal(
+  entries: ActivityEntry[],
+  day: Date = new Date()
+): number {
+  return entries
+    .filter((entry) => isSameLocalDay(entry.occurredAt, day))
+    .reduce((sum, entry) => sum + Math.max(0, entry.xp), 0)
 }
 
 function isSameLocalDay(occurredAt: string, day: Date): boolean {

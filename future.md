@@ -18,8 +18,6 @@ batch wizard:
 -  ng > gemsbok perf > 1986 = moving to new repo
 -  ng > gemsbok dynamic deployments > 3619 = ticket imported, need gemsbok latest after merge of 1986 metrics.
 
-- the notes at each node need to be visible on hover (starting at the bottom) and scrollable instead of those metrics,
-
 - when creating a new node, the default text for the name should be selected or "backgrounded"
 
 - need undo methodology
@@ -46,14 +44,15 @@ batch wizard:
 - root node notch overlaps notes display
 
 - switching to the create node mode changes all the colors of all the graphs in that mode.
-- visuals
+-
+- need better visual indication that a node is selected
+
+==================FINISHED============================================
+
 
 - level settings and other node settings need to be in a separate display,
 - the expanded update display should have a gear icon where settings display can be acccessed.
 - there should be a "clear button" on the updates pane that clears the current selection
-
-==================FINISHED============================================
-
 
 - double clicking a node should zoom to that node such that the full notes display could be viewed above
 - clicking on the tabs in the header should zoom to the full graph under that root node
@@ -67,3 +66,7 @@ batch wizard:
 - xp should default to 0
 - updates without notes should not create an update in history (say if just level cap changed etc.)
 - if xp is at 0 and there is a note, show a warning that there was a note with no xp, and do not continue.
+
+
+
+- the notes at each node need to be visible on hover (starting at the bottom) and scrollable instead of those metrics,
