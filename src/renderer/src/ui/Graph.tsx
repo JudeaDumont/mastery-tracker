@@ -418,18 +418,6 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
     return [...structural, ...temporary]
   }, [create, links, positions, previewLinks, roots, skills])
 
-  const graphStructureKey = useMemo(
-    () =>
-      [
-        ...roots.map((root) => `r:${root.id}`),
-        ...skills.map((skill) => `n:${skill.id}:${skill.rootId}`),
-        ...links.map((link) => `e:${link.from}>${link.to}`)
-      ]
-        .sort()
-        .join('|'),
-    [links, roots, skills]
-  )
-
   useEffect(() => {
     if (!flowInstance) {
       cameraDebug('view-request-skipped-no-flow', viewRequest)
@@ -588,7 +576,6 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
       }}
     >
       <ReactFlow
-        key={`graph-${graphStructureKey}-${create?.step ?? 'inspect'}-${create?.fromIds.join(',') ?? ''}-${create?.toIds.join(',') ?? ''}`}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}

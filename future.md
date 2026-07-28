@@ -40,11 +40,18 @@ batch wizard:
 
 - selecting a node should have some kind of highlighting effect on its attached edges all the way down to leaves.
 
-- double clicking a node should zoom to that node such that the full notes display could be viewed above
-- clicking on the tabs in the header should zoom to the full graph under that root node
+- tabs should be able to grow past 4, and should have horizontal arrows to select more.
+
+- max level should be capped at like 30 or something, otherwise the visual is indescipherable
+- root node notch overlaps notes display
 
 
 ==================FINISHED============================================
+
+
+- double clicking a node should zoom to that node such that the full notes display could be viewed above
+- clicking on the tabs in the header should zoom to the full graph under that root node
+
 - need a way of setting "level steps", where in the update pane I can set the additional xp for another level,
   putting in 1000 would mean each level requires another 1000 xp, the default for a level up should be about 100
   the wizard should not ask for this value, but should offer a box in which the default can be changed  need to be able to change number of max levels as well etc.
