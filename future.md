@@ -46,13 +46,20 @@ batch wizard:
 - switching to the create node mode changes all the colors of all the graphs in that mode.
 -
 - need better visual indication that a node is selected
--
-- each node can have "parallelized stacks", and "sequential stacks" associated with it
+
+
 - create a sequential stack for getting ng setup,
-- stacks need to be on their own display that allow a user to associate "tasks" with "stacks they are found in"
-- I want to be able to write a stack freeform, and the software needs to be able to determine that two tasks are the same task
-- so when I enter in an update, I want to be able to "check containing stacks" for each line in a note
- - and then special icons for identifying common parallel/sequential stacks increases productivity.
+-
+- support for task stacks
+- denoting a tasks relatinoship to the next task as "parallel" or "sequential" is useful
+- this would be a separate display that batches together updates that are typically ran together
+- these would be used to visually showcase effective task execution.
+- so id go to this display and look at a stack I want to prioritize, and execute it
+- then it would walk me through updating each node associated with each task
+- for every update it would zoom to the node i am currently updating so I can see more of the surrounding graph around each node
+-
+- stacks need to be on their own display
+ -
  - sequential stacks can also be paralellized in a side by side dynamic: (complicated)-
   - smart card                  -
   - login                       -
@@ -60,12 +67,14 @@ batch wizard:
   - but this is more about identifying long running tasks in sequential stacks
 
 
-- template text for deadlines is confusing, should jsut say "type date numbers" or some shit
-- deadline pane in notes display takes up too much real estate, lets put it behind the deadline icon
+
 
 
 
 ==================FINISHED============================================
+- template text for deadlines is confusing, should jsut say "type date numbers" or some shit
+- deadline pane in notes display takes up too much real estate, lets put it behind the deadline icon
+-
 - the color for deadline materials should be a deep forest green, glowing lime greem
 - an update can have a "deadline" associated with it
 - nodes that have a deadline should be marked with an icon affixed to the top of the node
