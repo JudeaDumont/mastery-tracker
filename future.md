@@ -11,7 +11,7 @@ batch wizard:
 - each node should have a "recurring expected tasks" associated with it
 - visual for this should be little unfilled orbs attached to the node, on hover would show the task that recurred
 
-- each node should have "parallelized stacks" associated with it
+
 - each node needs update history
 
 - create node structure:
@@ -46,6 +46,31 @@ batch wizard:
 - switching to the create node mode changes all the colors of all the graphs in that mode.
 -
 - need better visual indication that a node is selected
+-
+- each node can have "parallelized stacks", and "sequential stacks" associated with it
+- create a sequential stack for getting ng setup,
+ - this would just be a mode for notes, where each step is delineated by a new line
+ - and then special icons for identifying common parallel/sequential stacks increases productivity.
+ - sequential stacks can also be paralellized in a side by side dynamic: (complicated)-
+  - smart card                  -
+  - login                       -
+  - setup argo (long running)   - cgpt for other ng task
+  - but this is more about identifying long running tasks in sequential stacks
+
+- the color for deadline materials should be a deep forest green, glowing lime greem
+- an update can have a "deadline" associated with it
+- nodes that have a deadline should be marked with an icon affixed to the top of the node
+- hovering over this icon should reveal what update is due and when
+- the same icon should be found in the header, and this should give a display of what is due,
+- the display should be a scrollable area that starts at the bottom, where the soonest deadline can be found
+- the later deadlines follow above in order
+- both the notes display and the deadlines display should contain a textbox to enter or edit a deadline, and a deadline icon crossed out to remove them
+- the text box should accept many forms of dates, and needs to be smart about interpreting them.
+- "08/13", "1231", "20260813", "13 days", "08/13/2026", "0119" should all be considered valid and set correct assumed dates internally
+- 08/13/2026, 12/31/2026, 08/11/2026, 08/13/2026, "01/19/2027"
+- do not interpret past the day.
+-
+
 
 ==================FINISHED============================================
 
