@@ -289,6 +289,9 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
         deadlineEntries: xpLedger.filter(
           (entry) => entry.nodeId === root.id && Boolean(entry.deadlineOn)
         ),
+        opportuneEntries: xpLedger.filter(
+          (entry) => entry.nodeId === root.id && Boolean(entry.opportuneOn)
+        ),
         activitySelected: pickedIds.includes(root.id),
         visual: visualFor(
           root.id,
@@ -324,6 +327,9 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
         deadlineEntries: xpLedger.filter(
           (entry) => entry.nodeId === skill.id && Boolean(entry.deadlineOn)
         ),
+        opportuneEntries: xpLedger.filter(
+          (entry) => entry.nodeId === skill.id && Boolean(entry.opportuneOn)
+        ),
         activitySelected: pickedIds.includes(skill.id),
         visual: visualFor(
           skill.id,
@@ -355,6 +361,7 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
             root: preview.root,
             updateHistory: [],
             deadlineEntries: [],
+            opportuneEntries: [],
             currentLevelProgress: 0,
             visual: 'preview'
           })

@@ -2564,3 +2564,641 @@ button { color: inherit; }
   .deadline-card__icon { width: 32px; height: 32px; padding: 7px; }
   .deadline-card__content > header { flex-direction: column; gap: 4px; }
 }
+
+/* Opportune-time scheduling */
+:root {
+  --opportune-forest: #02160c;
+  --opportune-forest-deep: #010c06;
+  --opportune-lime: #c8ff45;
+  --opportune-lime-soft: rgba(200, 255, 69, .78);
+}
+
+.opportune-header-button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  min-width: 38px;
+  height: 36px;
+  padding: 7px !important;
+  border: 1px solid rgba(200, 255, 69, .34) !important;
+  background: rgba(2, 22, 12, .86) !important;
+  color: var(--opportune-lime) !important;
+  box-shadow:
+    inset 0 0 18px rgba(200, 255, 69, .06),
+    0 0 14px rgba(200, 255, 69, .12);
+}
+.opportune-header-button:hover,
+.opportune-header-button--active {
+  border-color: rgba(200, 255, 69, .78) !important;
+  background: rgba(2, 22, 12, .98) !important;
+  box-shadow:
+    inset 0 0 20px rgba(200, 255, 69, .13),
+    0 0 21px rgba(200, 255, 69, .34);
+}
+.opportune-header-button svg,
+.opportune-heading-icon svg,
+.node-opportune-marker > button svg,
+.deadline-card--opportune .deadline-card__icon svg,
+.deadline-editor--opportune .deadline-editor__remove svg,
+.node-update-history-entry__opportune-button svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.opportune-header-button > span {
+  position: absolute;
+  top: -6px;
+  right: -7px;
+  min-width: 17px;
+  height: 17px;
+  display: grid;
+  place-items: center;
+  padding: 0 4px;
+  border: 1px solid rgba(200, 255, 69, .86);
+  border-radius: 999px;
+  background: var(--opportune-forest-deep);
+  color: var(--opportune-lime);
+  font-size: 9px;
+  font-weight: 800;
+  box-shadow: 0 0 12px rgba(200, 255, 69, .5);
+}
+
+.node-opportune-marker {
+  position: absolute;
+  top: -11px;
+  left: -5px;
+  z-index: 18;
+}
+.node-opportune-marker > button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 5px;
+  border: 1px solid rgba(200, 255, 69, .82);
+  border-radius: 50%;
+  background: var(--opportune-forest);
+  color: var(--opportune-lime);
+  cursor: help;
+  box-shadow:
+    inset 0 0 14px rgba(200, 255, 69, .16),
+    0 0 9px rgba(200, 255, 69, .66),
+    0 0 24px rgba(200, 255, 69, .32);
+}
+.node-opportune-marker > button svg { width: 17px; height: 17px; }
+.node-opportune-tooltip {
+  position: absolute;
+  left: -18px;
+  bottom: calc(100% + 10px);
+  width: 330px;
+  max-height: 280px;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid rgba(200, 255, 69, .58);
+  border-radius: 13px;
+  background: rgba(1, 12, 6, .99);
+  color: #f1ffd7;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, .58), 0 0 28px rgba(200, 255, 69, .2);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(5px);
+  pointer-events: none;
+  transition: opacity .13s ease, transform .13s ease, visibility .13s ease;
+  text-align: left;
+}
+.node-opportune-marker:hover .node-opportune-tooltip,
+.node-opportune-marker:focus-within .node-opportune-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.mastery-node.node--opportune-hover .node-update-history-tooltip {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.node-opportune-tooltip > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba(200, 255, 69, .22);
+}
+.node-opportune-tooltip > header strong { font-size: 13px; }
+.node-opportune-tooltip > header span { color: var(--opportune-lime-soft); font-size: 10px; }
+.node-opportune-tooltip > div { display: flex; flex-direction: column; }
+.node-opportune-tooltip article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 9px;
+  padding: 10px 1px;
+  border-bottom: 1px solid rgba(200, 255, 69, .13);
+}
+.node-opportune-tooltip article:last-child { border-bottom: 0; }
+.node-opportune-tooltip article > strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+.node-opportune-tooltip article time {
+  grid-column: 2;
+  color: var(--opportune-lime-soft);
+  font-size: 10px;
+}
+.node-opportune-tooltip__status {
+  grid-row: 1 / span 2;
+  align-self: start;
+  padding: 3px 6px;
+  border: 1px solid rgba(200, 255, 69, .36);
+  border-radius: 999px;
+  color: var(--opportune-lime);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.node-opportune-tooltip__status--overdue {
+  border-color: rgba(200, 255, 69, .2);
+  color: rgba(200, 255, 69, .58);
+}
+
+.node-update-history-entry > header { padding-right: 87px; }
+.node-update-history-entry__opportune-control {
+  position: absolute;
+  top: 7px;
+  right: 65px;
+  z-index: 5;
+}
+.node-update-history-entry__opportune-button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: rgba(135, 158, 150, .62);
+  cursor: pointer;
+  opacity: .78;
+  transition:
+    color .12s ease,
+    border-color .12s ease,
+    background .12s ease,
+    box-shadow .12s ease,
+    opacity .12s ease;
+}
+.node-update-history-entry__opportune-button:hover,
+.node-update-history-entry__opportune-button:focus-visible,
+.node-update-history-entry__opportune-button[aria-expanded='true'] {
+  border-color: rgba(200, 255, 69, .55);
+  background: rgba(2, 22, 12, .9);
+  color: var(--opportune-lime);
+  box-shadow: 0 0 14px rgba(200, 255, 69, .24);
+  opacity: 1;
+  outline: none;
+}
+.node-update-history-entry__opportune-button--active {
+  border-color: rgba(200, 255, 69, .55);
+  background: rgba(2, 22, 12, .84);
+  color: var(--opportune-lime);
+  box-shadow: 0 0 13px rgba(200, 255, 69, .25);
+  opacity: 1;
+}
+.node-update-history-entry__opportune-popover {
+  position: absolute;
+  top: -1px;
+  right: 29px;
+  z-index: 20;
+  width: 235px;
+  padding: 0;
+  border-radius: 11px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .52), 0 0 25px rgba(200, 255, 69, .16);
+}
+.node-update-history-entry__opportune-popover .deadline-editor { margin-top: 0; }
+
+.deadline-editor--opportune {
+  border-color: rgba(200, 255, 69, .28);
+  background: rgba(1, 12, 6, .78);
+  color: #f1ffd7;
+}
+.deadline-editor--opportune label > span { color: var(--opportune-lime-soft); }
+.deadline-editor--opportune input {
+  border-color: rgba(200, 255, 69, .36);
+  background: rgba(0, 8, 4, .94);
+  color: #f3ffdf;
+}
+.deadline-editor--opportune input::placeholder { color: rgba(194, 221, 156, .42); }
+.deadline-editor--opportune input:focus {
+  border-color: rgba(200, 255, 69, .82);
+  box-shadow: 0 0 0 2px rgba(200, 255, 69, .12), 0 0 14px rgba(200, 255, 69, .14);
+}
+.deadline-editor--opportune .deadline-editor__remove {
+  border-color: rgba(200, 255, 69, .42);
+  background: rgba(2, 22, 12, .9);
+  color: var(--opportune-lime);
+}
+.deadline-editor--opportune .deadline-editor__remove:hover,
+.deadline-editor--opportune .deadline-editor__remove:focus-visible {
+  border-color: rgba(200, 255, 69, .84);
+  box-shadow: 0 0 16px rgba(200, 255, 69, .3);
+}
+
+.schedule-heading-icons {
+  position: relative;
+  width: 64px;
+  min-width: 64px;
+  height: 50px;
+  display: block;
+}
+.schedule-heading-icons .deadline-heading-icon,
+.schedule-heading-icons .opportune-heading-icon {
+  position: absolute;
+  top: 3px;
+  width: 44px;
+  height: 44px;
+}
+.schedule-heading-icons .deadline-heading-icon { left: 0; }
+.opportune-heading-icon {
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  border: 1px solid rgba(200, 255, 69, .62);
+  border-radius: 50%;
+  background: var(--opportune-forest);
+  color: var(--opportune-lime);
+  box-shadow: 0 0 24px rgba(200, 255, 69, .3);
+}
+.schedule-heading-icons .opportune-heading-icon { right: 0; top: 0; }
+.deadlines-overlay__summary-opportune strong { color: var(--opportune-lime); }
+
+.deadline-card--opportune {
+  border-color: rgba(200, 255, 69, .25);
+  background: rgba(2, 25, 13, .84);
+}
+.deadline-card--opportune.deadline-card--soonest {
+  border-color: rgba(200, 255, 69, .68);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, .34), 0 0 29px rgba(200, 255, 69, .18);
+}
+.deadline-card--opportune.deadline-card--overdue {
+  border-color: rgba(200, 255, 69, .18);
+  opacity: .78;
+}
+.deadline-card--opportune .deadline-card__icon {
+  border-color: rgba(200, 255, 69, .6);
+  background: var(--opportune-forest-deep);
+  color: var(--opportune-lime);
+  box-shadow: 0 0 20px rgba(200, 255, 69, .28);
+}
+.deadline-card--opportune.deadline-card--overdue .deadline-card__icon {
+  border-color: rgba(200, 255, 69, .28);
+  color: rgba(200, 255, 69, .66);
+}
+.deadline-card--opportune .deadline-card__content > header span {
+  color: var(--opportune-lime);
+}
+.deadline-card--opportune.deadline-card--overdue .deadline-card__content > header span {
+  color: rgba(200, 255, 69, .62);
+}
+.deadline-card--opportune .deadline-card__content > header time { color: #eaffb8; }
+
+@media (max-width: 760px) {
+  .schedule-heading-icons { width: 58px; min-width: 58px; }
+  .schedule-heading-icons .deadline-heading-icon,
+  .schedule-heading-icons .opportune-heading-icon { width: 40px; height: 40px; }
+}
+
+/* Combined deadline + opportune scheduling marker */
+.schedule-combo-icon {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 20px;
+  min-height: 20px;
+}
+.schedule-combo-icon__deadline,
+.schedule-combo-icon__opportune {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 72%;
+  height: 72%;
+  transition: color .15s ease, opacity .15s ease, filter .15s ease;
+}
+.schedule-combo-icon__opportune {
+  left: 0;
+  bottom: 0;
+  z-index: 1;
+  color: rgba(116, 143, 115, .4);
+  opacity: .55;
+}
+.schedule-combo-icon__deadline {
+  top: 0;
+  right: 0;
+  z-index: 2;
+  color: rgba(116, 143, 115, .45);
+  opacity: .62;
+}
+.schedule-combo-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.schedule-combo-icon--deadline-active .schedule-combo-icon__deadline {
+  color: var(--deadline-lime);
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(168, 255, 79, .66));
+}
+.schedule-combo-icon--opportune-active .schedule-combo-icon__opportune {
+  color: var(--opportune-lime);
+  opacity: 1;
+  filter: drop-shadow(0 0 5px rgba(200, 255, 69, .72));
+}
+.schedule-combo-icon--opportune-today .schedule-combo-icon__opportune {
+  color: #ff4d61;
+  opacity: 1;
+  filter:
+    drop-shadow(0 0 4px rgba(255, 77, 97, .95))
+    drop-shadow(0 0 9px rgba(255, 77, 97, .58));
+}
+
+.schedule-header-button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  min-width: 40px;
+  height: 36px;
+  padding: 5px !important;
+  border: 1px solid rgba(184, 255, 74, .36) !important;
+  background: linear-gradient(145deg, rgba(8, 42, 27, .88), rgba(1, 18, 9, .94)) !important;
+  box-shadow:
+    inset 0 0 18px rgba(184, 255, 74, .08),
+    0 0 14px rgba(184, 255, 74, .12);
+}
+.schedule-header-button:hover,
+.schedule-header-button--active {
+  border-color: rgba(184, 255, 74, .76) !important;
+  background: linear-gradient(145deg, rgba(9, 50, 31, .98), rgba(1, 22, 11, .99)) !important;
+  box-shadow:
+    inset 0 0 20px rgba(184, 255, 74, .13),
+    0 0 22px rgba(184, 255, 74, .3);
+}
+.schedule-header-button .schedule-combo-icon {
+  width: 27px;
+  height: 27px;
+}
+.schedule-header-count {
+  position: absolute;
+  top: -6px;
+  right: -7px;
+  min-width: 17px;
+  height: 17px;
+  display: grid;
+  place-items: center;
+  padding: 0 4px;
+  border: 1px solid rgba(184, 255, 74, .82);
+  border-radius: 999px;
+  background: #021109;
+  color: #c9ff4c;
+  font-size: 9px;
+  font-weight: 800;
+  box-shadow: 0 0 12px rgba(184, 255, 74, .44);
+}
+
+.node-schedule-marker {
+  position: absolute;
+  top: -13px;
+  right: -7px;
+  z-index: 20;
+}
+.node-schedule-marker > button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border: 1px solid rgba(184, 255, 74, .78);
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(8, 42, 27, .98), rgba(1, 17, 8, .99));
+  cursor: help;
+  box-shadow:
+    inset 0 0 14px rgba(184, 255, 74, .14),
+    0 0 9px rgba(184, 255, 74, .56),
+    0 0 22px rgba(184, 255, 74, .25);
+}
+.node-schedule-marker > button .schedule-combo-icon {
+  width: 23px;
+  height: 23px;
+}
+.node-schedule-tooltip {
+  position: absolute;
+  right: -18px;
+  bottom: calc(100% + 10px);
+  width: 350px;
+  max-height: 300px;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid rgba(184, 255, 74, .52);
+  border-radius: 13px;
+  background: rgba(2, 18, 10, .99);
+  color: #efffdf;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .58), 0 0 28px rgba(184, 255, 74, .17);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(5px);
+  pointer-events: none;
+  transition: opacity .13s ease, transform .13s ease, visibility .13s ease;
+  text-align: left;
+}
+.node-schedule-marker:hover .node-schedule-tooltip,
+.node-schedule-marker:focus-within .node-schedule-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.mastery-node.node--schedule-hover .node-update-history-tooltip {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.node-schedule-tooltip > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba(184, 255, 74, .2);
+}
+.node-schedule-tooltip > header strong { font-size: 13px; }
+.node-schedule-tooltip > header span {
+  color: rgba(205, 255, 129, .76);
+  font-size: 9px;
+  white-space: nowrap;
+}
+.node-schedule-tooltip > div { display: flex; flex-direction: column; }
+.node-schedule-tooltip__entry {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 9px;
+  padding: 10px 1px;
+  border-bottom: 1px solid rgba(184, 255, 74, .12);
+}
+.node-schedule-tooltip__entry:last-child { border-bottom: 0; }
+.node-schedule-tooltip__entry > strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+.node-schedule-tooltip__entry time {
+  grid-column: 2;
+  color: rgba(205, 255, 129, .74);
+  font-size: 10px;
+}
+.node-schedule-tooltip__status {
+  grid-row: 1 / span 2;
+  align-self: start;
+  padding: 3px 6px;
+  border: 1px solid rgba(168, 255, 79, .34);
+  border-radius: 999px;
+  color: var(--deadline-lime);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  white-space: nowrap;
+}
+.node-schedule-tooltip__entry--opportune .node-schedule-tooltip__status {
+  border-color: rgba(200, 255, 69, .42);
+  color: var(--opportune-lime);
+}
+.node-schedule-tooltip__entry--overdue .node-schedule-tooltip__status {
+  border-color: rgba(255, 112, 123, .42);
+  color: #ff9aa4;
+}
+.node-schedule-tooltip__entry--opportune.node-schedule-tooltip__entry--today .node-schedule-tooltip__status {
+  border-color: rgba(255, 77, 97, .72);
+  color: #ff6476;
+  box-shadow: 0 0 9px rgba(255, 77, 97, .24);
+}
+
+.schedule-heading-combo {
+  width: 54px;
+  min-width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  padding: 7px;
+  border: 1px solid rgba(184, 255, 74, .5);
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(8, 42, 27, .96), rgba(1, 17, 8, .98));
+  box-shadow: 0 0 24px rgba(184, 255, 74, .22);
+}
+.schedule-heading-combo .schedule-combo-icon {
+  width: 39px;
+  height: 39px;
+}
+.deadlines-empty .schedule-heading-combo {
+  width: 58px;
+  min-width: 58px;
+  height: 58px;
+}
+
+.node-opportune-sparkles {
+  position: absolute;
+  inset: -18px;
+  z-index: 17;
+  pointer-events: none;
+  border-radius: 50%;
+  animation: opportune-aura 1.9s ease-in-out infinite;
+}
+.node-opportune-sparkles i {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #b9ff3f;
+  box-shadow:
+    0 0 5px rgba(185, 255, 63, .95),
+    0 0 13px rgba(96, 255, 91, .78);
+  opacity: 0;
+  animation: opportune-sparkle 1.8s ease-in-out infinite;
+}
+.node-opportune-sparkles i::before,
+.node-opportune-sparkles i::after {
+  content: '';
+  position: absolute;
+  inset: 2px -3px;
+  height: 1px;
+  background: rgba(219, 255, 142, .95);
+  box-shadow: 0 0 5px rgba(185, 255, 63, .9);
+}
+.node-opportune-sparkles i::after {
+  inset: -3px 2px;
+  width: 1px;
+  height: auto;
+}
+.node-opportune-sparkles i:nth-child(1) { top: 3%; left: 28%; animation-delay: 0s; }
+.node-opportune-sparkles i:nth-child(2) { top: 17%; right: 5%; animation-delay: .28s; }
+.node-opportune-sparkles i:nth-child(3) { top: 54%; right: -1%; animation-delay: .57s; }
+.node-opportune-sparkles i:nth-child(4) { bottom: 4%; right: 28%; animation-delay: .86s; }
+.node-opportune-sparkles i:nth-child(5) { bottom: 14%; left: 3%; animation-delay: 1.14s; }
+.node-opportune-sparkles i:nth-child(6) { top: 34%; left: -2%; animation-delay: 1.42s; }
+.node--opportune-today .node-core {
+  animation: opportune-core-pulse 2.1s ease-in-out infinite;
+}
+@keyframes opportune-sparkle {
+  0%, 68%, 100% { opacity: 0; transform: scale(.35) rotate(0deg); }
+  76% { opacity: 1; transform: scale(1.35) rotate(45deg); }
+  88% { opacity: .55; transform: scale(.72) rotate(90deg); }
+}
+@keyframes opportune-aura {
+  0%, 100% { box-shadow: 0 0 0 rgba(111, 255, 79, 0); }
+  50% { box-shadow: 0 0 27px rgba(111, 255, 79, .24); }
+}
+@keyframes opportune-core-pulse {
+  0%, 100% { box-shadow: inset 0 0 22px rgba(var(--family-rgb), calc(.08 + .16 * var(--momentum))), 0 0 calc(7px + 18px * var(--momentum)) rgba(var(--family-rgb), calc(.06 + .22 * var(--momentum))); }
+  50% { box-shadow: inset 0 0 24px rgba(133, 255, 84, .18), 0 0 24px rgba(126, 255, 77, .32); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node-opportune-sparkles,
+  .node-opportune-sparkles i,
+  .node--opportune-today .node-core {
+    animation: none;
+  }
+  .node-opportune-sparkles i { opacity: .72; }
+}
+
+.node-update-history-entry__opportune-button--today,
+.node-update-history-entry__opportune-button--today:hover,
+.node-update-history-entry__opportune-button--today:focus-visible {
+  border-color: rgba(255, 77, 97, .72);
+  background: rgba(40, 4, 10, .9);
+  color: #ff4d61;
+  box-shadow: 0 0 14px rgba(255, 77, 97, .34);
+  opacity: 1;
+}
+.deadline-card--opportune.deadline-card--today .deadline-card__icon {
+  border-color: rgba(255, 77, 97, .72);
+  color: #ff4d61;
+  box-shadow: 0 0 20px rgba(255, 77, 97, .3);
+}
+.deadline-card--opportune.deadline-card--today .deadline-card__content > header span {
+  color: #ff6476;
+}

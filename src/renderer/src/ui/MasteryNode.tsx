@@ -6,6 +6,8 @@ import { deadlineStatus, formatDeadlineLong } from '../deadline'
 import { useMastery } from '../store'
 import { DeadlineEditor } from './DeadlineEditor'
 import { DeadlineIcon } from './DeadlineIcon'
+import { OpportunityIcon } from './OpportunityIcon'
+import { ScheduleIcon } from './ScheduleIcon'
 
 export type NodeVisual =
   | 'normal'
@@ -34,6 +36,7 @@ export interface MasteryNodeData extends Record<string, unknown> {
   currentLevelProgress?: number
   updateHistory?: ActivityEntry[]
   deadlineEntries?: ActivityEntry[]
+  opportuneEntries?: ActivityEntry[]
   visual: NodeVisual
 }
 
@@ -153,8 +156,9 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null)
   const [confirmingEntryId, setConfirmingEntryId] = useState<string | null>(null)
   const [deadlineEntryId, setDeadlineEntryId] = useState<string | null>(null)
+  const [opportuneEntryId, setOpportuneEntryId] = useState<string | null>(null)
   const [draftNote, setDraftNote] = useState('')
-  const [deadlineHover, setDeadlineHover] = useState(false)
+  const [scheduleHover, setScheduleHover] = useState(false)
   const editUpdateNote = useMastery((state) => state.editUpdateNote)
   const removeUpdate = useMastery((state) => state.removeUpdate)
   const updateHistory = [...(data.updateHistory ?? [])].sort(
@@ -163,6 +167,33 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
   const deadlineEntries = [...(data.deadlineEntries ?? [])]
     .filter((entry): entry is ActivityEntry & { deadlineOn: string } => Boolean(entry.deadlineOn))
     .sort((left, right) => left.deadlineOn.localeCompare(right.deadlineOn))
+  const opportuneEntries = [...(data.opportuneEntries ?? [])]
+    .filter((entry): entry is ActivityEntry & { opportuneOn: string } => Boolean(entry.opportuneOn))
+    .sort((left, right) => left.opportuneOn.localeCompare(right.opportuneOn))
+  const scheduledEntries: Array<{
+    kind: 'deadline' | 'opportune'
+    dateOn: string
+    entry: ActivityEntry
+  }> = [
+    ...deadlineEntries.map((entry) => ({
+      kind: 'deadline' as const,
+      dateOn: entry.deadlineOn,
+      entry
+    })),
+    ...opportuneEntries.map((entry) => ({
+      kind: 'opportune' as const,
+      dateOn: entry.opportuneOn,
+      entry
+    }))
+  ].sort((left, right) => {
+    const dateOrder = left.dateOn.localeCompare(right.dateOn)
+    if (dateOrder !== 0) return dateOrder
+    return left.kind.localeCompare(right.kind)
+  })
+  const hasSchedules = scheduledEntries.length > 0
+  const opportuneToday = opportuneEntries.some(
+    (entry) => deadlineStatus(entry.opportuneOn) === 'today'
+  )
 
   useEffect(() => {
     if (!confirmingEntryId) return
@@ -187,6 +218,7 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
   const beginNoteEdit = (entry: ActivityEntry): void => {
     setConfirmingEntryId(null)
     setDeadlineEntryId(null)
+    setOpportuneEntryId(null)
     setEditingEntryId(entry.id)
     setDraftNote(entry.note)
   }
@@ -200,6 +232,7 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
     stopNoteEdit()
     setConfirmingEntryId(null)
     setDeadlineEntryId(null)
+    setOpportuneEntryId(null)
   }
 
   const saveNoteEdit = (entry: ActivityEntry): void => {
@@ -210,6 +243,7 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
   const beginUpdateRemoval = (entry: ActivityEntry): void => {
     stopNoteEdit()
     setDeadlineEntryId(null)
+    setOpportuneEntryId(null)
     setConfirmingEntryId(entry.id)
   }
 
@@ -226,7 +260,8 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
     data.maxed && !data.root ? 'node--maxed' : '',
     data.activitySelected ? 'node--activity' : '',
     data.historyPinned ? 'node--history-pinned' : '',
-    deadlineHover ? 'node--deadline-hover' : '',
+    scheduleHover ? 'node--schedule-hover' : '',
+    opportuneToday ? 'node--opportune-today' : '',
     `node--${data.visual}`
   ]
     .filter(Boolean)
@@ -262,39 +297,72 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
         </span>
       )}
 
-      {deadlineEntries.length > 0 && (
+      {opportuneToday && (
+        <span className="node-opportune-sparkles" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+          <i />
+          <i />
+          <i />
+        </span>
+      )}
+
+      {hasSchedules && (
         <div
-          className="node-deadline-marker nowheel nodrag"
-          onMouseEnter={() => setDeadlineHover(true)}
-          onMouseLeave={() => setDeadlineHover(false)}
+          className="node-schedule-marker nowheel nodrag"
+          onMouseEnter={() => setScheduleHover(true)}
+          onMouseLeave={() => setScheduleHover(false)}
           onClick={(event) => event.stopPropagation()}
           onPointerDown={(event) => event.stopPropagation()}
         >
           <button
             type="button"
-            aria-label={`${deadlineEntries.length} ${deadlineEntries.length === 1 ? 'deadline' : 'deadlines'} for ${data.title}`}
+            aria-label={`${deadlineEntries.length} ${deadlineEntries.length === 1 ? 'deadline' : 'deadlines'} and ${opportuneEntries.length} opportune ${opportuneEntries.length === 1 ? 'time' : 'times'} for ${data.title}`}
           >
-            <DeadlineIcon />
+            <ScheduleIcon
+              deadlineActive={deadlineEntries.length > 0}
+              opportuneActive={opportuneEntries.length > 0}
+              opportuneToday={opportuneToday}
+            />
           </button>
-          <div className="node-deadline-tooltip" role="tooltip">
+          <div className="node-schedule-tooltip" role="tooltip">
             <header>
               <strong>{data.title}</strong>
-              <span>{deadlineEntries.length === 1 ? 'Deadline' : `${deadlineEntries.length} deadlines`}</span>
+              <span>
+                {deadlineEntries.length} deadline{deadlineEntries.length === 1 ? '' : 's'} ·{' '}
+                {opportuneEntries.length} opportune
+              </span>
             </header>
             <div>
-              {deadlineEntries.map((entry) => (
-                <article key={entry.id}>
-                  <span className={`node-deadline-tooltip__status node-deadline-tooltip__status--${deadlineStatus(entry.deadlineOn)}`}>
-                    {deadlineStatus(entry.deadlineOn) === 'overdue'
+              {scheduledEntries.map(({ kind, dateOn, entry }) => {
+                const status = deadlineStatus(dateOn)
+                const label =
+                  kind === 'deadline'
+                    ? status === 'overdue'
                       ? 'Overdue'
-                      : deadlineStatus(entry.deadlineOn) === 'today'
-                        ? 'Today'
-                        : 'Due'}
-                  </span>
-                  <strong>{entry.note.trim() || `XP update from ${formatUpdateDate(entry.occurredAt)}`}</strong>
-                  <time dateTime={entry.deadlineOn}>{formatDeadlineLong(entry.deadlineOn)}</time>
-                </article>
-              ))}
+                      : status === 'today'
+                        ? 'Due today'
+                        : 'Deadline'
+                    : status === 'overdue'
+                      ? 'Passed'
+                      : status === 'today'
+                        ? 'Address today'
+                        : 'Opportune'
+
+                return (
+                  <article
+                    key={`${kind}:${entry.id}`}
+                    className={`node-schedule-tooltip__entry node-schedule-tooltip__entry--${kind} node-schedule-tooltip__entry--${status}`}
+                  >
+                    <span className="node-schedule-tooltip__status">{label}</span>
+                    <strong>
+                      {entry.note.trim() || `XP update from ${formatUpdateDate(entry.occurredAt)}`}
+                    </strong>
+                    <time dateTime={dateOn}>{formatDeadlineLong(dateOn)}</time>
+                  </article>
+                )
+              })}
             </div>
           </div>
         </div>
@@ -368,34 +436,71 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
               updateHistory.map((entry) => (
                 <article className="node-update-history-entry" key={entry.id}>
                   {confirmingEntryId !== entry.id && (
-                    <div className="node-update-history-entry__deadline-control nowheel nodrag">
-                      <button
-                        className={`node-update-history-entry__deadline-button ${entry.deadlineOn ? 'node-update-history-entry__deadline-button--active' : ''}`}
-                        type="button"
-                        aria-label={entry.deadlineOn ? 'Edit deadline' : 'Add deadline'}
-                        title={entry.deadlineOn ? 'Edit deadline' : 'Add deadline'}
-                        aria-expanded={deadlineEntryId === entry.id}
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          setEditingEntryId(null)
-                          setConfirmingEntryId(null)
-                          setDeadlineEntryId((current) => (current === entry.id ? null : entry.id))
-                        }}
-                        onPointerDown={(event) => event.stopPropagation()}
-                      >
-                        <DeadlineIcon />
-                      </button>
-
-                      {deadlineEntryId === entry.id && (
-                        <div
-                          className="node-update-history-entry__deadline-popover"
-                          onClick={(event) => event.stopPropagation()}
+                    <>
+                      <div className="node-update-history-entry__opportune-control nowheel nodrag">
+                        <button
+                          className={`node-update-history-entry__opportune-button ${entry.opportuneOn ? 'node-update-history-entry__opportune-button--active' : ''} ${entry.opportuneOn && deadlineStatus(entry.opportuneOn) === 'today' ? 'node-update-history-entry__opportune-button--today' : ''}`}
+                          type="button"
+                          aria-label={entry.opportuneOn ? 'Edit opportune time' : 'Add opportune time'}
+                          title={entry.opportuneOn ? 'Edit opportune time' : 'Add opportune time'}
+                          aria-expanded={opportuneEntryId === entry.id}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            setEditingEntryId(null)
+                            setConfirmingEntryId(null)
+                            setDeadlineEntryId(null)
+                            setOpportuneEntryId((current) =>
+                              current === entry.id ? null : entry.id
+                            )
+                          }}
                           onPointerDown={(event) => event.stopPropagation()}
                         >
-                          <DeadlineEditor entry={entry} compact />
-                        </div>
-                      )}
-                    </div>
+                          <OpportunityIcon />
+                        </button>
+
+                        {opportuneEntryId === entry.id && (
+                          <div
+                            className="node-update-history-entry__opportune-popover"
+                            onClick={(event) => event.stopPropagation()}
+                            onPointerDown={(event) => event.stopPropagation()}
+                          >
+                            <DeadlineEditor entry={entry} compact kind="opportune" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="node-update-history-entry__deadline-control nowheel nodrag">
+                        <button
+                          className={`node-update-history-entry__deadline-button ${entry.deadlineOn ? 'node-update-history-entry__deadline-button--active' : ''}`}
+                          type="button"
+                          aria-label={entry.deadlineOn ? 'Edit deadline' : 'Add deadline'}
+                          title={entry.deadlineOn ? 'Edit deadline' : 'Add deadline'}
+                          aria-expanded={deadlineEntryId === entry.id}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            setEditingEntryId(null)
+                            setConfirmingEntryId(null)
+                            setOpportuneEntryId(null)
+                            setDeadlineEntryId((current) =>
+                              current === entry.id ? null : entry.id
+                            )
+                          }}
+                          onPointerDown={(event) => event.stopPropagation()}
+                        >
+                          <DeadlineIcon />
+                        </button>
+
+                        {deadlineEntryId === entry.id && (
+                          <div
+                            className="node-update-history-entry__deadline-popover"
+                            onClick={(event) => event.stopPropagation()}
+                            onPointerDown={(event) => event.stopPropagation()}
+                          >
+                            <DeadlineEditor entry={entry} compact />
+                          </div>
+                        )}
+                      </div>
+                    </>
                   )}
 
                   <button

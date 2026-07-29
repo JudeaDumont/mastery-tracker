@@ -3,12 +3,20 @@ import type { ReactElement } from 'react'
 import type { ActivityEntry, RootAccent } from '../model'
 import { deadlineStatus, formatDeadlineLong } from '../deadline'
 import { nodeRootId, nodeTitle, useMastery } from '../store'
-import { DeadlineEditor } from './DeadlineEditor'
+import { DeadlineEditor, type ScheduleKind } from './DeadlineEditor'
 import { DeadlineIcon } from './DeadlineIcon'
+import { OpportunityIcon } from './OpportunityIcon'
+import { ScheduleIcon } from './ScheduleIcon'
 
 interface DeadlinesProps {
   open: boolean
   onClose: () => void
+}
+
+interface ScheduledItem {
+  kind: ScheduleKind
+  dateOn: string
+  entry: ActivityEntry
 }
 
 export function Deadlines({ open, onClose }: DeadlinesProps): ReactElement | null {
@@ -17,13 +25,25 @@ export function Deadlines({ open, onClose }: DeadlinesProps): ReactElement | nul
   const xpLedger = useMastery((state) => state.xpLedger)
   const scrollerRef = useRef<HTMLDivElement>(null)
 
-  const deadlines = useMemo<ActivityEntry[]>(
+  const scheduledItems = useMemo<ScheduledItem[]>(
     () =>
       xpLedger
-        .filter((entry): entry is ActivityEntry & { deadlineOn: string } => Boolean(entry.deadlineOn))
+        .flatMap<ScheduledItem>((entry) => {
+          const items: ScheduledItem[] = []
+          if (entry.deadlineOn) {
+            items.push({ kind: 'deadline', dateOn: entry.deadlineOn, entry })
+          }
+          if (entry.opportuneOn) {
+            items.push({ kind: 'opportune', dateOn: entry.opportuneOn, entry })
+          }
+          return items
+        })
         .sort((left, right) => {
-          const dateOrder = right.deadlineOn!.localeCompare(left.deadlineOn!)
-          return dateOrder !== 0 ? dateOrder : right.occurredAt.localeCompare(left.occurredAt)
+          const dateOrder = right.dateOn.localeCompare(left.dateOn)
+          if (dateOrder !== 0) return dateOrder
+          const updateOrder = right.entry.occurredAt.localeCompare(left.entry.occurredAt)
+          if (updateOrder !== 0) return updateOrder
+          return left.kind.localeCompare(right.kind)
         }),
     [xpLedger]
   )
@@ -49,59 +69,77 @@ export function Deadlines({ open, onClose }: DeadlinesProps): ReactElement | nul
       window.cancelAnimationFrame(frame)
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [deadlines.length, onClose, open])
+  }, [onClose, open, scheduledItems.length])
 
   if (!open) return null
 
-  const overdueCount = deadlines.filter((entry) => deadlineStatus(entry.deadlineOn!) === 'overdue').length
+  const deadlineCount = scheduledItems.filter((item) => item.kind === 'deadline').length
+  const opportuneCount = scheduledItems.filter((item) => item.kind === 'opportune').length
+  const pastCount = scheduledItems.filter(
+    (item) => deadlineStatus(item.dateOn) === 'overdue'
+  ).length
+  const hasOpportuneToday = scheduledItems.some(
+    (item) => item.kind === 'opportune' && deadlineStatus(item.dateOn) === 'today'
+  )
 
   return (
-    <section className="deadlines-overlay" aria-label="Deadlines">
+    <section className="deadlines-overlay" aria-label="Deadlines and opportune times">
       <header className="deadlines-overlay__header">
         <div className="deadlines-overlay__title">
-          <span className="deadline-heading-icon" aria-hidden="true"><DeadlineIcon /></span>
+          <span className="schedule-heading-combo" aria-hidden="true">
+            <ScheduleIcon
+              deadlineActive={deadlineCount > 0}
+              opportuneActive={opportuneCount > 0}
+              opportuneToday={hasOpportuneToday}
+            />
+          </span>
           <div>
-            <span className="eyebrow">Due work</span>
-            <h2>Deadlines</h2>
-            <p>Later deadlines are above. The soonest deadline is at the bottom.</p>
+            <span className="eyebrow">Scheduled work</span>
+            <h2>Deadlines &amp; Opportune Times</h2>
+            <p>Later dates are above. The nearest scheduled item is at the bottom.</p>
           </div>
         </div>
         <div className="deadlines-overlay__summary">
-          <span><strong>{deadlines.length}</strong>scheduled</span>
-          <span><strong>{overdueCount}</strong>overdue</span>
+          <span><strong>{deadlineCount}</strong>deadlines</span>
+          <span className="deadlines-overlay__summary-opportune"><strong>{opportuneCount}</strong>opportune</span>
+          <span><strong>{pastCount}</strong>past</span>
           <button type="button" onClick={onClose}>Close</button>
         </div>
       </header>
 
       <div className="deadlines-scroll" ref={scrollerRef}>
         <div className="deadlines-list">
-          {deadlines.length === 0 ? (
+          {scheduledItems.length === 0 ? (
             <div className="deadlines-empty">
-              <span className="deadline-heading-icon" aria-hidden="true"><DeadlineIcon /></span>
-              <strong>No deadlines yet.</strong>
-              <span>Add one from an update in a node&apos;s notes display.</span>
+              <span className="schedule-heading-combo" aria-hidden="true">
+                <ScheduleIcon deadlineActive={false} opportuneActive={false} />
+              </span>
+              <strong>No scheduled dates yet.</strong>
+              <span>Add a deadline or opportune time from an update in a node&apos;s notes display.</span>
             </div>
           ) : (
-            deadlines.map((entry, index) => {
+            scheduledItems.map((item, index) => {
+              const { entry, kind, dateOn } = item
               const title = nodeTitle(entry.nodeId, roots, skills)
               const rootId = nodeRootId(entry.nodeId, roots, skills)
               const accent: RootAccent = roots.find((root) => root.id === rootId)?.accent ?? 'teal'
-              const status = deadlineStatus(entry.deadlineOn!)
-              const soonest = index === deadlines.length - 1
+              const status = deadlineStatus(dateOn)
+              const soonest = index === scheduledItems.length - 1
+              const ItemIcon = kind === 'deadline' ? DeadlineIcon : OpportunityIcon
 
               return (
                 <article
-                  key={entry.id}
-                  className={`deadline-card deadline-card--${status} deadline-card--accent-${accent} ${soonest ? 'deadline-card--soonest' : ''}`}
+                  key={`${kind}:${entry.id}`}
+                  className={`deadline-card deadline-card--${kind} deadline-card--${status} deadline-card--accent-${accent} ${soonest ? 'deadline-card--soonest' : ''}`}
                 >
-                  <div className="deadline-card__icon" aria-hidden="true"><DeadlineIcon /></div>
+                  <div className="deadline-card__icon" aria-hidden="true"><ItemIcon /></div>
                   <div className="deadline-card__content">
                     <header>
                       <div>
                         <strong>{title}</strong>
-                        <span>{statusLabel(status, soonest)}</span>
+                        <span>{statusLabel(kind, status, soonest)}</span>
                       </div>
-                      <time dateTime={entry.deadlineOn}>{formatDeadlineLong(entry.deadlineOn!)}</time>
+                      <time dateTime={dateOn}>{formatDeadlineLong(dateOn)}</time>
                     </header>
                     <p>{entry.note.trim() || `XP update from ${formatUpdateDay(entry.occurredAt)}`}</p>
                     <div className="deadline-card__meta">
@@ -109,7 +147,7 @@ export function Deadlines({ open, onClose }: DeadlinesProps): ReactElement | nul
                       <span>{entry.minutes.toLocaleString()} min</span>
                       <span>Updated {formatUpdateDay(entry.occurredAt)}</span>
                     </div>
-                    <DeadlineEditor entry={entry} />
+                    <DeadlineEditor entry={entry} kind={kind} />
                   </div>
                 </article>
               )
@@ -121,10 +159,20 @@ export function Deadlines({ open, onClose }: DeadlinesProps): ReactElement | nul
   )
 }
 
-function statusLabel(status: ReturnType<typeof deadlineStatus>, soonest: boolean): string {
-  if (status === 'overdue') return soonest ? 'Soonest · Overdue' : 'Overdue'
-  if (status === 'today') return soonest ? 'Soonest · Due today' : 'Due today'
-  return soonest ? 'Soonest deadline' : 'Scheduled'
+function statusLabel(
+  kind: ScheduleKind,
+  status: ReturnType<typeof deadlineStatus>,
+  soonest: boolean
+): string {
+  if (kind === 'opportune') {
+    if (status === 'overdue') return soonest ? 'Nearest · Opportunity passed' : 'Opportunity passed'
+    if (status === 'today') return soonest ? 'Nearest · Address today' : 'Address today'
+    return soonest ? 'Nearest · Opportune time' : 'Opportune time to address'
+  }
+
+  if (status === 'overdue') return soonest ? 'Nearest · Overdue' : 'Overdue'
+  if (status === 'today') return soonest ? 'Nearest · Due today' : 'Due today'
+  return soonest ? 'Nearest deadline' : 'Deadline'
 }
 
 function formatUpdateDay(value: string): string {

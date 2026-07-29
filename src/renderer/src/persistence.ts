@@ -22,9 +22,9 @@ import {
 } from './store'
 
 export const GRAPH_FILE_FORMAT = 'mastery-tracker.graph'
-export const GRAPH_FILE_VERSION = 5
+export const GRAPH_FILE_VERSION = 6
 
-interface GraphFileV5 {
+interface GraphFileV6 {
   format: typeof GRAPH_FILE_FORMAT
   schemaVersion: typeof GRAPH_FILE_VERSION
   savedAt: string
@@ -88,7 +88,7 @@ function persistCurrentState(): Promise<void> {
 }
 
 function saveSnapshot(snapshot: GraphStateSnapshot): Promise<void> {
-  const document: GraphFileV5 = {
+  const document: GraphFileV6 = {
     format: GRAPH_FILE_FORMAT,
     schemaVersion: GRAPH_FILE_VERSION,
     savedAt: new Date().toISOString(),
@@ -106,7 +106,7 @@ export function migrateGraphFile(raw: unknown): GraphStateSnapshot | null {
     const version = finiteInteger(object.schemaVersion, 0)
     if (version > GRAPH_FILE_VERSION) throw new UnsupportedGraphVersionError(version)
 
-    if (version === 5 || version === 4 || version === 3 || version === 2 || version === 1) {
+    if (version === 6 || version === 5 || version === 4 || version === 3 || version === 2 || version === 1) {
       return normalizeSnapshot(object.data)
     }
     return normalizeSnapshot(object.data ?? object.state ?? object)
@@ -281,6 +281,9 @@ function normalizeHistory(
     const deadlineOn = normalizeDeadlineDay(
       entry.deadlineOn ?? entry.deadlineAt ?? entry.deadline
     )
+    const opportuneOn = normalizeDeadlineDay(
+      entry.opportuneOn ?? entry.opportunityOn ?? entry.opportuneAt ?? entry.opportunityAt
+    )
 
     return [
       {
@@ -291,7 +294,8 @@ function normalizeHistory(
         effort: effortValue(entry.effort),
         xp: Math.max(0, finiteNumber(entry.xp, 0)),
         note: stringValue(entry.note),
-        ...(deadlineOn ? { deadlineOn } : {})
+        ...(deadlineOn ? { deadlineOn } : {}),
+        ...(opportuneOn ? { opportuneOn } : {})
       }
     ]
   })

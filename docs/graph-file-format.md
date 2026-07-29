@@ -5,9 +5,9 @@ Mastery Tracker stores graph state in `mastery-graph.json` inside Electron's per
 ## Compatibility contract
 
 - `format` identifies the file independently from the application version.
-- `schemaVersion` is an integer and currently uses version `5`.
+- `schemaVersion` is an integer and currently uses version `6`.
 - Readers migrate older versions before hydrating the store.
-- Version 5 accepts versions 4, 3, 2, 1, the unversioned prototype shape, and Zustand-style `{ "state": ... }` wrappers.
+- Version 6 accepts versions 5, 4, 3, 2, 1, the unversioned prototype shape, and Zustand-style `{ "state": ... }` wrappers.
 - Version 1's global `history` array is distributed into each matching node's `updateHistory` during migration.
 - Versions 1-3 infer the initial XP ledger from existing node note histories. XP submissions that were never historically stored cannot be reconstructed.
 - Version 2 files receive default new-node level settings during migration.
@@ -18,12 +18,12 @@ Mastery Tracker stores graph state in `mastery-graph.json` inside Electron's per
 - Writes use a temporary file and keep `mastery-graph.json.backup` as the previous complete save.
 - Invalid JSON is moved aside with a `.corrupt-<timestamp>` suffix instead of being destroyed.
 
-## Version 5
+## Version 6
 
 ```json
 {
   "format": "mastery-tracker.graph",
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "savedAt": "2026-07-28T12:00:00.000Z",
   "data": {
     "roots": [
@@ -54,7 +54,8 @@ Mastery Tracker stores graph state in `mastery-graph.json` inside Electron's per
             "effort": "moderate",
             "xp": 60,
             "note": "Worked on depth and bracing.",
-            "deadlineOn": "2026-08-13"
+            "deadlineOn": "2026-08-13",
+            "opportuneOn": "2026-08-06"
           }
         ]
       }
@@ -69,7 +70,8 @@ Mastery Tracker stores graph state in `mastery-graph.json` inside Electron's per
         "effort": "moderate",
         "xp": 60,
         "note": "Worked on depth and bracing.",
-        "deadlineOn": "2026-08-13"
+        "deadlineOn": "2026-08-13",
+        "opportuneOn": "2026-08-06"
       },
       {
         "id": "2026-07-28T14:00:00.000Z-squat",
@@ -96,6 +98,8 @@ Mastery Tracker stores graph state in `mastery-graph.json` inside Electron's per
 
 Deadline edits are synchronized between `xpLedger` and the matching node `updateHistory` entry. Removing a deadline does not remove the update or its XP.
 
+`opportuneOn` is a second optional local calendar-day value stored as `YYYY-MM-DD`. It uses the same smart day parser as deadlines but remains an independent scheduling flow with its own icon, node marker, and editor. An update may contain a deadline, an opportune time, both, or neither. The combined Deadlines & Opportune Times overlay renders each assigned date as its own scheduled item.
+
 Every root and skill also owns an `updateHistory` array. That array contains only updates with notes and drives the node-hover notes display.
 
 When a noted update is deleted from the hover display, the matching ledger entry is also removed. The node's XP, level dates, momentum contribution, daily totals, and lock state are recalculated.
@@ -105,6 +109,10 @@ When a noted update is deleted from the hover display, the matching ledger entry
 `levelDefaults` controls newly created mastery nodes. The creation card edits these defaults directly. Existing nodes retain their own level configuration until edited individually.
 
 Transient UI state such as selections, open panels, unfinished updates, and an unfinished create wizard is intentionally not persisted.
+
+## Version 5 migration
+
+Version 5 has deadlines but no `opportuneOn` field. It migrates unchanged; opportune dates begin empty and are added only when the user assigns them.
 
 ## Version 4 migration
 
@@ -131,10 +139,17 @@ Existing node-specific XP requirements and maximum levels remain unchanged. Exis
 
 Version 1 stores activity in one top-level `history` array. During migration, each entry is copied into the matching root or skill's `updateHistory` and into the XP ledger. Duplicate entry IDs are removed and entries are sorted chronologically.
 
-## Adding version 6
+## Adding version 7
 
 1. Add a new versioned document type.
 2. Add a deterministic migration to the new shape.
 3. Keep all existing migration paths.
 4. Normalize and validate the migrated result before applying it to the store.
 5. Write only the newest version after a successful load.
+
+## Weekday deadline input
+
+Both deadline and opportune-time editors accept weekday names and common abbreviations.
+The parser always chooses the next future occurrence, never the current day. For example,
+entering `Thursday` on a Thursday resolves to the Thursday of the following week.
+Supported examples include `Thursday`, `next Thursday`, `Thu`, and `Thurs`.

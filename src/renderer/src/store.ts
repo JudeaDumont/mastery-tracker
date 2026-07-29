@@ -264,6 +264,7 @@ interface MasteryStore {
   edit: (id: SkillId, patch: Partial<DraftUpdate>) => void
   editUpdateNote: (nodeId: NodeId, entryId: string, note: string) => void
   setUpdateDeadline: (nodeId: NodeId, entryId: string, deadlineOn?: string) => void
+  setUpdateOpportune: (nodeId: NodeId, entryId: string, opportuneOn?: string) => void
   removeUpdate: (nodeId: NodeId, entryId: string) => void
   configureLevels: (
     id: SkillId,
@@ -363,6 +364,38 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
           const nextEntry = { ...entry }
           delete nextEntry.deadlineOn
+          return nextEntry
+        })
+
+      const roots = state.roots.map((root) =>
+        root.id === nodeId ? { ...root, updateHistory: updateEntries(root.updateHistory) } : root
+      )
+      const skills = state.skills.map((skill) =>
+        skill.id === nodeId
+          ? { ...skill, updateHistory: updateEntries(skill.updateHistory) }
+          : skill
+      )
+      const xpLedger = updateEntries(state.xpLedger)
+
+      return changed ? { roots, skills, xpLedger } : state
+    }),
+
+  setUpdateOpportune: (nodeId, entryId, opportuneOn) =>
+    set((state) => {
+      const normalizedOpportune = opportuneOn ? normalizeDeadlineDay(opportuneOn) : undefined
+      if (opportuneOn && !normalizedOpportune) return state
+
+      let changed = false
+      const updateEntries = (entries: ActivityEntry[]): ActivityEntry[] =>
+        entries.map((entry) => {
+          if (entry.id !== entryId || entry.nodeId !== nodeId) return entry
+          if (entry.opportuneOn === normalizedOpportune) return entry
+
+          changed = true
+          if (normalizedOpportune) return { ...entry, opportuneOn: normalizedOpportune }
+
+          const nextEntry = { ...entry }
+          delete nextEntry.opportuneOn
           return nextEntry
         })
 

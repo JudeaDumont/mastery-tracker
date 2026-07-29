@@ -4,6 +4,16 @@ export interface DeadlineParseResult {
 }
 
 const ISO_DAY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
+const WEEKDAYS = new Map([
+  ['sun', 0], ['sunday', 0],
+  ['mon', 1], ['monday', 1],
+  ['tue', 2], ['tues', 2], ['tuesday', 2],
+  ['wed', 3], ['weds', 3], ['wednesday', 3],
+  ['thu', 4], ['thur', 4], ['thurs', 4], ['thursday', 4],
+  ['fri', 5], ['friday', 5],
+  ['sat', 6], ['saturday', 6]
+])
+
 const MONTHS = new Map([
   ['jan', 1], ['january', 1],
   ['feb', 2], ['february', 2],
@@ -21,7 +31,7 @@ const MONTHS = new Map([
 
 export function parseDeadlineInput(input: string, now = new Date()): DeadlineParseResult {
   const value = input.trim()
-  if (!value) return { error: 'Enter a deadline date.' }
+  if (!value) return { error: 'Enter a date.' }
 
   const normalized = value.toLowerCase().replace(/\s+/g, ' ')
   const today = startOfLocalDay(now)
@@ -29,11 +39,19 @@ export function parseDeadlineInput(input: string, now = new Date()): DeadlinePar
   if (normalized === 'today') return { dateKey: localDateKey(today) }
   if (normalized === 'tomorrow') return { dateKey: localDateKey(addLocalDays(today, 1)) }
 
+  const weekdayMatch = normalized.match(/^(?:next\s+)?([a-z]+)$/)
+  if (weekdayMatch) {
+    const weekday = WEEKDAYS.get(weekdayMatch[1])
+    if (weekday !== undefined) {
+      return { dateKey: localDateKey(nextLocalWeekday(today, weekday)) }
+    }
+  }
+
   const relativeMatch = normalized.match(/^(?:in\s+)?(\d+)\s*(?:d|day|days)$/)
   if (relativeMatch) {
     const days = Number(relativeMatch[1])
     if (!Number.isSafeInteger(days) || days < 0 || days > 365000) {
-      return { error: 'That relative deadline is too large.' }
+      return { error: 'That relative date is too large.' }
     }
     return { dateKey: localDateKey(addLocalDays(today, days)) }
   }
@@ -107,7 +125,7 @@ export function parseDeadlineInput(input: string, now = new Date()): DeadlinePar
   }
 
   if (!/[\d]/.test(normalized)) {
-    return { error: 'Include a calendar day, such as 08/13 or 13 days.' }
+    return { error: 'Enter a date or weekday, such as 08/13, 13 days, or Thursday.' }
   }
 
   const parsed = new Date(`${value} 12:00:00`)
@@ -116,7 +134,7 @@ export function parseDeadlineInput(input: string, now = new Date()): DeadlinePar
   }
 
   return {
-    error: 'Could not interpret that day. Try 08/13, 1231, 20260813, or 13 days.'
+    error: 'Could not interpret that day. Try 08/13, 1231, 13 days, or Thursday.'
   }
 }
 
@@ -216,4 +234,9 @@ function startOfLocalDay(date: Date): Date {
 
 function addLocalDays(date: Date, days: number): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days)
+}
+
+function nextLocalWeekday(date: Date, weekday: number): Date {
+  const daysUntil = (weekday - date.getDay() + 7) % 7 || 7
+  return addLocalDays(date, daysUntil)
 }

@@ -5,7 +5,8 @@ import { Graph, type GraphViewRequest } from './ui/Graph'
 import { Updates } from './ui/Updates'
 import { DailyUpdates } from './ui/DailyUpdates'
 import { Deadlines } from './ui/Deadlines'
-import { DeadlineIcon } from './ui/DeadlineIcon'
+import { ScheduleIcon } from './ui/ScheduleIcon'
+import { deadlineStatus } from './deadline'
 import { dailyXpTotal, useMastery } from './store'
 import { isLocked, levelFor } from './xp'
 
@@ -67,6 +68,11 @@ function App(): ReactElement {
   const highMomentumNodes = skills.filter((skill) => skill.momentum >= 70).length
   const lockedNodes = skills.filter((skill) => isLocked(skill, skills)).length
   const deadlineCount = xpLedger.filter((entry) => Boolean(entry.deadlineOn)).length
+  const opportuneCount = xpLedger.filter((entry) => Boolean(entry.opportuneOn)).length
+  const scheduledCount = deadlineCount + opportuneCount
+  const hasOpportuneToday = xpLedger.some(
+    (entry) => entry.opportuneOn && deadlineStatus(entry.opportuneOn) === 'today'
+  )
 
   return (
     <div className="app-shell">
@@ -120,18 +126,22 @@ function App(): ReactElement {
             Daily Updates
           </button>
           <button
-            className={`deadline-header-button ${deadlinesOpen ? 'deadline-header-button--active' : ''}`}
+            className={`schedule-header-button ${deadlinesOpen ? 'schedule-header-button--active' : ''}`}
             type="button"
-            aria-label={`Deadlines${deadlineCount > 0 ? `, ${deadlineCount} scheduled` : ''}`}
-            title="Deadlines"
+            aria-label={`Deadlines and opportune times${scheduledCount > 0 ? `, ${scheduledCount} scheduled` : ''}`}
+            title="Deadlines and opportune times"
             aria-expanded={deadlinesOpen}
             onClick={() => {
               setDeadlinesOpen((open) => !open)
               setDailyUpdatesOpen(false)
             }}
           >
-            <DeadlineIcon />
-            {deadlineCount > 0 && <span>{deadlineCount}</span>}
+            <ScheduleIcon
+              deadlineActive={deadlineCount > 0}
+              opportuneActive={opportuneCount > 0}
+              opportuneToday={hasOpportuneToday}
+            />
+            {scheduledCount > 0 && <span className="schedule-header-count">{scheduledCount}</span>}
           </button>
           <button type="button">Search</button>
           <div className="logs-menu">

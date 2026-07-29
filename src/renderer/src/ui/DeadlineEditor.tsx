@@ -4,35 +4,54 @@ import type { ActivityEntry } from '../model'
 import { formatDeadlineDay, parseDeadlineInput } from '../deadline'
 import { useMastery } from '../store'
 import { DeadlineIcon } from './DeadlineIcon'
+import { OpportunityIcon } from './OpportunityIcon'
+
+export type ScheduleKind = 'deadline' | 'opportune'
 
 interface DeadlineEditorProps {
   entry: ActivityEntry
   compact?: boolean
+  kind?: ScheduleKind
 }
 
-export function DeadlineEditor({ entry, compact = false }: DeadlineEditorProps): ReactElement {
+export function DeadlineEditor({
+  entry,
+  compact = false,
+  kind = 'deadline'
+}: DeadlineEditorProps): ReactElement {
   const setUpdateDeadline = useMastery((state) => state.setUpdateDeadline)
-  const [value, setValue] = useState(entry.deadlineOn ? formatDeadlineDay(entry.deadlineOn) : '')
+  const setUpdateOpportune = useMastery((state) => state.setUpdateOpportune)
+  const storedDate = kind === 'deadline' ? entry.deadlineOn : entry.opportuneOn
+  const label = kind === 'deadline' ? 'Deadline' : 'Opportune time'
+  const [value, setValue] = useState(storedDate ? formatDeadlineDay(storedDate) : '')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    setValue(entry.deadlineOn ? formatDeadlineDay(entry.deadlineOn) : '')
+    setValue(storedDate ? formatDeadlineDay(storedDate) : '')
     setError(null)
-  }, [entry.deadlineOn, entry.id])
+  }, [entry.id, kind, storedDate])
+
+  const updateDate = (dateKey?: string): void => {
+    if (kind === 'deadline') {
+      setUpdateDeadline(entry.nodeId, entry.id, dateKey)
+    } else {
+      setUpdateOpportune(entry.nodeId, entry.id, dateKey)
+    }
+  }
 
   const reset = (): void => {
-    setValue(entry.deadlineOn ? formatDeadlineDay(entry.deadlineOn) : '')
+    setValue(storedDate ? formatDeadlineDay(storedDate) : '')
     setError(null)
   }
 
   const save = (): boolean => {
     const result = parseDeadlineInput(value)
     if (!result.dateKey) {
-      setError(result.error ?? 'Enter a valid deadline day.')
+      setError(result.error ?? `Enter a valid ${label.toLowerCase()} day.`)
       return false
     }
 
-    setUpdateDeadline(entry.nodeId, entry.id, result.dateKey)
+    updateDate(result.dateKey)
     setValue(formatDeadlineDay(result.dateKey))
     setError(null)
     return true
@@ -50,14 +69,18 @@ export function DeadlineEditor({ entry, compact = false }: DeadlineEditorProps):
     }
   }
 
+  const RemoveIcon = kind === 'deadline' ? DeadlineIcon : OpportunityIcon
+
   return (
-    <div className={`deadline-editor nowheel nodrag ${compact ? 'deadline-editor--compact' : ''}`}>
+    <div
+      className={`deadline-editor deadline-editor--${kind} nowheel nodrag ${compact ? 'deadline-editor--compact' : ''}`}
+    >
       <label>
-        <span>Deadline</span>
+        <span>{label}</span>
         <input
           value={value}
-          placeholder="Type date numbers"
-          aria-label="Deadline day"
+          placeholder="Type date or weekday"
+          aria-label={`${label} day`}
           onChange={(event) => {
             setValue(event.target.value)
             setError(null)
@@ -74,21 +97,21 @@ export function DeadlineEditor({ entry, compact = false }: DeadlineEditorProps):
           }}
         />
       </label>
-      {entry.deadlineOn && (
+      {storedDate && (
         <button
           className="deadline-editor__remove"
           type="button"
-          title="Remove deadline"
-          aria-label="Remove deadline"
+          title={`Remove ${label.toLowerCase()}`}
+          aria-label={`Remove ${label.toLowerCase()}`}
           onClick={(event) => {
             event.stopPropagation()
-            setUpdateDeadline(entry.nodeId, entry.id, undefined)
+            updateDate(undefined)
             setValue('')
             setError(null)
           }}
           onPointerDown={(event) => event.stopPropagation()}
         >
-          <DeadlineIcon crossedOut />
+          <RemoveIcon crossedOut />
         </button>
       )}
       {error && <small role="alert">{error}</small>}
