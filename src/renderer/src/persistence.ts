@@ -10,6 +10,7 @@ import type {
   RootAccent,
   Skill
 } from './model'
+import { normalizeDeadlineDay } from './deadline'
 import {
   DEFAULT_LEVEL_STEP_XP,
   DEFAULT_MAX_LEVEL,
@@ -21,9 +22,9 @@ import {
 } from './store'
 
 export const GRAPH_FILE_FORMAT = 'mastery-tracker.graph'
-export const GRAPH_FILE_VERSION = 4
+export const GRAPH_FILE_VERSION = 5
 
-interface GraphFileV4 {
+interface GraphFileV5 {
   format: typeof GRAPH_FILE_FORMAT
   schemaVersion: typeof GRAPH_FILE_VERSION
   savedAt: string
@@ -87,7 +88,7 @@ function persistCurrentState(): Promise<void> {
 }
 
 function saveSnapshot(snapshot: GraphStateSnapshot): Promise<void> {
-  const document: GraphFileV4 = {
+  const document: GraphFileV5 = {
     format: GRAPH_FILE_FORMAT,
     schemaVersion: GRAPH_FILE_VERSION,
     savedAt: new Date().toISOString(),
@@ -105,7 +106,7 @@ export function migrateGraphFile(raw: unknown): GraphStateSnapshot | null {
     const version = finiteInteger(object.schemaVersion, 0)
     if (version > GRAPH_FILE_VERSION) throw new UnsupportedGraphVersionError(version)
 
-    if (version === 4 || version === 3 || version === 2 || version === 1) {
+    if (version === 5 || version === 4 || version === 3 || version === 2 || version === 1) {
       return normalizeSnapshot(object.data)
     }
     return normalizeSnapshot(object.data ?? object.state ?? object)
@@ -277,6 +278,9 @@ function normalizeHistory(
     const entry = asObject(value)
     const nodeId = stringValue(entry?.nodeId) || fallbackNodeId || ''
     if (!entry || !nodeId || !nodeIds.has(nodeId)) return []
+    const deadlineOn = normalizeDeadlineDay(
+      entry.deadlineOn ?? entry.deadlineAt ?? entry.deadline
+    )
 
     return [
       {
@@ -286,7 +290,8 @@ function normalizeHistory(
         minutes: Math.max(0, finiteNumber(entry.minutes, 0)),
         effort: effortValue(entry.effort),
         xp: Math.max(0, finiteNumber(entry.xp, 0)),
-        note: stringValue(entry.note)
+        note: stringValue(entry.note),
+        ...(deadlineOn ? { deadlineOn } : {})
       }
     ]
   })

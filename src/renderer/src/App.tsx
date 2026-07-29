@@ -4,6 +4,8 @@ import type { RootId } from './model'
 import { Graph, type GraphViewRequest } from './ui/Graph'
 import { Updates } from './ui/Updates'
 import { DailyUpdates } from './ui/DailyUpdates'
+import { Deadlines } from './ui/Deadlines'
+import { DeadlineIcon } from './ui/DeadlineIcon'
 import { dailyXpTotal, useMastery } from './store'
 import { isLocked, levelFor } from './xp'
 
@@ -21,6 +23,7 @@ function App(): ReactElement {
   })
   const [cameraDebugLines, setCameraDebugLines] = useState<string[]>([])
   const [dailyUpdatesOpen, setDailyUpdatesOpen] = useState(false)
+  const [deadlinesOpen, setDeadlinesOpen] = useState(false)
 
   useEffect(() => {
     const onCameraDebug = (event: Event): void => {
@@ -37,6 +40,10 @@ function App(): ReactElement {
 
   const closeDailyUpdates = useCallback((): void => {
     setDailyUpdatesOpen(false)
+  }, [])
+
+  const closeDeadlines = useCallback((): void => {
+    setDeadlinesOpen(false)
   }, [])
 
   const copyCameraLogs = (): void => {
@@ -59,6 +66,7 @@ function App(): ReactElement {
       : 0
   const highMomentumNodes = skills.filter((skill) => skill.momentum >= 70).length
   const lockedNodes = skills.filter((skill) => isLocked(skill, skills)).length
+  const deadlineCount = xpLedger.filter((entry) => Boolean(entry.deadlineOn)).length
 
   return (
     <div className="app-shell">
@@ -104,9 +112,26 @@ function App(): ReactElement {
             className={dailyUpdatesOpen ? 'top-action--active' : ''}
             type="button"
             aria-expanded={dailyUpdatesOpen}
-            onClick={() => setDailyUpdatesOpen((open) => !open)}
+            onClick={() => {
+              setDailyUpdatesOpen((open) => !open)
+              setDeadlinesOpen(false)
+            }}
           >
             Daily Updates
+          </button>
+          <button
+            className={`deadline-header-button ${deadlinesOpen ? 'deadline-header-button--active' : ''}`}
+            type="button"
+            aria-label={`Deadlines${deadlineCount > 0 ? `, ${deadlineCount} scheduled` : ''}`}
+            title="Deadlines"
+            aria-expanded={deadlinesOpen}
+            onClick={() => {
+              setDeadlinesOpen((open) => !open)
+              setDailyUpdatesOpen(false)
+            }}
+          >
+            <DeadlineIcon />
+            {deadlineCount > 0 && <span>{deadlineCount}</span>}
           </button>
           <button type="button">Search</button>
           <div className="logs-menu">
@@ -160,6 +185,7 @@ function App(): ReactElement {
           </div>
           <Graph viewRequest={graphView} />
           <DailyUpdates open={dailyUpdatesOpen} onClose={closeDailyUpdates} />
+          <Deadlines open={deadlinesOpen} onClose={closeDeadlines} />
           <div className="graph-legend">
             {create ? (
               <>

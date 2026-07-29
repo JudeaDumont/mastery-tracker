@@ -49,7 +49,9 @@ batch wizard:
 -
 - each node can have "parallelized stacks", and "sequential stacks" associated with it
 - create a sequential stack for getting ng setup,
- - this would just be a mode for notes, where each step is delineated by a new line
+- stacks need to be on their own display that allow a user to associate "tasks" with "stacks they are found in"
+- I want to be able to write a stack freeform, and the software needs to be able to determine that two tasks are the same task
+- so when I enter in an update, I want to be able to "check containing stacks" for each line in a note
  - and then special icons for identifying common parallel/sequential stacks increases productivity.
  - sequential stacks can also be paralellized in a side by side dynamic: (complicated)-
   - smart card                  -
@@ -57,6 +59,13 @@ batch wizard:
   - setup argo (long running)   - cgpt for other ng task
   - but this is more about identifying long running tasks in sequential stacks
 
+
+- template text for deadlines is confusing, should jsut say "type date numbers" or some shit
+- deadline pane in notes display takes up too much real estate, lets put it behind the deadline icon
+
+
+
+==================FINISHED============================================
 - the color for deadline materials should be a deep forest green, glowing lime greem
 - an update can have a "deadline" associated with it
 - nodes that have a deadline should be marked with an icon affixed to the top of the node
@@ -69,11 +78,6 @@ batch wizard:
 - "08/13", "1231", "20260813", "13 days", "08/13/2026", "0119" should all be considered valid and set correct assumed dates internally
 - 08/13/2026, 12/31/2026, 08/11/2026, 08/13/2026, "01/19/2027"
 - do not interpret past the day.
--
-
-
-==================FINISHED============================================
-
 
 - level settings and other node settings need to be in a separate display,
 - the expanded update display should have a gear icon where settings display can be acccessed.

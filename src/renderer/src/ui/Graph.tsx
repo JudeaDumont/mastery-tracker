@@ -60,6 +60,7 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
   const roots = useMastery((state) => state.roots)
   const skills = useMastery((state) => state.skills)
   const links = useMastery((state) => state.links)
+  const xpLedger = useMastery((state) => state.xpLedger)
   const pickedIds = useMastery((state) => state.pickedIds)
   const create = useMastery((state) => state.create)
   const togglePicked = useMastery((state) => state.togglePicked)
@@ -285,6 +286,9 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
         levelReachedAt: [],
         currentLevelProgress: 0,
         updateHistory: root.updateHistory,
+        deadlineEntries: xpLedger.filter(
+          (entry) => entry.nodeId === root.id && Boolean(entry.deadlineOn)
+        ),
         activitySelected: pickedIds.includes(root.id),
         visual: visualFor(
           root.id,
@@ -317,6 +321,9 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
         levelReachedAt: skill.levelReachedAt ?? [],
         currentLevelProgress: currentLevelProgressFor(skill),
         updateHistory: skill.updateHistory,
+        deadlineEntries: xpLedger.filter(
+          (entry) => entry.nodeId === skill.id && Boolean(entry.deadlineOn)
+        ),
         activitySelected: pickedIds.includes(skill.id),
         visual: visualFor(
           skill.id,
@@ -347,6 +354,7 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
             locked: false,
             root: preview.root,
             updateHistory: [],
+            deadlineEntries: [],
             currentLevelProgress: 0,
             visual: 'preview'
           })
@@ -365,7 +373,8 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
     roots,
     skills,
     toCandidates,
-    toFull
+    toFull,
+    xpLedger
   ])
 
   const edges = useMemo<Edge[]>(() => {

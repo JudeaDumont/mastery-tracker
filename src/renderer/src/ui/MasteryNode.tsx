@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactElement } from 'react'
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react'
 import type { ActivityEntry, RootAccent, RootId } from '../model'
+import { deadlineStatus, formatDeadlineLong } from '../deadline'
 import { useMastery } from '../store'
+import { DeadlineEditor } from './DeadlineEditor'
+import { DeadlineIcon } from './DeadlineIcon'
 
 export type NodeVisual =
   | 'normal'
@@ -30,6 +33,7 @@ export interface MasteryNodeData extends Record<string, unknown> {
   levelReachedAt?: Array<string | null>
   currentLevelProgress?: number
   updateHistory?: ActivityEntry[]
+  deadlineEntries?: ActivityEntry[]
   visual: NodeVisual
 }
 
@@ -148,12 +152,17 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
   const confirmationRef = useRef<HTMLDivElement>(null)
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null)
   const [confirmingEntryId, setConfirmingEntryId] = useState<string | null>(null)
+  const [deadlineEntryId, setDeadlineEntryId] = useState<string | null>(null)
   const [draftNote, setDraftNote] = useState('')
+  const [deadlineHover, setDeadlineHover] = useState(false)
   const editUpdateNote = useMastery((state) => state.editUpdateNote)
   const removeUpdate = useMastery((state) => state.removeUpdate)
   const updateHistory = [...(data.updateHistory ?? [])].sort(
     (left, right) => new Date(left.occurredAt).getTime() - new Date(right.occurredAt).getTime()
   )
+  const deadlineEntries = [...(data.deadlineEntries ?? [])]
+    .filter((entry): entry is ActivityEntry & { deadlineOn: string } => Boolean(entry.deadlineOn))
+    .sort((left, right) => left.deadlineOn.localeCompare(right.deadlineOn))
 
   useEffect(() => {
     if (!confirmingEntryId) return
@@ -177,6 +186,7 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
 
   const beginNoteEdit = (entry: ActivityEntry): void => {
     setConfirmingEntryId(null)
+    setDeadlineEntryId(null)
     setEditingEntryId(entry.id)
     setDraftNote(entry.note)
   }
@@ -189,6 +199,7 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
   const stopHoverInteraction = (): void => {
     stopNoteEdit()
     setConfirmingEntryId(null)
+    setDeadlineEntryId(null)
   }
 
   const saveNoteEdit = (entry: ActivityEntry): void => {
@@ -198,6 +209,7 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
 
   const beginUpdateRemoval = (entry: ActivityEntry): void => {
     stopNoteEdit()
+    setDeadlineEntryId(null)
     setConfirmingEntryId(entry.id)
   }
 
@@ -214,6 +226,7 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
     data.maxed && !data.root ? 'node--maxed' : '',
     data.activitySelected ? 'node--activity' : '',
     data.historyPinned ? 'node--history-pinned' : '',
+    deadlineHover ? 'node--deadline-hover' : '',
     `node--${data.visual}`
   ]
     .filter(Boolean)
@@ -247,6 +260,44 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
             <path d="M6 16.5h20" />
           </svg>
         </span>
+      )}
+
+      {deadlineEntries.length > 0 && (
+        <div
+          className="node-deadline-marker nowheel nodrag"
+          onMouseEnter={() => setDeadlineHover(true)}
+          onMouseLeave={() => setDeadlineHover(false)}
+          onClick={(event) => event.stopPropagation()}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <button
+            type="button"
+            aria-label={`${deadlineEntries.length} ${deadlineEntries.length === 1 ? 'deadline' : 'deadlines'} for ${data.title}`}
+          >
+            <DeadlineIcon />
+          </button>
+          <div className="node-deadline-tooltip" role="tooltip">
+            <header>
+              <strong>{data.title}</strong>
+              <span>{deadlineEntries.length === 1 ? 'Deadline' : `${deadlineEntries.length} deadlines`}</span>
+            </header>
+            <div>
+              {deadlineEntries.map((entry) => (
+                <article key={entry.id}>
+                  <span className={`node-deadline-tooltip__status node-deadline-tooltip__status--${deadlineStatus(entry.deadlineOn)}`}>
+                    {deadlineStatus(entry.deadlineOn) === 'overdue'
+                      ? 'Overdue'
+                      : deadlineStatus(entry.deadlineOn) === 'today'
+                        ? 'Today'
+                        : 'Due'}
+                  </span>
+                  <strong>{entry.note.trim() || `XP update from ${formatUpdateDate(entry.occurredAt)}`}</strong>
+                  <time dateTime={entry.deadlineOn}>{formatDeadlineLong(entry.deadlineOn)}</time>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
       {targetHandleOffsets.map(({ left, top }, index) => (
@@ -316,6 +367,37 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
             ) : (
               updateHistory.map((entry) => (
                 <article className="node-update-history-entry" key={entry.id}>
+                  {confirmingEntryId !== entry.id && (
+                    <div className="node-update-history-entry__deadline-control nowheel nodrag">
+                      <button
+                        className={`node-update-history-entry__deadline-button ${entry.deadlineOn ? 'node-update-history-entry__deadline-button--active' : ''}`}
+                        type="button"
+                        aria-label={entry.deadlineOn ? 'Edit deadline' : 'Add deadline'}
+                        title={entry.deadlineOn ? 'Edit deadline' : 'Add deadline'}
+                        aria-expanded={deadlineEntryId === entry.id}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          setEditingEntryId(null)
+                          setConfirmingEntryId(null)
+                          setDeadlineEntryId((current) => (current === entry.id ? null : entry.id))
+                        }}
+                        onPointerDown={(event) => event.stopPropagation()}
+                      >
+                        <DeadlineIcon />
+                      </button>
+
+                      {deadlineEntryId === entry.id && (
+                        <div
+                          className="node-update-history-entry__deadline-popover"
+                          onClick={(event) => event.stopPropagation()}
+                          onPointerDown={(event) => event.stopPropagation()}
+                        >
+                          <DeadlineEditor entry={entry} compact />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <button
                     className="node-update-history-entry__delete nowheel nodrag"
                     type="button"
@@ -434,9 +516,11 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
                   )}
 
                   {confirmingEntryId !== entry.id && (
-                    <small>
-                      {entry.minutes.toLocaleString()} min · {formatEffort(entry.effort)}
-                    </small>
+                    <>
+                      <small>
+                        {entry.minutes.toLocaleString()} min · {formatEffort(entry.effort)}
+                      </small>
+                    </>
                   )}
                 </article>
               ))

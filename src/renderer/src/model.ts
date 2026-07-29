@@ -41,6 +41,7 @@ export interface DraftUpdate {
   minutes: number
   effort: Effort
   note: string
+  deadlineOn?: string
 }
 
 export interface ActivityEntry {
@@ -51,6 +52,7 @@ export interface ActivityEntry {
   effort: Effort
   xp: number
   note: string
+  deadlineOn?: string
 }
 
 export interface SubmitResult {

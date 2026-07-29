@@ -14,6 +14,7 @@ import type {
   SkillId,
   SubmitResult
 } from './model'
+import { normalizeDeadlineDay } from './deadline'
 import { earnedXp, isLocked, levelFor } from './xp'
 
 export const MAX_INCOMING_RELATIONSHIPS = 8
@@ -262,6 +263,7 @@ interface MasteryStore {
   toggle: (id: SkillId) => void
   edit: (id: SkillId, patch: Partial<DraftUpdate>) => void
   editUpdateNote: (nodeId: NodeId, entryId: string, note: string) => void
+  setUpdateDeadline: (nodeId: NodeId, entryId: string, deadlineOn?: string) => void
   removeUpdate: (nodeId: NodeId, entryId: string) => void
   configureLevels: (
     id: SkillId,
@@ -330,6 +332,38 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
           changed = true
           return { ...entry, note: nextNote }
+        })
+
+      const roots = state.roots.map((root) =>
+        root.id === nodeId ? { ...root, updateHistory: updateEntries(root.updateHistory) } : root
+      )
+      const skills = state.skills.map((skill) =>
+        skill.id === nodeId
+          ? { ...skill, updateHistory: updateEntries(skill.updateHistory) }
+          : skill
+      )
+      const xpLedger = updateEntries(state.xpLedger)
+
+      return changed ? { roots, skills, xpLedger } : state
+    }),
+
+  setUpdateDeadline: (nodeId, entryId, deadlineOn) =>
+    set((state) => {
+      const normalizedDeadline = deadlineOn ? normalizeDeadlineDay(deadlineOn) : undefined
+      if (deadlineOn && !normalizedDeadline) return state
+
+      let changed = false
+      const updateEntries = (entries: ActivityEntry[]): ActivityEntry[] =>
+        entries.map((entry) => {
+          if (entry.id !== entryId || entry.nodeId !== nodeId) return entry
+          if (entry.deadlineOn === normalizedDeadline) return entry
+
+          changed = true
+          if (normalizedDeadline) return { ...entry, deadlineOn: normalizedDeadline }
+
+          const nextEntry = { ...entry }
+          delete nextEntry.deadlineOn
+          return nextEntry
         })
 
       const roots = state.roots.map((root) =>
