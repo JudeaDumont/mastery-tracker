@@ -69,6 +69,9 @@ batch wizard:
 - need enter to navigate node creation
 - need to be able to change node relationships
 - must mark node as finished (locked in star look?)
+- selecting a node should probably just be a single at a time, instead do shift for group selection and ctrl for group management
+- section for measurement metrics? T would be one...
+ - no, it would be a display that counts references to specific terms in updates and aggregates them together.
 
 
 
