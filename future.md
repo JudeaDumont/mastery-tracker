@@ -66,7 +66,7 @@ batch wizard:
   - setup argo (long running)   - cgpt for other ng task
   - but this is more about identifying long running tasks in sequential stacks
 
-
+ - need enter to navigate node creation
 
 
 

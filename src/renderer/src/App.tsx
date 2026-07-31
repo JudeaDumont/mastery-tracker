@@ -12,6 +12,7 @@ import { isLocked, levelFor } from './xp'
 
 const CAMERA_DEBUG_EVENT = 'mastery-camera-debug'
 const CAMERA_DEBUG_MAX_LINES = 100
+const ROOT_TABS_VISIBLE = 3
 
 function App(): ReactElement {
   const roots = useMastery((state) => state.roots)
@@ -25,6 +26,7 @@ function App(): ReactElement {
   const [cameraDebugLines, setCameraDebugLines] = useState<string[]>([])
   const [dailyUpdatesOpen, setDailyUpdatesOpen] = useState(false)
   const [deadlinesOpen, setDeadlinesOpen] = useState(false)
+  const [rootTabStart, setRootTabStart] = useState(0)
 
   useEffect(() => {
     const onCameraDebug = (event: Event): void => {
@@ -38,6 +40,11 @@ function App(): ReactElement {
     window.addEventListener(CAMERA_DEBUG_EVENT, onCameraDebug)
     return () => window.removeEventListener(CAMERA_DEBUG_EVENT, onCameraDebug)
   }, [])
+
+  useEffect(() => {
+    const maximumStart = Math.max(0, roots.length - ROOT_TABS_VISIBLE)
+    setRootTabStart((current) => Math.min(current, maximumStart))
+  }, [roots.length])
 
   const closeDailyUpdates = useCallback((): void => {
     setDailyUpdatesOpen(false)
@@ -73,6 +80,10 @@ function App(): ReactElement {
   const hasOpportuneToday = xpLedger.some(
     (entry) => entry.opportuneOn && deadlineStatus(entry.opportuneOn) === 'today'
   )
+  const maximumRootTabStart = Math.max(0, roots.length - ROOT_TABS_VISIBLE)
+  const visibleRoots = roots.slice(rootTabStart, rootTabStart + ROOT_TABS_VISIBLE)
+  const canShowPreviousRoots = rootTabStart > 0
+  const canShowNextRoots = rootTabStart < maximumRootTabStart
 
   return (
     <div className="app-shell">
@@ -86,26 +97,52 @@ function App(): ReactElement {
         </div>
 
         <nav className="view-tabs" aria-label="Graph view">
-          {roots.slice(0, 3).map((root) => {
-            const level = Math.min(
-              10,
-              skills
-                .filter((skill) => skill.rootId === root.id)
-                .reduce((sum, skill) => sum + levelFor(skill), 0)
-            )
-            return (
-              <button
-                key={root.id}
-                className={`view-tab ${graphView.rootId === root.id ? 'view-tab--active' : ''}`}
-                type="button"
-                onClick={() => requestGraphView(root.id)}
-              >
-                {root.title} {level}
-              </button>
-            )
-          })}
           <button
-            className={`view-tab ${graphView.rootId === undefined ? 'view-tab--active' : ''}`}
+            className="view-tabs__arrow"
+            type="button"
+            aria-label="Show previous root tabs"
+            disabled={!canShowPreviousRoots}
+            onClick={() => setRootTabStart((current) => Math.max(0, current - 1))}
+          >
+            <span aria-hidden="true">←</span>
+          </button>
+
+          <div className="view-tabs__window">
+            {visibleRoots.map((root) => {
+              const level = Math.min(
+                10,
+                skills
+                  .filter((skill) => skill.rootId === root.id)
+                  .reduce((sum, skill) => sum + levelFor(skill), 0)
+              )
+              return (
+                <button
+                  key={root.id}
+                  className={`view-tab ${graphView.rootId === root.id ? 'view-tab--active' : ''}`}
+                  type="button"
+                  title={`${root.title} ${level}`}
+                  onClick={() => requestGraphView(root.id)}
+                >
+                  {root.title} {level}
+                </button>
+              )
+            })}
+          </div>
+
+          <button
+            className="view-tabs__arrow"
+            type="button"
+            aria-label="Show next root tabs"
+            disabled={!canShowNextRoots}
+            onClick={() =>
+              setRootTabStart((current) => Math.min(maximumRootTabStart, current + 1))
+            }
+          >
+            <span aria-hidden="true">→</span>
+          </button>
+
+          <button
+            className={`view-tab view-tab--full ${graphView.rootId === undefined ? 'view-tab--active' : ''}`}
             type="button"
             onClick={() => requestGraphView()}
           >

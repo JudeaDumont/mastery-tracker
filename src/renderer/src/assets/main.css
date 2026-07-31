@@ -61,13 +61,54 @@ button { color: inherit; }
 .brand small { color: var(--muted); font-size: 11px; }
 
 .view-tabs {
-  display: flex; gap: 4px; padding: 4px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 32px auto;
+  align-items: center;
+  gap: 4px;
+  width: clamp(430px, 42vw, 650px);
+  min-width: 0;
+  padding: 4px;
   border: 1px solid var(--line); border-radius: 14px;
   background: rgba(10, 16, 31, .72);
+}
+.view-tabs__window {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
 }
 .view-tab, .top-actions button {
   border: 0; background: transparent; cursor: pointer;
   padding: 8px 14px; border-radius: 10px; color: var(--muted);
+}
+.view-tab {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.view-tab--full { min-width: max-content; }
+.view-tabs__arrow {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+}
+.view-tabs__arrow:hover:not(:disabled) {
+  color: var(--cyan-2);
+  background: rgba(99, 219, 255, .08);
+}
+.view-tabs__arrow:disabled {
+  opacity: .22;
+  cursor: default;
 }
 .view-tab:hover, .top-actions button:hover { color: var(--text); background: rgba(255,255,255,.05); }
 .view-tab--active {
