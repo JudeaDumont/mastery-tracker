@@ -68,11 +68,16 @@ batch wizard:
 
 - need enter to navigate node creation
 - need to be able to change node relationships
-- must mark node as finished (locked in star look?)
+- finished nodes should have a "locked in looking star overlay" in addition to the nice crown
 - selecting a node should probably just be a single at a time, instead do shift for group selection and ctrl for group management
 - section for measurement metrics? T would be one...
  - no, it would be a display that counts references to specific terms in updates and aggregates them together.
+- gemsbok perf metrics node should be renamed to "gemsbok perf metrics plan"
 
+- use the software to plan family trips
+- iterate over these changes with the intention of operating at a higher order magnitude for improvements.
+ - some items will be overtaken by earlier implemented items.
+ - have cgpt turn these into nice looking markdown first
 
 
 ==================FINISHED============================================
