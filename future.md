@@ -66,8 +66,9 @@ batch wizard:
   - setup argo (long running)   - cgpt for other ng task
   - but this is more about identifying long running tasks in sequential stacks
 
- - need enter to navigate node creation
-
+- need enter to navigate node creation
+- need to be able to change node relationships
+- must mark node as finished (locked in star look?)
 
 
 
