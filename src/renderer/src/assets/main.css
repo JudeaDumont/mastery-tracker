@@ -1828,6 +1828,35 @@ button { color: inherit; }
   color: rgba(123, 207, 237, .78);
   font-size: 9px;
 }
+
+.node-settings-name label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 9.5px;
+}
+.node-settings-name input {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(5, 10, 21, .8);
+  color: var(--text);
+  font-size: 11px;
+  outline: none;
+}
+.node-settings-name input:focus {
+  border-color: rgba(99, 219, 255, .55);
+  box-shadow: 0 0 0 2px rgba(99, 219, 255, .08);
+}
+.node-settings-name small {
+  display: block;
+  margin-top: 7px;
+  color: rgba(159, 179, 207, .74);
+  font-size: 8.75px;
+  line-height: 1.4;
+}
 .node-settings-levels__fields {
   display: grid;
   grid-template-columns: 1fr 1fr;

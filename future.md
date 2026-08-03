@@ -75,6 +75,7 @@ batch wizard:
 - gemsbok perf metrics node should be renamed to "gemsbok perf metrics plan"
 
 - use the software to plan family trips
+-
 - iterate over these changes with the intention of operating at a higher order magnitude for improvements.
  - some items will be overtaken by earlier implemented items.
  - have cgpt turn these into nice looking markdown first

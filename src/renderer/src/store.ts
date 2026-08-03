@@ -271,6 +271,7 @@ interface MasteryStore {
     patch: { levelStepXp?: number; maxLevel?: number }
   ) => void
   configureLevelDefaults: (patch: Partial<LevelDefaults>) => void
+  renameNode: (id: NodeId, title: string) => void
   submit: () => void
   togglePicked: (id: NodeId) => void
   clearPicked: () => void
@@ -516,6 +517,30 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       }
     })),
 
+  renameNode: (id, title) =>
+    set((state) => {
+      const normalizedTitle = title.trim().replace(/\s+/g, ' ')
+      if (!normalizedTitle) return state
+
+      const root = state.roots.find((candidate) => candidate.id === id)
+      if (root) {
+        if (root.title === normalizedTitle) return state
+        return {
+          roots: state.roots.map((candidate) =>
+            candidate.id === id ? { ...candidate, title: normalizedTitle } : candidate
+          )
+        }
+      }
+
+      const skill = state.skills.find((candidate) => candidate.id === id)
+      if (!skill || skill.title === normalizedTitle) return state
+
+      return {
+        skills: state.skills.map((candidate) =>
+          candidate.id === id ? { ...candidate, title: normalizedTitle } : candidate
+        )
+      }
+    }),
 
   submit: () => {
     const before = get()
@@ -937,7 +962,6 @@ export function projectedXp(update: DraftUpdate, skill: Skill): number {
   if (!update.selected) return 0
   return earnedXp(update.minutes, update.effort)
 }
-
 
 export function nodeUpdateHistory(
   id: NodeId,

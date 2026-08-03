@@ -39,14 +39,43 @@ export function Create(): ReactElement | null {
     if (!draft) return undefined
 
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key !== 'Escape') return
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        escape()
+        return
+      }
+
+      if (event.key !== 'Enter' || event.isComposing || event.repeat) return
+
+      const target = event.target
+      if (target instanceof HTMLElement) {
+        if (target.closest('[data-create-enter="commit-only"]')) return
+        if (
+          target.isContentEditable ||
+          target instanceof HTMLTextAreaElement ||
+          target instanceof HTMLButtonElement ||
+          target instanceof HTMLSelectElement
+        ) {
+          return
+        }
+
+        if (
+          target instanceof HTMLInputElement &&
+          !target.matches('[data-create-enter="advance"]')
+        ) {
+          return
+        }
+      }
+
+      if (!draft.title.trim()) return
+
       event.preventDefault()
-      escape()
+      next()
     }
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [draft, escape])
+  }, [draft, escape, next])
 
   const candidateCount = useMemo(() => {
     if (!draft || draft.step !== 'to') return 0
@@ -90,6 +119,7 @@ export function Create(): ReactElement | null {
         <input
           value={draft.title}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => setTitle(event.target.value)}
+          data-create-enter="advance"
           autoFocus
         />
       </label>
@@ -171,7 +201,13 @@ export function Create(): ReactElement | null {
       </div>
 
       <small className="create-escape">
-        Esc {draft.step === 'from' ? 'cancels creation' : 'returns to From selection'}
+        Enter{' '}
+        {draft.step === 'from'
+          ? creatingRoot
+            ? 'creates the root'
+            : 'continues to To selection'
+          : 'creates the node'}
+        {' · '}Esc {draft.step === 'from' ? 'cancels creation' : 'returns to From selection'}
       </small>
     </section>
   )
@@ -236,6 +272,7 @@ function CreateLevelDefaults({
     <section
       className="level-defaults level-defaults--create"
       aria-label="New node level setup"
+      data-create-enter="commit-only"
     >
       <div className="level-defaults__heading">
         <div>

@@ -235,7 +235,6 @@ export function Updates(): ReactElement {
         </div>
       </div>
 
-
       {lastCreated && !create && (
         <div className="created-banner">
           <strong>{lastCreated}</strong>
@@ -528,6 +527,12 @@ export function Updates(): ReactElement {
                 </button>
               </header>
 
+              <NameSettings
+                nodeId={(settingsRoot ?? settingsSkill)!.id}
+                title={(settingsRoot ?? settingsSkill)!.title}
+                kind={settingsRoot ? 'root' : 'node'}
+              />
+
               {settingsSkill && (
                 <>
                   <div className="node-settings-summary">
@@ -626,6 +631,70 @@ export function Updates(): ReactElement {
         </div>
       )}
     </>
+  )
+}
+
+function NameSettings({
+  nodeId,
+  title,
+  kind
+}: {
+  nodeId: NodeId
+  title: string
+  kind: 'root' | 'node'
+}): ReactElement {
+  const renameNode = useMastery((state) => state.renameNode)
+  const [value, setValue] = useState(title)
+
+  useEffect(() => {
+    setValue(title)
+  }, [nodeId, title])
+
+  const reset = (): void => setValue(title)
+
+  const commit = (): void => {
+    const normalized = value.trim().replace(/\s+/g, ' ')
+    if (!normalized) {
+      reset()
+      return
+    }
+
+    setValue(normalized)
+    renameNode(nodeId, normalized)
+  }
+
+  return (
+    <section className="node-settings-section node-settings-name">
+      <div className="node-settings-section__heading">
+        <div>
+          <strong>{kind === 'root' ? 'Root name' : 'Node name'}</strong>
+          <span>Updates everywhere immediately</span>
+        </div>
+      </div>
+      <label>
+        Display name
+        <input
+          type="text"
+          value={value}
+          maxLength={120}
+          aria-label={`${kind === 'root' ? 'Root' : 'Node'} display name`}
+          onChange={(event) => setValue(event.target.value)}
+          onBlur={commit}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              event.stopPropagation()
+              commit()
+            } else if (event.key === 'Escape') {
+              event.preventDefault()
+              event.stopPropagation()
+              reset()
+            }
+          }}
+        />
+      </label>
+      <small>The internal node ID and every relationship stay unchanged.</small>
+    </section>
   )
 }
 
