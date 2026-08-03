@@ -78,6 +78,8 @@ batch wizard:
 - iterate over these changes with the intention of operating at a higher order magnitude for improvements.
  - some items will be overtaken by earlier implemented items.
  - have cgpt turn these into nice looking markdown first
+ -
+ - not a huge fan of the visual when a parent has only one child.
 
 
 ==================FINISHED============================================
