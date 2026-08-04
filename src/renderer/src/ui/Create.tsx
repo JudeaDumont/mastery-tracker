@@ -49,7 +49,7 @@ export function Create(): ReactElement | null {
 
       const target = event.target
       if (target instanceof HTMLElement) {
-        if (target.closest('[data-create-enter="commit-only"]')) return
+        if (target.closest('[data-create-enter="commit-and-advance"]')) return
         if (
           target.isContentEditable ||
           target instanceof HTMLTextAreaElement ||
@@ -73,8 +73,8 @@ export function Create(): ReactElement | null {
       next()
     }
 
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
   }, [draft, escape, next])
 
   const candidateCount = useMemo(() => {
@@ -159,6 +159,7 @@ export function Create(): ReactElement | null {
         <CreateLevelDefaults
           defaults={levelDefaults}
           onChange={configureLevelDefaults}
+          onAdvance={next}
         />
       )}
 
@@ -215,10 +216,12 @@ export function Create(): ReactElement | null {
 
 function CreateLevelDefaults({
   defaults,
-  onChange
+  onChange,
+  onAdvance
 }: {
   defaults: LevelDefaults
   onChange: (patch: Partial<LevelDefaults>) => void
+  onAdvance: () => void
 }): ReactElement {
   const [stepValue, setStepValue] = useState(String(defaults.levelStepXp))
   const [maxLevelValue, setMaxLevelValue] = useState(String(defaults.maxLevel))
@@ -228,39 +231,41 @@ function CreateLevelDefaults({
     setMaxLevelValue(String(defaults.maxLevel))
   }, [defaults.levelStepXp, defaults.maxLevel])
 
-  const commitStep = (): void => {
+  const commitStep = (): boolean => {
     const parsed = Number(stepValue)
     if (!Number.isFinite(parsed) || parsed < 1) {
       setStepValue(String(defaults.levelStepXp))
-      return
+      return false
     }
 
     const levelStepXp = Math.max(1, Math.trunc(parsed))
     setStepValue(String(levelStepXp))
     onChange({ levelStepXp })
+    return true
   }
 
-  const commitMaxLevel = (): void => {
+  const commitMaxLevel = (): boolean => {
     const parsed = Number(maxLevelValue)
     if (!Number.isFinite(parsed) || parsed < 1) {
       setMaxLevelValue(String(defaults.maxLevel))
-      return
+      return false
     }
 
     const maxLevel = Math.min(MAX_LEVEL_LIMIT, Math.max(1, Math.trunc(parsed)))
     setMaxLevelValue(String(maxLevel))
     onChange({ maxLevel })
+    return true
   }
 
   const handleKeyDown = (
     event: React.KeyboardEvent<HTMLInputElement>,
-    commit: () => void,
+    commit: () => boolean,
     reset: () => void
   ): void => {
     if (event.key === 'Enter') {
       event.preventDefault()
       event.stopPropagation()
-      commit()
+      if (commit()) onAdvance()
     } else if (event.key === 'Escape') {
       event.preventDefault()
       event.stopPropagation()
@@ -272,7 +277,7 @@ function CreateLevelDefaults({
     <section
       className="level-defaults level-defaults--create"
       aria-label="New node level setup"
-      data-create-enter="commit-only"
+      data-create-enter="commit-and-advance"
     >
       <div className="level-defaults__heading">
         <div>

@@ -49,6 +49,7 @@ const CAMERA_DEBUG_EVENT = 'mastery-camera-debug'
 
 export interface GraphViewRequest {
   rootId?: RootId
+  nodeId?: NodeId
   requestId: number
 }
 
@@ -442,6 +443,22 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
 
     cameraDebug('view-request-start', viewRequest)
     const frame = window.requestAnimationFrame(() => {
+      setFocusedHistoryNodeId(null)
+      setPendingFocusNodeId(null)
+
+      if (viewRequest.nodeId) {
+        const host = flowHostRef.current
+        const node = flowInstance.getNode(viewRequest.nodeId)
+        cameraDebug('view-request-node-measured', {
+          nodeId: viewRequest.nodeId,
+          hostFound: Boolean(host),
+          nodeFound: Boolean(node)
+        })
+        if (!host || !node) return
+        focusNodeCentered(flowInstance, host, node, cameraDebug)
+        return
+      }
+
       const viewNodes = flowInstance
         .getNodes()
         .filter((node) => node.id !== PREVIEW_ID)
@@ -456,8 +473,6 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
       })
 
       if (!bounds) return
-      setFocusedHistoryNodeId(null)
-      setPendingFocusNodeId(null)
       void flowInstance
         .fitBounds(bounds, {
           padding: 0.16,
@@ -470,7 +485,13 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
     })
 
     return () => window.cancelAnimationFrame(frame)
-  }, [cameraDebug, flowInstance, viewRequest.requestId, viewRequest.rootId])
+  }, [
+    cameraDebug,
+    flowInstance,
+    viewRequest.nodeId,
+    viewRequest.requestId,
+    viewRequest.rootId
+  ])
 
   useEffect(() => {
     cameraDebug('focus-effect-check', {
@@ -717,6 +738,41 @@ function boundsForNodes(nodes: Node<MasteryNodeData>[]): ViewBounds | undefined 
     width: Math.max(1, maximumX - minimumX),
     height: Math.max(1, maximumY - minimumY)
   }
+}
+
+function focusNodeCentered(
+  flowInstance: ReactFlowInstance<Node<MasteryNodeData>, Edge>,
+  host: HTMLDivElement,
+  node: Node<MasteryNodeData>,
+  cameraDebug: (step: string, details?: unknown) => void
+): void {
+  const hostRect = host.getBoundingClientRect()
+  if (hostRect.width <= 0 || hostRect.height <= 0) {
+    cameraDebug('search-focus-aborted', 'host-has-zero-size')
+    return
+  }
+
+  const nodeSize = renderedNodeSize(node)
+  const zoom = clampNumber(1.3, 0.35, 1.8)
+  const nodeCenterX = node.position.x + nodeSize / 2
+  const nodeCenterY = node.position.y + nodeSize / 2
+  const nextViewport = {
+    x: hostRect.width / 2 - nodeCenterX * zoom,
+    y: hostRect.height / 2 - nodeCenterY * zoom,
+    zoom
+  }
+
+  cameraDebug('search-focus-viewport-calculated', {
+    nodeId: node.id,
+    nodeCenterX,
+    nodeCenterY,
+    nextViewport
+  })
+
+  void flowInstance
+    .setViewport(nextViewport, { duration: 320 })
+    .then(() => cameraDebug('search-focus-complete', flowInstance.getViewport()))
+    .catch((error: unknown) => cameraDebug('search-focus-error', debugError(error)))
 }
 
 function focusNodeWithHistory(

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
-import type { RootId } from './model'
+import type { NodeId, RootId } from './model'
 import { Graph, type GraphViewRequest } from './ui/Graph'
 import { Updates } from './ui/Updates'
 import { DailyUpdates } from './ui/DailyUpdates'
 import { Deadlines } from './ui/Deadlines'
 import { ScheduleIcon } from './ui/ScheduleIcon'
+import { NodeSearch } from './ui/NodeSearch'
 import { deadlineStatus } from './deadline'
 import { dailyXpTotal, useMastery } from './store'
 import { isLocked, levelFor } from './xp'
@@ -62,9 +63,34 @@ function App(): ReactElement {
     console.info('[camera-debug]', 'header-view-request', { rootId: rootId ?? 'full-view' })
     setGraphView((current) => ({
       rootId,
+      nodeId: undefined,
       requestId: current.requestId + 1
     }))
   }
+
+  const requestNodeView = useCallback(
+    (nodeId: NodeId, rootId: RootId): void => {
+      const rootIndex = roots.findIndex((root) => root.id === rootId)
+      if (rootIndex >= 0) {
+        setRootTabStart((current) => {
+          if (rootIndex < current) return rootIndex
+          if (rootIndex >= current + ROOT_TABS_VISIBLE) {
+            return Math.max(0, rootIndex - ROOT_TABS_VISIBLE + 1)
+          }
+          return current
+        })
+      }
+
+      setDailyUpdatesOpen(false)
+      setDeadlinesOpen(false)
+      setGraphView((current) => ({
+        rootId,
+        nodeId,
+        requestId: current.requestId + 1
+      }))
+    },
+    [roots]
+  )
 
   const totalXp = skills.reduce((sum, skill) => sum + skill.xp, 0)
   const todayXp = dailyXpTotal(xpLedger)
@@ -180,7 +206,7 @@ function App(): ReactElement {
             />
             {scheduledCount > 0 && <span className="schedule-header-count">{scheduledCount}</span>}
           </button>
-          <button type="button">Search</button>
+          <NodeSearch onSelect={requestNodeView} />
           <div className="logs-menu">
             <button
               className="logs-menu__trigger"
