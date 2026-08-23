@@ -1,6 +1,12 @@
 # Mastery Tracker graph file
 
-Mastery Tracker stores graph state in `mastery-graph.json` inside Electron's per-user `userData` directory.
+When Mastery Tracker runs from a Git checkout, it stores graph state in the tracked
+`data/mastery-graph.json` file at the repository root. Persistent edits therefore appear in the
+working tree and can be committed, pushed, and pulled like source changes.
+
+If no Git checkout can be found, such as in a packaged installation, the app falls back to
+`mastery-graph.json` inside Electron's per-user `userData` directory. The
+`MASTERY_GRAPH_STATE_PATH` environment variable can override both locations with an absolute path.
 
 ## Compatibility contract
 
@@ -15,6 +21,10 @@ Mastery Tracker stores graph state in `mastery-graph.json` inside Electron's per
 - Legacy cumulative `thresholds` migrate to independent `levelXpRequirements`.
 - Unknown fields are ignored, so additive fields remain backwards compatible.
 - A file with a newer unsupported schema version is never overwritten.
+- The committed repository seed is replaced by the previous `userData` graph on the first launch
+  after this storage change, preserving an existing local graph.
+- Loading an already-current version 6 file does not rewrite it just to refresh `savedAt`, avoiding
+  meaningless Git changes on startup.
 - Writes use a temporary file and keep `mastery-graph.json.backup` as the previous complete save.
 - Invalid JSON is moved aside with a `.corrupt-<timestamp>` suffix instead of being destroyed.
 

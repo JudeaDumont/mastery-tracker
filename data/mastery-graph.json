@@ -1,0 +1,425 @@
+{
+  "format": "mastery-tracker.graph",
+  "schemaVersion": 6,
+  "repositorySeed": true,
+  "savedAt": "2026-08-23T00:00:00.000Z",
+  "data": {
+    "roots": [
+      {
+        "id": "lifter",
+        "title": "Lifter",
+        "accent": "teal",
+        "updateHistory": []
+      }
+    ],
+    "skills": [
+      {
+        "id": "a",
+        "rootId": "lifter",
+        "title": "A",
+        "xp": 145,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          180,
+          275,
+          425,
+          650
+        ],
+        "levelReachedAt": [
+          "2026-06-02T14:00:00.000Z"
+        ],
+        "momentum": 6,
+        "updateHistory": [],
+        "gates": []
+      },
+      {
+        "id": "b",
+        "rootId": "lifter",
+        "title": "B",
+        "xp": 1200,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          180,
+          275,
+          425,
+          650
+        ],
+        "levelReachedAt": [
+          "2026-01-12T14:00:00.000Z",
+          "2026-02-21T14:00:00.000Z",
+          "2026-04-03T14:00:00.000Z",
+          "2026-06-28T14:00:00.000Z"
+        ],
+        "momentum": 73,
+        "updateHistory": [],
+        "gates": []
+      },
+      {
+        "id": "c",
+        "rootId": "lifter",
+        "title": "C",
+        "xp": 350,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          180,
+          275,
+          425,
+          650
+        ],
+        "levelReachedAt": [
+          "2026-03-05T14:00:00.000Z",
+          "2026-05-14T14:00:00.000Z"
+        ],
+        "momentum": 28,
+        "updateHistory": [],
+        "gates": []
+      },
+      {
+        "id": "d",
+        "rootId": "lifter",
+        "title": "D",
+        "xp": 650,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          180,
+          275,
+          425,
+          650
+        ],
+        "levelReachedAt": [
+          "2026-01-27T14:00:00.000Z",
+          "2026-03-18T14:00:00.000Z",
+          "2026-06-11T14:00:00.000Z"
+        ],
+        "momentum": 54,
+        "updateHistory": [],
+        "gates": []
+      },
+      {
+        "id": "e",
+        "rootId": "lifter",
+        "title": "E",
+        "xp": 420,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          180,
+          275,
+          425,
+          650
+        ],
+        "levelReachedAt": [
+          "2026-04-08T14:00:00.000Z",
+          "2026-07-01T14:00:00.000Z"
+        ],
+        "momentum": 15,
+        "updateHistory": [],
+        "gates": []
+      },
+      {
+        "id": "f",
+        "rootId": "lifter",
+        "title": "F",
+        "xp": 1350,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          180,
+          275,
+          425,
+          650
+        ],
+        "levelReachedAt": [
+          "2026-01-09T14:00:00.000Z",
+          "2026-02-18T14:00:00.000Z",
+          "2026-04-30T14:00:00.000Z",
+          "2026-07-10T14:00:00.000Z"
+        ],
+        "momentum": 87,
+        "updateHistory": [],
+        "gates": []
+      },
+      {
+        "id": "g",
+        "rootId": "lifter",
+        "title": "G",
+        "xp": 1880,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          180,
+          275,
+          425,
+          650
+        ],
+        "levelReachedAt": [
+          "2025-12-18T14:00:00.000Z",
+          "2026-01-29T14:00:00.000Z",
+          "2026-03-20T14:00:00.000Z",
+          "2026-05-22T14:00:00.000Z",
+          "2026-07-18T14:00:00.000Z"
+        ],
+        "momentum": 41,
+        "updateHistory": [],
+        "gates": []
+      },
+      {
+        "id": "h",
+        "rootId": "lifter",
+        "title": "H",
+        "xp": 1050,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          180,
+          275,
+          425,
+          650
+        ],
+        "levelReachedAt": [
+          "2026-01-20T14:00:00.000Z",
+          "2026-03-02T14:00:00.000Z",
+          "2026-05-07T14:00:00.000Z",
+          "2026-07-14T14:00:00.000Z"
+        ],
+        "momentum": 100,
+        "updateHistory": [],
+        "gates": []
+      },
+      {
+        "id": "i",
+        "rootId": "lifter",
+        "title": "I",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          180,
+          275,
+          425,
+          650
+        ],
+        "levelReachedAt": [],
+        "momentum": 22,
+        "updateHistory": [],
+        "gates": [
+          {
+            "nodeId": "a",
+            "level": 2
+          },
+          {
+            "nodeId": "b",
+            "level": 3
+          },
+          {
+            "nodeId": "c",
+            "level": 3
+          },
+          {
+            "nodeId": "d",
+            "level": 4
+          },
+          {
+            "nodeId": "e",
+            "level": 2
+          },
+          {
+            "nodeId": "f",
+            "level": 4
+          },
+          {
+            "nodeId": "g",
+            "level": 5
+          },
+          {
+            "nodeId": "h",
+            "level": 5
+          }
+        ]
+      },
+      {
+        "id": "j",
+        "rootId": "lifter",
+        "title": "J",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          180,
+          275,
+          425,
+          650
+        ],
+        "levelReachedAt": [],
+        "momentum": 64,
+        "updateHistory": [],
+        "gates": [
+          {
+            "nodeId": "a",
+            "level": 2
+          },
+          {
+            "nodeId": "b",
+            "level": 3
+          },
+          {
+            "nodeId": "c",
+            "level": 3
+          },
+          {
+            "nodeId": "d",
+            "level": 4
+          },
+          {
+            "nodeId": "e",
+            "level": 2
+          },
+          {
+            "nodeId": "f",
+            "level": 4
+          },
+          {
+            "nodeId": "g",
+            "level": 5
+          },
+          {
+            "nodeId": "h",
+            "level": 5
+          }
+        ]
+      }
+    ],
+    "links": [
+      {
+        "id": "lifter-a",
+        "from": "lifter",
+        "to": "a"
+      },
+      {
+        "id": "lifter-b",
+        "from": "lifter",
+        "to": "b"
+      },
+      {
+        "id": "lifter-c",
+        "from": "lifter",
+        "to": "c"
+      },
+      {
+        "id": "lifter-d",
+        "from": "lifter",
+        "to": "d"
+      },
+      {
+        "id": "lifter-e",
+        "from": "lifter",
+        "to": "e"
+      },
+      {
+        "id": "lifter-f",
+        "from": "lifter",
+        "to": "f"
+      },
+      {
+        "id": "lifter-g",
+        "from": "lifter",
+        "to": "g"
+      },
+      {
+        "id": "lifter-h",
+        "from": "lifter",
+        "to": "h"
+      },
+      {
+        "id": "a-i",
+        "from": "a",
+        "to": "i"
+      },
+      {
+        "id": "b-i",
+        "from": "b",
+        "to": "i"
+      },
+      {
+        "id": "c-i",
+        "from": "c",
+        "to": "i"
+      },
+      {
+        "id": "d-i",
+        "from": "d",
+        "to": "i"
+      },
+      {
+        "id": "e-i",
+        "from": "e",
+        "to": "i"
+      },
+      {
+        "id": "f-i",
+        "from": "f",
+        "to": "i"
+      },
+      {
+        "id": "g-i",
+        "from": "g",
+        "to": "i"
+      },
+      {
+        "id": "h-i",
+        "from": "h",
+        "to": "i"
+      },
+      {
+        "id": "a-j",
+        "from": "a",
+        "to": "j"
+      },
+      {
+        "id": "b-j",
+        "from": "b",
+        "to": "j"
+      },
+      {
+        "id": "c-j",
+        "from": "c",
+        "to": "j"
+      },
+      {
+        "id": "d-j",
+        "from": "d",
+        "to": "j"
+      },
+      {
+        "id": "e-j",
+        "from": "e",
+        "to": "j"
+      },
+      {
+        "id": "f-j",
+        "from": "f",
+        "to": "j"
+      },
+      {
+        "id": "g-j",
+        "from": "g",
+        "to": "j"
+      },
+      {
+        "id": "h-j",
+        "from": "h",
+        "to": "j"
+      }
+    ],
+    "xpLedger": [],
+    "todayXp": 0,
+    "levelDefaults": {
+      "levelStepXp": 100,
+      "maxLevel": 3
+    }
+  }
+}

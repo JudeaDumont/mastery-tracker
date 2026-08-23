@@ -4,6 +4,9 @@ out
 .DS_Store
 .eslintcache
 *.log*
+data/mastery-graph.json.backup
+data/mastery-graph.json.tmp
+data/mastery-graph.json.corrupt-*
 .idea/workspace.xml
 .idea/shelf/
 .idea/httpRequests/

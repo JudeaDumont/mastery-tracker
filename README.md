@@ -18,9 +18,29 @@ The install step adds React Flow and Zustand, which were not in the original Ele
 - Root node plus Squat, Deadlift, and Running
 - Level-gated locked node
 - Hottest-to-coldest update pane
-- Batch duration, effort, and note entry
+- Single-node duration, effort, and note entry
 - XP awards, level-ups, unlock checks, and heat changes
-- In-memory activity history and XP board
+- Persistent activity history and XP board
+
+## Graph state and Git sync
+
+When the app runs from a Git checkout, its canonical graph state is
+`data/mastery-graph.json`. That file is intentionally committed to the repository, so normal
+Git commits preserve graph history and make the graph portable between devices.
+
+```powershell
+git add data/mastery-graph.json
+git commit -m "Update mastery graph state"
+git push
+```
+
+Pull the latest commit before opening the app on another device. The app does not create Git
+commits automatically.
+
+The first launch after this storage change imports the previous Electron `userData` copy when the
+tracked file is still the repository seed. Packaged builds that are not running inside a Git
+checkout continue to use Electron `userData`. Set `MASTERY_GRAPH_STATE_PATH` to an absolute file
+path to override either location.
 
 ## Short source layout
 
@@ -35,5 +55,3 @@ src/renderer/src/
     MasteryNode.tsx
     Updates.tsx
 ```
-
-The next slice should add JSON persistence through `src/main` and `src/preload`.

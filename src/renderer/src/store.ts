@@ -248,6 +248,19 @@ function draftFor(skills: Skill[]): Record<SkillId, DraftUpdate> {
   )
 }
 
+function draftWithOnlySelection(
+  draft: Record<SkillId, DraftUpdate>,
+  selectedId?: SkillId,
+  selected = false
+): Record<SkillId, DraftUpdate> {
+  return Object.fromEntries(
+    Object.entries(draft).map(([skillId, update]) => [
+      skillId,
+      { ...update, selected: selected && skillId === selectedId }
+    ])
+  ) as Record<SkillId, DraftUpdate>
+}
+
 interface MasteryStore {
   roots: Root[]
   skills: Skill[]
@@ -261,7 +274,7 @@ interface MasteryStore {
   lastResult: SubmitResult | null
   lastCreated: string | null
   toggle: (id: SkillId) => void
-  edit: (id: SkillId, patch: Partial<DraftUpdate>) => void
+  edit: (id: SkillId, patch: Partial<Omit<DraftUpdate, 'selected'>>) => void
   editUpdateNote: (nodeId: NodeId, entryId: string, note: string) => void
   setUpdateDeadline: (nodeId: NodeId, entryId: string, deadlineOn?: string) => void
   setUpdateOpportune: (nodeId: NodeId, entryId: string, opportuneOn?: string) => void
@@ -306,11 +319,11 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       const skill = state.skills.find((candidate) => candidate.id === id)
       if (!skill || isLocked(skill, state.skills)) return state
 
+      const picked = state.pickedIds.length === 1 && state.pickedIds[0] === id
+
       return {
-        draft: {
-          ...state.draft,
-          [id]: { ...state.draft[id], selected: !state.draft[id].selected }
-        }
+        pickedIds: picked ? [] : [id],
+        draft: draftWithOnlySelection(state.draft, id, !picked)
       }
     }),
 
@@ -544,9 +557,11 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
   submit: () => {
     const before = get()
+    const selectedNodeId = before.pickedIds.length === 1 ? before.pickedIds[0] : undefined
     const hasNoteWithoutXp = before.skills.some((skill) => {
       const update = before.draft[skill.id]
       return (
+        skill.id === selectedNodeId &&
         update?.selected &&
         !isLocked(skill, before.skills) &&
         update.note.trim().length > 0 &&
@@ -566,7 +581,9 @@ export const useMastery = create<MasteryStore>((set, get) => ({
     const ledgerEntries: ActivityEntry[] = []
     const skills = before.skills.map((skill) => {
       const update = before.draft[skill.id]
-      if (!update?.selected || isLocked(skill, before.skills)) return skill
+      if (skill.id !== selectedNodeId || !update?.selected || isLocked(skill, before.skills)) {
+        return skill
+      }
 
       const xp = earnedXp(update.minutes, update.effort)
       if (xp <= 0) return skill
@@ -616,34 +633,27 @@ export const useMastery = create<MasteryStore>((set, get) => ({
 
   togglePicked: (id) =>
     set((state) => {
-      const picked = state.pickedIds.includes(id)
-      const pickedIds = picked
-        ? state.pickedIds.filter((pickedId) => pickedId !== id)
-        : [id, ...state.pickedIds]
+      const picked = state.pickedIds.length === 1 && state.pickedIds[0] === id
+      if (picked) {
+        return {
+          pickedIds: [],
+          draft: draftWithOnlySelection(state.draft)
+        }
+      }
+
       const skill = state.skills.find((candidate) => candidate.id === id)
-
-      if (!skill) return { pickedIds }
-
-      const selected = !picked && !isLocked(skill, state.skills)
+      const selected = Boolean(skill && !isLocked(skill, state.skills))
 
       return {
-        pickedIds,
-        draft: {
-          ...state.draft,
-          [id]: { ...state.draft[id], selected }
-        }
+        pickedIds: [id],
+        draft: draftWithOnlySelection(state.draft, skill?.id, selected)
       }
     }),
 
   clearPicked: () =>
     set((state) => ({
       pickedIds: [],
-      draft: Object.fromEntries(
-        Object.entries(state.draft).map(([id, update]) => [
-          id,
-          { ...update, selected: false }
-        ])
-      ) as Record<SkillId, DraftUpdate>
+      draft: draftWithOnlySelection(state.draft)
     })),
 
   deleteNode: (id) =>
@@ -768,6 +778,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       set({
         roots: [...state.roots, root],
         create: null,
+        draft: draftWithOnlySelection(state.draft),
         pickedIds: [id],
         lastCreated: `${root.title} root created`
       })
@@ -810,7 +821,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       skills: [...state.skills, skill],
       links,
       draft: {
-        ...state.draft,
+        ...draftWithOnlySelection(state.draft),
         [id]: { selected: true, minutes: 0, effort: 'moderate', note: '' }
       },
       create: null,

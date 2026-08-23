@@ -50,8 +50,12 @@ export async function initializeMasteryPersistence(): Promise<void> {
 
     if (migrated) applyPersistedSnapshot(migrated)
 
-    await persistCurrentState()
-    lastSerialized = JSON.stringify(graphStateSnapshot())
+    const currentSnapshot = graphStateSnapshot()
+    lastSerialized = JSON.stringify(currentSnapshot)
+
+    if (raw === null || !isCurrentGraphFile(raw)) {
+      await saveSnapshot(currentSnapshot)
+    }
 
     useMastery.subscribe((state) => {
       const snapshot: GraphStateSnapshot = {
@@ -83,10 +87,6 @@ export async function initializeMasteryPersistence(): Promise<void> {
   }
 }
 
-function persistCurrentState(): Promise<void> {
-  return saveSnapshot(graphStateSnapshot())
-}
-
 function saveSnapshot(snapshot: GraphStateSnapshot): Promise<void> {
   const document: GraphFileV6 = {
     format: GRAPH_FILE_FORMAT,
@@ -96,6 +96,14 @@ function saveSnapshot(snapshot: GraphStateSnapshot): Promise<void> {
   }
 
   return window.api.graphPersistence.save(document)
+}
+
+function isCurrentGraphFile(raw: unknown): boolean {
+  const object = asObject(raw)
+  return (
+    object?.format === GRAPH_FILE_FORMAT &&
+    finiteInteger(object.schemaVersion, 0) === GRAPH_FILE_VERSION
+  )
 }
 
 export function migrateGraphFile(raw: unknown): GraphStateSnapshot | null {

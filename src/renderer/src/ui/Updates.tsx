@@ -248,7 +248,7 @@ export function Updates(): ReactElement {
         {selectedCount === 0 && !create && (
           <div className="node-list-empty">
             <strong>No nodes selected</strong>
-            <span>Select one or more nodes in the graph to add updates.</span>
+            <span>Select a node in the graph to add an update.</span>
           </div>
         )}
 
@@ -461,7 +461,9 @@ export function Updates(): ReactElement {
         )}
 
         <div className="submit-summary">
-          <span>{updatable.length} nodes</span>
+          <span>
+            {updatable.length} {updatable.length === 1 ? 'node' : 'nodes'}
+          </span>
           <span>
             {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m
           </span>
@@ -473,7 +475,7 @@ export function Updates(): ReactElement {
           disabled={!canAttemptSubmit}
           onClick={submitUpdates}
         >
-          Submit updates
+          Submit update
         </button>
         </div>
       )}
