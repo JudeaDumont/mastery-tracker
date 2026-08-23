@@ -1,425 +1,3462 @@
 {
   "format": "mastery-tracker.graph",
   "schemaVersion": 6,
-  "repositorySeed": true,
-  "savedAt": "2026-08-23T00:00:00.000Z",
+  "savedAt": "2026-08-23T13:00:33.424Z",
   "data": {
     "roots": [
       {
-        "id": "lifter",
-        "title": "Lifter",
-        "accent": "teal",
+        "id": "parallelism",
+        "title": "Parallel Chore",
+        "accent": "violet",
+        "updateHistory": []
+      },
+      {
+        "id": "ng",
+        "title": "NG",
+        "accent": "amber",
+        "updateHistory": []
+      },
+      {
+        "id": "home-improvement",
+        "title": "Home Improvement",
+        "accent": "green",
+        "updateHistory": []
+      },
+      {
+        "id": "health-wellness",
+        "title": "Health & Wellness",
+        "accent": "rose",
         "updateHistory": []
       }
     ],
     "skills": [
       {
-        "id": "a",
-        "rootId": "lifter",
-        "title": "A",
-        "xp": 145,
-        "maxLevel": 5,
+        "id": "4-running",
+        "rootId": "parallelism",
+        "title": "4 Running",
+        "xp": 375,
+        "maxLevel": 3,
         "levelXpRequirements": [
           100,
-          180,
-          275,
-          425,
-          650
+          200,
+          300
         ],
         "levelReachedAt": [
-          "2026-06-02T14:00:00.000Z"
+          "2026-07-27T13:36:46.465Z",
+          "2026-07-29T14:18:29.032Z"
         ],
+        "momentum": 31,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-27T13:36:46.465Z-4-running",
+            "nodeId": "4-running",
+            "occurredAt": "2026-07-27T13:36:46.465Z",
+            "minutes": 120,
+            "effort": "moderate",
+            "xp": 120,
+            "note": "- laundry\n- dishes\n- benchmark unit tests for gemsbok\n- hang up clothes"
+          },
+          {
+            "id": "2026-07-28T13:11:47.823Z-4-running",
+            "nodeId": "4-running",
+            "occurredAt": "2026-07-28T13:11:47.823Z",
+            "minutes": 90,
+            "effort": "hard",
+            "xp": 135,
+            "note": "-laundry\n-dishes\n-mastery thread\n-ng thread g perf\n-second ng thread g dep rec"
+          },
+          {
+            "id": "2026-07-29T14:18:29.032Z-4-running-2068fc9d-2eaf-46ea-83bd-40f4886e8d5f",
+            "nodeId": "4-running",
+            "occurredAt": "2026-07-29T14:18:29.032Z",
+            "minutes": 120,
+            "effort": "moderate",
+            "xp": 120,
+            "note": "-dishes\n-laundry\n-cgpt mastery\n-cgpt perf test"
+          }
+        ]
+      },
+      {
+        "id": "gemsbok-perf",
+        "rootId": "ng",
+        "title": "Gemsbok Perf",
+        "xp": 60,
+        "maxLevel": 3,
+        "levelXpRequirements": [
+          100,
+          200,
+          300
+        ],
+        "levelReachedAt": [],
+        "momentum": 5,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T11:36:39.455Z-gemsbok-perf",
+            "nodeId": "gemsbok-perf",
+            "occurredAt": "2026-07-28T11:36:39.455Z",
+            "minutes": 60,
+            "effort": "moderate",
+            "xp": 60,
+            "note": ""
+          }
+        ]
+      },
+      {
+        "id": "1986",
+        "rootId": "ng",
+        "title": "1986 gemsbok-test performance",
+        "xp": 600,
+        "maxLevel": 3,
+        "levelXpRequirements": [
+          100,
+          200,
+          300
+        ],
+        "levelReachedAt": [
+          "2026-07-28T13:04:18.430Z",
+          "2026-08-23T12:27:48.121Z",
+          "2026-08-23T12:27:57.224Z"
+        ],
+        "momentum": 51,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T11:36:39.455Z-1986",
+            "nodeId": "1986",
+            "occurredAt": "2026-07-28T11:36:39.455Z",
+            "minutes": 30,
+            "effort": "moderate",
+            "xp": 30,
+            "note": "- moving to new repo"
+          },
+          {
+            "id": "2026-07-28T13:04:18.430Z-1986",
+            "nodeId": "1986",
+            "occurredAt": "2026-07-28T13:04:18.430Z",
+            "minutes": 140,
+            "effort": "moderate",
+            "xp": 140,
+            "note": "split gemsbok e2e perf test service into its own repo, kept supporting metrics in original PR"
+          }
+        ]
+      },
+      {
+        "id": "gemsbok-dynamic-deployment",
+        "rootId": "ng",
+        "title": "Gemsbok Dynamic Deployment",
+        "xp": 120,
+        "maxLevel": 3,
+        "levelXpRequirements": [
+          100,
+          200,
+          300
+        ],
+        "levelReachedAt": [
+          "2026-07-28T13:02:51.737Z"
+        ],
+        "momentum": 10,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T11:39:40.242Z-gemsbok-dynamic-deployment",
+            "nodeId": "gemsbok-dynamic-deployment",
+            "occurredAt": "2026-07-28T11:39:40.242Z",
+            "minutes": 60,
+            "effort": "moderate",
+            "xp": 60,
+            "note": "test2"
+          },
+          {
+            "id": "2026-07-28T13:02:51.737Z-gemsbok-dynamic-deployment",
+            "nodeId": "gemsbok-dynamic-deployment",
+            "occurredAt": "2026-07-28T13:02:51.737Z",
+            "minutes": 60,
+            "effort": "moderate",
+            "xp": 60,
+            "note": "test"
+          }
+        ]
+      },
+      {
+        "id": "3619",
+        "rootId": "ng",
+        "title": "3619 reconciler",
+        "xp": 600,
+        "maxLevel": 3,
+        "levelXpRequirements": [
+          100,
+          200,
+          300
+        ],
+        "levelReachedAt": [
+          "2026-07-28T13:03:12.880Z",
+          "2026-08-04T22:19:35.898Z",
+          "2026-08-23T12:27:25.237Z"
+        ],
+        "momentum": 52,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T13:02:51.737Z-3619",
+            "nodeId": "3619",
+            "occurredAt": "2026-07-28T13:02:51.737Z",
+            "minutes": 60,
+            "effort": "moderate",
+            "xp": 60,
+            "note": "- working gemsbok deployment reconciler now, first pass"
+          },
+          {
+            "id": "2026-07-28T13:03:12.880Z-3619",
+            "nodeId": "3619",
+            "occurredAt": "2026-07-28T13:03:12.880Z",
+            "minutes": 60,
+            "effort": "moderate",
+            "xp": 60,
+            "note": "extra points"
+          },
+          {
+            "id": "2026-07-28T14:43:51.184Z-3619",
+            "nodeId": "3619",
+            "occurredAt": "2026-07-28T14:43:51.184Z",
+            "minutes": 15,
+            "effort": "moderate",
+            "xp": 15,
+            "note": "look over first pass in coder & test"
+          },
+          {
+            "id": "2026-08-04T22:19:35.898Z-3619-590094c3-7434-4d59-97af-da0e7a7d2586",
+            "nodeId": "3619",
+            "occurredAt": "2026-08-04T22:19:35.898Z",
+            "minutes": 180,
+            "effort": "moderate",
+            "xp": 180,
+            "note": "integrated into dev-df and dev-judea\nneed to continue testing and building on the test suite for it."
+          }
+        ]
+      },
+      {
+        "id": "admin",
+        "rootId": "ng",
+        "title": "Admin",
+        "xp": 15,
+        "maxLevel": 3,
+        "levelXpRequirements": [
+          100,
+          200,
+          300
+        ],
+        "levelReachedAt": [],
+        "momentum": 3,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T13:25:20.727Z-admin",
+            "nodeId": "admin",
+            "occurredAt": "2026-07-28T13:25:20.727Z",
+            "minutes": 15,
+            "effort": "moderate",
+            "xp": 15,
+            "note": "need password change at the gccsj level",
+            "deadlineOn": "2026-08-11"
+          }
+        ]
+      },
+      {
+        "id": "cats-ripped-up-the-carpet",
+        "rootId": "home-improvement",
+        "title": "Cats Ripped up the Carpet",
+        "xp": 100,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-23T12:52:02.650Z"
+        ],
+        "momentum": 10,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T15:14:23.382Z-cats-ripped-up-the-carpet",
+            "nodeId": "cats-ripped-up-the-carpet",
+            "occurredAt": "2026-07-28T15:14:23.382Z",
+            "minutes": 15,
+            "effort": "moderate",
+            "xp": 15,
+            "note": "research what can be done about this"
+          },
+          {
+            "id": "2026-08-23T12:52:02.650Z-cats-ripped-up-the-carpet-57d8a3fc-30ce-44d4-abc3-686f154b0486",
+            "nodeId": "cats-ripped-up-the-carpet",
+            "occurredAt": "2026-08-23T12:52:02.650Z",
+            "minutes": 85,
+            "effort": "moderate",
+            "xp": 85,
+            "note": "done"
+          }
+        ]
+      },
+      {
+        "id": "test-gemsbok-test",
+        "rootId": "ng",
+        "title": "Test gemsbok-test",
+        "xp": 430,
+        "maxLevel": 3,
+        "levelXpRequirements": [
+          100,
+          200,
+          300
+        ],
+        "levelReachedAt": [
+          "2026-07-29T18:26:11.548Z",
+          "2026-07-29T20:00:08.641Z"
+        ],
+        "momentum": 38,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T14:35:42.563Z-test-gemsbok-test",
+            "nodeId": "test-gemsbok-test",
+            "occurredAt": "2026-07-28T14:35:42.563Z",
+            "minutes": 15,
+            "effort": "moderate",
+            "xp": 15,
+            "note": "Test gemsbok-test repo and get throughput"
+          },
+          {
+            "id": "2026-07-29T14:16:44.370Z-test-gemsbok-test-bfb8a716-66c2-4403-bfaa-e1ba7e7c1856",
+            "nodeId": "test-gemsbok-test",
+            "occurredAt": "2026-07-29T14:16:44.370Z",
+            "minutes": 45,
+            "effort": "moderate",
+            "xp": 45,
+            "note": "have instructions for deploying gemsbok-test repo into nyx"
+          },
+          {
+            "id": "2026-07-29T18:26:11.548Z-test-gemsbok-test-12b2480c-4cc5-4932-9853-eaf1496cec15",
+            "nodeId": "test-gemsbok-test",
+            "occurredAt": "2026-07-29T18:26:11.548Z",
+            "minutes": 200,
+            "effort": "moderate",
+            "xp": 200,
+            "note": "- change to registry to snapshot\n- 1.0.0-main-GCCSJ is an old not working image?\n- reset polly and kafka\n- gemsbok cant subscribe -> track summaries reset"
+          },
+          {
+            "id": "2026-07-29T20:00:08.641Z-test-gemsbok-test-9a8fed78-89d9-4761-b463-562485638e01",
+            "nodeId": "test-gemsbok-test",
+            "occurredAt": "2026-07-29T20:00:08.641Z",
+            "minutes": 120,
+            "effort": "moderate",
+            "xp": 120,
+            "note": "- fixed password failing on rotation\n- fixed settings\n- consistent operation"
+          },
+          {
+            "id": "2026-07-29T20:00:38.793Z-test-gemsbok-test-562b7bb6-8ccc-46d4-9bb9-a2ee35d753c4",
+            "nodeId": "test-gemsbok-test",
+            "occurredAt": "2026-07-29T20:00:38.793Z",
+            "minutes": 50,
+            "effort": "moderate",
+            "xp": 50,
+            "note": "Just need to have it tested in ajax with joe",
+            "opportuneOn": "2026-07-30"
+          }
+        ]
+      },
+      {
+        "id": "confluence",
+        "rootId": "ng",
+        "title": "Confluence",
+        "xp": 15,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [
+          null
+        ],
+        "momentum": 3,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T15:18:58.290Z-confluence",
+            "nodeId": "confluence",
+            "occurredAt": "2026-07-28T15:18:58.290Z",
+            "minutes": 15,
+            "effort": "moderate",
+            "xp": 15,
+            "note": "draw.io diagrams in progress"
+          }
+        ]
+      },
+      {
+        "id": "compiles-tests-live",
+        "rootId": "ng",
+        "title": "Compiles, Tests, Live",
+        "xp": 416,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-03T23:50:33.865Z"
+        ],
+        "momentum": 39,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T15:21:01.777Z-compiles-tests-live",
+            "nodeId": "compiles-tests-live",
+            "occurredAt": "2026-07-28T15:21:01.777Z",
+            "minutes": 15,
+            "effort": "moderate",
+            "xp": 15,
+            "note": "have the zip to test"
+          },
+          {
+            "id": "2026-07-28T19:27:41.422Z-compiles-tests-live",
+            "nodeId": "compiles-tests-live",
+            "occurredAt": "2026-07-28T19:27:41.422Z",
+            "minutes": 1,
+            "effort": "moderate",
+            "xp": 1,
+            "note": "under take 1"
+          },
+          {
+            "id": "2026-08-03T23:50:33.865Z-compiles-tests-live-9f0cd5ed-80a8-45c2-8631-ff71cc9da9a4",
+            "nodeId": "compiles-tests-live",
+            "occurredAt": "2026-08-03T23:50:33.865Z",
+            "minutes": 400,
+            "effort": "moderate",
+            "xp": 400,
+            "note": "- need to be able to turn the reconciler off\n- need to test it with dev-df\n- get a list of test scenarios\n- the aim is the demo, we will fully demo the gemsbok reconciler by showing a confluence page table row describing the test, then show the test and how it works."
+          }
+        ]
+      },
+      {
+        "id": "joe-ajax",
+        "rootId": "ng",
+        "title": "Joe & Ajax",
+        "xp": 100,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-23T12:28:09.881Z"
+        ],
+        "momentum": 9,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-29T14:15:40.745Z-joe-ajax-dda6a4f7-bdb2-41a3-a597-a65e174e9e5b",
+            "nodeId": "joe-ajax",
+            "occurredAt": "2026-07-29T14:15:40.745Z",
+            "minutes": 30,
+            "effort": "moderate",
+            "xp": 30,
+            "note": "hes going to reset polly and kafka, then start at 400 updates per second and work his way up"
+          }
+        ]
+      },
+      {
+        "id": "gccsj-pw-change",
+        "rootId": "ng",
+        "title": "GCCSJ PW Change",
+        "xp": 1,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 3,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T19:26:55.689Z-gccsj-pw-change",
+            "nodeId": "gccsj-pw-change",
+            "occurredAt": "2026-07-28T19:26:55.689Z",
+            "minutes": 1,
+            "effort": "moderate",
+            "xp": 1,
+            "note": "AUG 5 Deadline",
+            "deadlineOn": "2026-08-11",
+            "opportuneOn": "2026-07-30"
+          }
+        ]
+      },
+      {
+        "id": "breathwork",
+        "rootId": "health-wellness",
+        "title": "Breathwork",
+        "xp": 390,
+        "maxLevel": 10,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-04T22:27:06.752Z",
+          "2026-08-23T12:14:51.262Z",
+          "2026-08-23T12:14:51.262Z"
+        ],
+        "momentum": 37,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T18:31:00.235Z-breathwork",
+            "nodeId": "breathwork",
+            "occurredAt": "2026-07-28T18:31:00.235Z",
+            "minutes": 45,
+            "effort": "moderate",
+            "xp": 45,
+            "note": "- 3 rounds"
+          },
+          {
+            "id": "2026-07-29T14:14:41.668Z-breathwork-493973f1-d378-41fc-b8cc-c184ea90e79f",
+            "nodeId": "breathwork",
+            "occurredAt": "2026-07-29T14:14:41.668Z",
+            "minutes": 20,
+            "effort": "moderate",
+            "xp": 20,
+            "note": "40 breaths in the cold plunge"
+          },
+          {
+            "id": "2026-07-29T20:05:02.422Z-breathwork-29f74e3c-b9b9-4582-a50f-908ba4436bd1",
+            "nodeId": "breathwork",
+            "occurredAt": "2026-07-29T20:05:02.422Z",
+            "minutes": 5,
+            "effort": "moderate",
+            "xp": 5,
+            "note": "using breath as a response to resistance to action"
+          },
+          {
+            "id": "2026-08-23T12:14:51.262Z-breathwork-bcfc1d85-fe4f-4928-b02e-b47a3d31e829",
+            "nodeId": "breathwork",
+            "occurredAt": "2026-08-23T12:14:51.262Z",
+            "minutes": 200,
+            "effort": "moderate",
+            "xp": 200,
+            "note": "lots of breath work all the time. using it to stay anchored"
+          }
+        ]
+      },
+      {
+        "id": "squat",
+        "rootId": "health-wellness",
+        "title": "Squat",
+        "xp": 104,
+        "maxLevel": 10,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-23T12:53:27.125Z"
+        ],
+        "momentum": 11,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T18:38:33.407Z-squat",
+            "nodeId": "squat",
+            "occurredAt": "2026-07-28T18:38:33.407Z",
+            "minutes": 4,
+            "effort": "moderate",
+            "xp": 4,
+            "note": "405x1"
+          },
+          {
+            "id": "2026-08-23T12:53:27.125Z-squat-835ee39d-5338-4687-a30c-dc0137d53841",
+            "nodeId": "squat",
+            "occurredAt": "2026-08-23T12:53:27.125Z",
+            "minutes": 100,
+            "effort": "moderate",
+            "xp": 100,
+            "note": "405*1"
+          }
+        ]
+      },
+      {
+        "id": "bench",
+        "rootId": "health-wellness",
+        "title": "Bench",
+        "xp": 130,
+        "maxLevel": 10,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-23T12:54:02.196Z"
+        ],
+        "momentum": 11,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T18:37:51.968Z-bench",
+            "nodeId": "bench",
+            "occurredAt": "2026-07-28T18:37:51.968Z",
+            "minutes": 30,
+            "effort": "moderate",
+            "xp": 30,
+            "note": "315x10"
+          },
+          {
+            "id": "2026-08-23T12:54:02.196Z-bench-b573998a-7567-49b1-a1b7-d3c5272f49e3",
+            "nodeId": "bench",
+            "occurredAt": "2026-08-23T12:54:02.196Z",
+            "minutes": 100,
+            "effort": "moderate",
+            "xp": 100,
+            "note": "315*8\n315*5"
+          }
+        ]
+      },
+      {
+        "id": "deadlift",
+        "rootId": "health-wellness",
+        "title": "Deadlift",
+        "xp": 606,
+        "maxLevel": 10,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-07-31T12:06:21.546Z",
+          "2026-08-23T12:11:47.634Z",
+          "2026-08-23T12:11:47.634Z",
+          "2026-08-23T12:11:47.634Z",
+          "2026-08-23T12:11:47.634Z",
+          "2026-08-23T12:11:47.634Z"
+        ],
+        "momentum": 56,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T18:38:19.438Z-deadlift",
+            "nodeId": "deadlift",
+            "occurredAt": "2026-07-28T18:38:19.438Z",
+            "minutes": 5,
+            "effort": "moderate",
+            "xp": 5,
+            "note": "495*1"
+          },
+          {
+            "id": "2026-07-31T12:06:21.546Z-deadlift-5f7c0634-c484-41b4-86e1-15f8f6ec75d6",
+            "nodeId": "deadlift",
+            "occurredAt": "2026-07-31T12:06:21.546Z",
+            "minutes": 95,
+            "effort": "moderate",
+            "xp": 95,
+            "note": "315*10+\n\nback to fundamentals\n\nmassive T uptake, j'n 6+ times after sex"
+          },
+          {
+            "id": "2026-08-23T12:14:08.252Z-deadlift-a627e2b1-2baf-4a72-ba1e-6b97c0545ff1",
+            "nodeId": "deadlift",
+            "occurredAt": "2026-08-23T12:14:08.252Z",
+            "minutes": 1,
+            "effort": "moderate",
+            "xp": 1,
+            "note": "-525"
+          }
+        ]
+      },
+      {
+        "id": "pull-ups",
+        "rootId": "health-wellness",
+        "title": "Pull ups",
+        "xp": 50,
+        "maxLevel": 10,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
         "momentum": 6,
-        "updateHistory": [],
-        "gates": []
-      },
-      {
-        "id": "b",
-        "rootId": "lifter",
-        "title": "B",
-        "xp": 1200,
-        "maxLevel": 5,
-        "levelXpRequirements": [
-          100,
-          180,
-          275,
-          425,
-          650
-        ],
-        "levelReachedAt": [
-          "2026-01-12T14:00:00.000Z",
-          "2026-02-21T14:00:00.000Z",
-          "2026-04-03T14:00:00.000Z",
-          "2026-06-28T14:00:00.000Z"
-        ],
-        "momentum": 73,
-        "updateHistory": [],
-        "gates": []
-      },
-      {
-        "id": "c",
-        "rootId": "lifter",
-        "title": "C",
-        "xp": 350,
-        "maxLevel": 5,
-        "levelXpRequirements": [
-          100,
-          180,
-          275,
-          425,
-          650
-        ],
-        "levelReachedAt": [
-          "2026-03-05T14:00:00.000Z",
-          "2026-05-14T14:00:00.000Z"
-        ],
-        "momentum": 28,
-        "updateHistory": [],
-        "gates": []
-      },
-      {
-        "id": "d",
-        "rootId": "lifter",
-        "title": "D",
-        "xp": 650,
-        "maxLevel": 5,
-        "levelXpRequirements": [
-          100,
-          180,
-          275,
-          425,
-          650
-        ],
-        "levelReachedAt": [
-          "2026-01-27T14:00:00.000Z",
-          "2026-03-18T14:00:00.000Z",
-          "2026-06-11T14:00:00.000Z"
-        ],
-        "momentum": 54,
-        "updateHistory": [],
-        "gates": []
-      },
-      {
-        "id": "e",
-        "rootId": "lifter",
-        "title": "E",
-        "xp": 420,
-        "maxLevel": 5,
-        "levelXpRequirements": [
-          100,
-          180,
-          275,
-          425,
-          650
-        ],
-        "levelReachedAt": [
-          "2026-04-08T14:00:00.000Z",
-          "2026-07-01T14:00:00.000Z"
-        ],
-        "momentum": 15,
-        "updateHistory": [],
-        "gates": []
-      },
-      {
-        "id": "f",
-        "rootId": "lifter",
-        "title": "F",
-        "xp": 1350,
-        "maxLevel": 5,
-        "levelXpRequirements": [
-          100,
-          180,
-          275,
-          425,
-          650
-        ],
-        "levelReachedAt": [
-          "2026-01-09T14:00:00.000Z",
-          "2026-02-18T14:00:00.000Z",
-          "2026-04-30T14:00:00.000Z",
-          "2026-07-10T14:00:00.000Z"
-        ],
-        "momentum": 87,
-        "updateHistory": [],
-        "gates": []
-      },
-      {
-        "id": "g",
-        "rootId": "lifter",
-        "title": "G",
-        "xp": 1880,
-        "maxLevel": 5,
-        "levelXpRequirements": [
-          100,
-          180,
-          275,
-          425,
-          650
-        ],
-        "levelReachedAt": [
-          "2025-12-18T14:00:00.000Z",
-          "2026-01-29T14:00:00.000Z",
-          "2026-03-20T14:00:00.000Z",
-          "2026-05-22T14:00:00.000Z",
-          "2026-07-18T14:00:00.000Z"
-        ],
-        "momentum": 41,
-        "updateHistory": [],
-        "gates": []
-      },
-      {
-        "id": "h",
-        "rootId": "lifter",
-        "title": "H",
-        "xp": 1050,
-        "maxLevel": 5,
-        "levelXpRequirements": [
-          100,
-          180,
-          275,
-          425,
-          650
-        ],
-        "levelReachedAt": [
-          "2026-01-20T14:00:00.000Z",
-          "2026-03-02T14:00:00.000Z",
-          "2026-05-07T14:00:00.000Z",
-          "2026-07-14T14:00:00.000Z"
-        ],
-        "momentum": 100,
-        "updateHistory": [],
-        "gates": []
-      },
-      {
-        "id": "i",
-        "rootId": "lifter",
-        "title": "I",
-        "xp": 0,
-        "maxLevel": 5,
-        "levelXpRequirements": [
-          100,
-          180,
-          275,
-          425,
-          650
-        ],
-        "levelReachedAt": [],
-        "momentum": 22,
-        "updateHistory": [],
-        "gates": [
+        "gates": [],
+        "updateHistory": [
           {
-            "nodeId": "a",
-            "level": 2
+            "id": "2026-07-28T19:23:38.453Z-pull-ups",
+            "nodeId": "pull-ups",
+            "occurredAt": "2026-07-28T19:23:38.453Z",
+            "minutes": 30,
+            "effort": "moderate",
+            "xp": 30,
+            "note": "20, 10"
           },
           {
-            "nodeId": "b",
-            "level": 3
-          },
-          {
-            "nodeId": "c",
-            "level": 3
-          },
-          {
-            "nodeId": "d",
-            "level": 4
-          },
-          {
-            "nodeId": "e",
-            "level": 2
-          },
-          {
-            "nodeId": "f",
-            "level": 4
-          },
-          {
-            "nodeId": "g",
-            "level": 5
-          },
-          {
-            "nodeId": "h",
-            "level": 5
+            "id": "2026-07-29T14:11:56.694Z-pull-ups-a8b324ff-8ab5-43dd-9ec2-99968a6a4135",
+            "nodeId": "pull-ups",
+            "occurredAt": "2026-07-29T14:11:56.694Z",
+            "minutes": 20,
+            "effort": "moderate",
+            "xp": 20,
+            "note": "20"
           }
         ]
       },
       {
-        "id": "j",
-        "rootId": "lifter",
-        "title": "J",
+        "id": "push-ups",
+        "rootId": "health-wellness",
+        "title": "Push ups",
+        "xp": 40,
+        "maxLevel": 10,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 6,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T18:37:16.682Z-push-ups",
+            "nodeId": "push-ups",
+            "occurredAt": "2026-07-28T18:37:16.682Z",
+            "minutes": 20,
+            "effort": "moderate",
+            "xp": 20,
+            "note": "20"
+          }
+        ]
+      },
+      {
+        "id": "ac",
+        "rootId": "home-improvement",
+        "title": "AC",
+        "xp": 0,
+        "maxLevel": 10,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "insulation",
+        "rootId": "home-improvement",
+        "title": "Insulation",
+        "xp": 255,
+        "maxLevel": 10,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-02T20:51:26.139Z",
+          "2026-08-03T16:14:36.637Z"
+        ],
+        "momentum": 23,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T18:44:41.235Z-insulation",
+            "nodeId": "insulation",
+            "occurredAt": "2026-07-28T18:44:41.235Z",
+            "minutes": 15,
+            "effort": "moderate",
+            "xp": 15,
+            "note": "arrives july 29",
+            "opportuneOn": "2026-07-29"
+          },
+          {
+            "id": "2026-08-03T16:14:36.637Z-insulation-1233d8cd-cae2-4c83-ae17-33ddcb105597",
+            "nodeId": "insulation",
+            "occurredAt": "2026-08-03T16:14:36.637Z",
+            "minutes": 120,
+            "effort": "moderate",
+            "xp": 120,
+            "note": "- put 100 dollars worth up there to cover the attic walk way"
+          }
+        ]
+      },
+      {
+        "id": "temp-stim",
+        "rootId": "health-wellness",
+        "title": "Temp Stim",
+        "xp": 10,
+        "maxLevel": 10,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 3,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-29T14:14:06.712Z-temp-stim-34217631-4ccd-444d-8907-0f284e513674",
+            "nodeId": "temp-stim",
+            "occurredAt": "2026-07-29T14:14:06.712Z",
+            "minutes": 10,
+            "effort": "moderate",
+            "xp": 10,
+            "note": "cold, hot, cold"
+          }
+        ]
+      },
+      {
+        "id": "hotbox",
+        "rootId": "health-wellness",
+        "title": "Hotbox",
+        "xp": 60,
+        "maxLevel": 10,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 9,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T19:23:24.147Z-hotbox",
+            "nodeId": "hotbox",
+            "occurredAt": "2026-07-28T19:23:24.147Z",
+            "minutes": 20,
+            "effort": "moderate",
+            "xp": 20,
+            "note": "probably 15+ minutes standing"
+          },
+          {
+            "id": "2026-07-29T14:13:32.677Z-hotbox-3072616a-4119-48cc-b224-a8740d8d24c5",
+            "nodeId": "hotbox",
+            "occurredAt": "2026-07-29T14:13:32.677Z",
+            "minutes": 15,
+            "effort": "moderate",
+            "xp": 15,
+            "note": "j'd"
+          },
+          {
+            "id": "2026-08-23T12:15:47.690Z-hotbox-ab1039d7-e7a0-435c-a2dc-12fd0c1fd57a",
+            "nodeId": "hotbox",
+            "occurredAt": "2026-08-23T12:15:47.690Z",
+            "minutes": 25,
+            "effort": "moderate",
+            "xp": 25,
+            "note": "- few rounds of quantity punches"
+          }
+        ]
+      },
+      {
+        "id": "cold-plunge",
+        "rootId": "health-wellness",
+        "title": "Cold plunge",
+        "xp": 140,
+        "maxLevel": 10,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-23T12:15:26.179Z"
+        ],
+        "momentum": 14,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-28T19:22:57.165Z-cold-plunge",
+            "nodeId": "cold-plunge",
+            "occurredAt": "2026-07-28T19:22:57.165Z",
+            "minutes": 10,
+            "effort": "moderate",
+            "xp": 10,
+            "note": "double plunge and some dunks"
+          },
+          {
+            "id": "2026-07-29T14:12:39.359Z-cold-plunge-01d2bfd4-f1e9-4edf-b5d1-2ecbe74b204a",
+            "nodeId": "cold-plunge",
+            "occurredAt": "2026-07-29T14:12:39.359Z",
+            "minutes": 30,
+            "effort": "moderate",
+            "xp": 30,
+            "note": "plunge, hotbox, long plunge + breathwork"
+          },
+          {
+            "id": "2026-08-23T12:15:26.179Z-cold-plunge-58c008cc-51f3-41cb-b8cb-d5e7e6a0ed4d",
+            "nodeId": "cold-plunge",
+            "occurredAt": "2026-08-23T12:15:26.179Z",
+            "minutes": 100,
+            "effort": "moderate",
+            "xp": 100,
+            "note": "-  5 dunks"
+          }
+        ]
+      },
+      {
+        "id": "mars",
+        "rootId": "ng",
+        "title": "MARS",
+        "xp": 0,
+        "maxLevel": 10,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "vig-kafka-mtls-ticket",
+        "rootId": "ng",
+        "title": "Vig: Kafka MTLS ticket",
+        "xp": 50,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          null,
+          null
+        ],
+        "momentum": 4,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-29T20:02:06.792Z-vig-kafka-mtls-ticket-a5873be1-03ef-477f-bdc2-65e38ffc6bf1",
+            "nodeId": "vig-kafka-mtls-ticket",
+            "occurredAt": "2026-07-29T20:02:06.792Z",
+            "minutes": 50,
+            "effort": "moderate",
+            "xp": 50,
+            "note": "- talked about the plan with stephen present\n- vig seems to be moving on it"
+          }
+        ]
+      },
+      {
+        "id": "gemsbok-perf-metrics",
+        "rootId": "ng",
+        "title": "Gemsbok Perf Metrics Plan",
+        "xp": 200,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-07-31T12:00:48.545Z",
+          "2026-07-31T12:00:48.545Z"
+        ],
+        "momentum": 19,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-30T11:22:36.694Z-gemsbok-perf-metrics-a3a554b0-399c-49c7-8135-a880d8e3d864",
+            "nodeId": "gemsbok-perf-metrics",
+            "occurredAt": "2026-07-30T11:22:36.694Z",
+            "minutes": 10,
+            "effort": "moderate",
+            "xp": 10,
+            "note": "- write a confluence page that has joes findings\n- cluster, scenario, performance\n- add the e2e metrics for gemsbok services with metrics."
+          },
+          {
+            "id": "2026-07-31T12:00:48.545Z-gemsbok-perf-metrics-88e96eed-3244-4e33-b629-7f6a4a533303",
+            "nodeId": "gemsbok-perf-metrics",
+            "occurredAt": "2026-07-31T12:00:48.545Z",
+            "minutes": 190,
+            "effort": "moderate",
+            "xp": 190,
+            "note": "- come up with plan, this node is finished"
+          }
+        ]
+      },
+      {
+        "id": "write-blackfish-input-version",
+        "rootId": "ng",
+        "title": "Write blackfish input generator version",
+        "xp": 0,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "pop-the-nats-stream-cap-off",
+        "rootId": "ng",
+        "title": "pop the nats stream cap off",
+        "xp": 0,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "perf-test-ajax-from-clean",
+        "rootId": "ng",
+        "title": "perf test ajax from clean",
+        "xp": 15,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 3,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-07-31T11:59:28.215Z-perf-test-ajax-from-clean-f61b1dd4-a383-42ea-ac9b-c0b72707b9ac",
+            "nodeId": "perf-test-ajax-from-clean",
+            "occurredAt": "2026-07-31T11:59:28.215Z",
+            "minutes": 15,
+            "effort": "moderate",
+            "xp": 15,
+            "note": "- pop nats jetstream off first and confirm\n- clean ajax\n- test just gemsbok polly e2e\n- test blackfish gemsbok producer e2e\n- write confluence page for blackfish gemsbok-test\n- write confluence page for performance metrics"
+          }
+        ]
+      },
+      {
+        "id": "write-full-perf-confluence-page-under-joe",
+        "rootId": "ng",
+        "title": "write full perf confluence page under joe",
+        "xp": 0,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "hardwood-floors-for-master-and-gabes-room",
+        "rootId": "home-improvement",
+        "title": "hardwood floors  for master and gabes room",
+        "xp": 200,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-23T11:39:20.794Z",
+          "2026-08-23T11:39:20.794Z"
+        ],
+        "momentum": 17,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-23T11:39:20.794Z-hardwood-floors-for-master-and-gabes-room-e5994c19-bfc0-478d-ba70-6bfc7432bbcb",
+            "nodeId": "hardwood-floors-for-master-and-gabes-room",
+            "occurredAt": "2026-08-23T11:39:20.794Z",
+            "minutes": 200,
+            "effort": "moderate",
+            "xp": 200,
+            "note": "done"
+          }
+        ]
+      },
+      {
+        "id": "call-hvac-tech-for-ac",
+        "rootId": "home-improvement",
+        "title": "New HVAC Quote",
+        "xp": 200,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-04T22:14:35.982Z",
+          "2026-08-04T22:14:35.982Z"
+        ],
+        "momentum": 20,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-03T01:54:06.878Z-call-hvac-tech-for-ac-ed74fce7-1806-43d4-956c-ec41bc789ebd",
+            "nodeId": "call-hvac-tech-for-ac",
+            "occurredAt": "2026-08-03T01:54:06.878Z",
+            "minutes": 15,
+            "effort": "moderate",
+            "xp": 15,
+            "note": "tell him about the two vents that actually work"
+          },
+          {
+            "id": "2026-08-03T01:57:28.378Z-call-hvac-tech-for-ac-cf97a64d-6b71-4b41-8997-cfea8c5bcc57",
+            "nodeId": "call-hvac-tech-for-ac",
+            "occurredAt": "2026-08-03T01:57:28.378Z",
+            "minutes": 15,
+            "effort": "moderate",
+            "xp": 15,
+            "note": "tell them only 2 vents work"
+          },
+          {
+            "id": "2026-08-04T22:14:35.982Z-call-hvac-tech-for-ac-0d1a2424-7f53-444a-8aae-9f315aaa183c",
+            "nodeId": "call-hvac-tech-for-ac",
+            "occurredAt": "2026-08-04T22:14:35.982Z",
+            "minutes": 170,
+            "effort": "moderate",
+            "xp": 170,
+            "note": "- cashiers check incoming, friday for full replacement"
+          }
+        ]
+      },
+      {
+        "id": "get-a-quote-for-hardwooding-gabes-room",
+        "rootId": "home-improvement",
+        "title": "get a quote for hardwooding gabes room",
+        "xp": 200,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-23T11:38:57.975Z",
+          "2026-08-23T11:39:10.735Z"
+        ],
+        "momentum": 16,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "lawyer-up",
+        "rootId": "home-improvement",
+        "title": "Lawyer up",
+        "xp": 200,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-04T22:11:41.708Z",
+          "2026-08-04T22:12:26.772Z"
+        ],
+        "momentum": 18,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-03T16:13:01.835Z-lawyer-up-d299f43c-a10e-4750-be1d-65c4c5a718b0",
+            "nodeId": "lawyer-up",
+            "occurredAt": "2026-08-03T16:13:01.835Z",
+            "minutes": 60,
+            "effort": "moderate",
+            "xp": 60,
+            "note": "- called 2 lawyer firms\n- H&H and E&E\n- scheduled to talk to E&E at 1600",
+            "opportuneOn": "2026-08-04"
+          },
+          {
+            "id": "2026-08-04T22:11:41.708Z-lawyer-up-dd551574-5326-4b3a-9f24-32b756de3198",
+            "nodeId": "lawyer-up",
+            "occurredAt": "2026-08-04T22:11:41.708Z",
+            "minutes": 120,
+            "effort": "moderate",
+            "xp": 120,
+            "note": "PIA notarized and mailed out"
+          },
+          {
+            "id": "2026-08-04T22:12:26.772Z-lawyer-up-0f55111c-9157-4e3d-ac60-fc03ff243016",
+            "nodeId": "lawyer-up",
+            "occurredAt": "2026-08-04T22:12:26.772Z",
+            "minutes": 20,
+            "effort": "moderate",
+            "xp": 20,
+            "note": "its done"
+          }
+        ]
+      },
+      {
+        "id": "put-his-branch-into-cgpt",
+        "rootId": "ng",
+        "title": "Put his branch into cgpt",
+        "xp": 0,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "mark-poopooing-honus-for-second-job",
+        "rootId": "ng",
+        "title": "mark poopooing: honus for second job",
+        "xp": 0,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "data-ringing",
+        "rootId": "ng",
+        "title": "data ringing",
+        "xp": 100,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-03T16:16:59.621Z"
+        ],
+        "momentum": 8,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-03T16:16:59.621Z-data-ringing-7e389bb8-4f07-4727-83e7-fc6536f37816",
+            "nodeId": "data-ringing",
+            "occurredAt": "2026-08-03T16:16:59.621Z",
+            "minutes": 100,
+            "effort": "moderate",
+            "xp": 100,
+            "note": "poopooed inbetween solution for data ringing because \"would have to upgrade systems all at once\""
+          }
+        ]
+      },
+      {
+        "id": "perf-related",
+        "rootId": "ng",
+        "title": "perf related",
+        "xp": 100,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-03T16:18:19.706Z"
+        ],
+        "momentum": 8,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-03T16:18:19.706Z-perf-related-4e2c1b7e-8765-4b82-aac1-f450388d3c57",
+            "nodeId": "perf-related",
+            "occurredAt": "2026-08-03T16:18:19.706Z",
+            "minutes": 100,
+            "effort": "moderate",
+            "xp": 100,
+            "note": "- didn't want to \"pop the cap off\" of the jetstream because he \"doesnt understand how that would affect performance\""
+          }
+        ]
+      },
+      {
+        "id": "vig-has-branch-now",
+        "rootId": "ng",
+        "title": "Vig has branch now",
+        "xp": 0,
+        "maxLevel": 2,
+        "levelXpRequirements": [
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "check-email-and-wait-to-hear-back",
+        "rootId": "home-improvement",
+        "title": "check email and wait to hear back",
+        "xp": 50,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 4,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-23T11:38:37.329Z-check-email-and-wait-to-hear-back-417861dc-c660-43d7-9199-9bf9dbd6ccf8",
+            "nodeId": "check-email-and-wait-to-hear-back",
+            "occurredAt": "2026-08-23T11:38:37.329Z",
+            "minutes": 50,
+            "effort": "moderate",
+            "xp": 50,
+            "note": "second continuation in september"
+          }
+        ]
+      },
+      {
+        "id": "must-have-a-fully-functioning-consumer-before-perf-test",
+        "rootId": "ng",
+        "title": "must have a fully functioning consumer before perf test",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "wire-in-call-to-performance-test-service-for-simple-traffic-test",
+        "rootId": "ng",
+        "title": "wire in call to performance test service for simple traffic test",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "check-other-manually-run-commands",
+        "rootId": "ng",
+        "title": "check other manually run commands",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "build-catio",
+        "rootId": "home-improvement",
+        "title": "Build Catio",
+        "xp": 500,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-23T11:42:57.643Z",
+          "2026-08-23T11:42:57.643Z",
+          "2026-08-23T11:42:57.643Z",
+          "2026-08-23T11:42:57.643Z",
+          "2026-08-23T11:42:57.643Z"
+        ],
+        "momentum": 42,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-23T11:42:57.643Z-build-catio-4ed86dd6-274a-48ee-aedc-6b2677d9c042",
+            "nodeId": "build-catio",
+            "occurredAt": "2026-08-23T11:42:57.643Z",
+            "minutes": 500,
+            "effort": "moderate",
+            "xp": 500,
+            "note": "built, it was hard"
+          }
+        ]
+      },
+      {
+        "id": "get-rid-of-insects",
+        "rootId": "home-improvement",
+        "title": "Get rid of insects",
         "xp": 0,
         "maxLevel": 5,
         "levelXpRequirements": [
           100,
-          180,
-          275,
-          425,
-          650
+          100,
+          100,
+          100,
+          100
         ],
         "levelReachedAt": [],
-        "momentum": 64,
-        "updateHistory": [],
-        "gates": [
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "reppellent-garden",
+        "rootId": "home-improvement",
+        "title": "reppellent garden",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "eat-onions",
+        "rootId": "home-improvement",
+        "title": "eat onions",
+        "xp": 50,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 6,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "water-the-flowers",
+        "rootId": "home-improvement",
+        "title": "water the flowers",
+        "xp": 0,
+        "maxLevel": 99,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "mix-compost-into-top-3",
+        "rootId": "home-improvement",
+        "title": "mix compost into top 3\"",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "get-pick-axe",
+        "rootId": "home-improvement",
+        "title": "get pick axe",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [
+          null
+        ],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "call-orkin",
+        "rootId": "home-improvement",
+        "title": "Call Orkin",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "garage-sprayed",
+        "rootId": "home-improvement",
+        "title": "garage sprayed",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "fight",
+        "rootId": "health-wellness",
+        "title": "fight",
+        "xp": 100,
+        "maxLevel": 99,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-23T12:03:51.597Z",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "momentum": 8,
+        "gates": [],
+        "updateHistory": [
           {
-            "nodeId": "a",
-            "level": 2
-          },
-          {
-            "nodeId": "b",
-            "level": 3
-          },
-          {
-            "nodeId": "c",
-            "level": 3
-          },
-          {
-            "nodeId": "d",
-            "level": 4
-          },
-          {
-            "nodeId": "e",
-            "level": 2
-          },
-          {
-            "nodeId": "f",
-            "level": 4
-          },
-          {
-            "nodeId": "g",
-            "level": 5
-          },
-          {
-            "nodeId": "h",
-            "level": 5
+            "id": "2026-08-23T12:03:51.597Z-fight-80745b95-e531-432e-b1cb-679c19b8a07f",
+            "nodeId": "fight",
+            "occurredAt": "2026-08-23T12:03:51.597Z",
+            "minutes": 100,
+            "effort": "moderate",
+            "xp": 100,
+            "note": "- 300 windmill punches\n- breathwork, videos, etc."
           }
         ]
+      },
+      {
+        "id": "cardio-conditioning",
+        "rootId": "health-wellness",
+        "title": "cardio/ conditioning",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "distance-managmeent",
+        "rootId": "health-wellness",
+        "title": "distance managmeent",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "run",
+        "rootId": "health-wellness",
+        "title": "run",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "walk",
+        "rootId": "health-wellness",
+        "title": "walk",
+        "xp": 45,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 4,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-23T12:11:24.560Z-walk-e9b5ab24-94c1-44ba-a9d6-d24601018e29",
+            "nodeId": "walk",
+            "occurredAt": "2026-08-23T12:11:24.560Z",
+            "minutes": 45,
+            "effort": "moderate",
+            "xp": 45,
+            "note": "lots of walking during lifts"
+          }
+        ]
+      },
+      {
+        "id": "punch-quantity",
+        "rootId": "health-wellness",
+        "title": "punch quantity",
+        "xp": 30,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 3,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-23T12:10:56.935Z-punch-quantity-bdd3b4af-fe06-4dcf-8d70-179b8cc5ab48",
+            "nodeId": "punch-quantity",
+            "occurredAt": "2026-08-23T12:10:56.935Z",
+            "minutes": 30,
+            "effort": "moderate",
+            "xp": 30,
+            "note": "300 punches in hotbox"
+          }
+        ]
+      },
+      {
+        "id": "punch-quality",
+        "rootId": "health-wellness",
+        "title": "punch quality",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "foot-work",
+        "rootId": "health-wellness",
+        "title": "foot work",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "skip-rope",
+        "rootId": "health-wellness",
+        "title": "skip rope",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "juggle",
+        "rootId": "health-wellness",
+        "title": "juggle",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "j-off",
+        "rootId": "health-wellness",
+        "title": "J Off",
+        "xp": 50,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 4,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-23T12:21:21.213Z-j-off-a30c3914-7a40-4dad-befc-d615ded588a9",
+            "nodeId": "j-off",
+            "occurredAt": "2026-08-23T12:21:21.213Z",
+            "minutes": 50,
+            "effort": "moderate",
+            "xp": 50,
+            "note": "- a couple, hopefully a few more"
+          }
+        ]
+      },
+      {
+        "id": "spiders-outside-sprayed",
+        "rootId": "home-improvement",
+        "title": "spiders outside sprayed",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "cut-grass",
+        "rootId": "home-improvement",
+        "title": "cut grass",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "start-interviewing-to-compensate",
+        "rootId": "ng",
+        "title": "Start interviewing to compensate",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "gabe-does-the-laundry",
+        "rootId": "parallelism",
+        "title": "Gabe does the dishes",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "gabe-does-the-laundry-2",
+        "rootId": "parallelism",
+        "title": "Gabe does the laundry",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "dishes",
+        "rootId": "parallelism",
+        "title": "Dishes",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "laundry",
+        "rootId": "parallelism",
+        "title": "Laundry",
+        "xp": 50,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 4,
+        "gates": [],
+        "updateHistory": []
       }
     ],
     "links": [
       {
-        "id": "lifter-a",
-        "from": "lifter",
-        "to": "a"
+        "id": "parallelism-4-running",
+        "from": "parallelism",
+        "to": "4-running"
       },
       {
-        "id": "lifter-b",
-        "from": "lifter",
-        "to": "b"
+        "id": "ng-gemsbok-perf",
+        "from": "ng",
+        "to": "gemsbok-perf"
       },
       {
-        "id": "lifter-c",
-        "from": "lifter",
-        "to": "c"
+        "id": "gemsbok-perf-1986",
+        "from": "gemsbok-perf",
+        "to": "1986"
       },
       {
-        "id": "lifter-d",
-        "from": "lifter",
-        "to": "d"
+        "id": "ng-gemsbok-dynamic-deployment",
+        "from": "ng",
+        "to": "gemsbok-dynamic-deployment"
       },
       {
-        "id": "lifter-e",
-        "from": "lifter",
-        "to": "e"
+        "id": "gemsbok-dynamic-deployment-3619",
+        "from": "gemsbok-dynamic-deployment",
+        "to": "3619"
       },
       {
-        "id": "lifter-f",
-        "from": "lifter",
-        "to": "f"
+        "id": "ng-admin",
+        "from": "ng",
+        "to": "admin"
       },
       {
-        "id": "lifter-g",
-        "from": "lifter",
-        "to": "g"
+        "id": "home-improvement-cats-ripped-up-the-carpet",
+        "from": "home-improvement",
+        "to": "cats-ripped-up-the-carpet"
       },
       {
-        "id": "lifter-h",
-        "from": "lifter",
-        "to": "h"
+        "id": "1986-test-gemsbok-test",
+        "from": "1986",
+        "to": "test-gemsbok-test"
       },
       {
-        "id": "a-i",
-        "from": "a",
-        "to": "i"
+        "id": "3619-confluence",
+        "from": "3619",
+        "to": "confluence"
       },
       {
-        "id": "b-i",
-        "from": "b",
-        "to": "i"
+        "id": "3619-compiles-tests-live",
+        "from": "3619",
+        "to": "compiles-tests-live"
       },
       {
-        "id": "c-i",
-        "from": "c",
-        "to": "i"
+        "id": "gemsbok-perf-joe-ajax",
+        "from": "gemsbok-perf",
+        "to": "joe-ajax"
       },
       {
-        "id": "d-i",
-        "from": "d",
-        "to": "i"
+        "id": "admin-gccsj-pw-change",
+        "from": "admin",
+        "to": "gccsj-pw-change"
       },
       {
-        "id": "e-i",
-        "from": "e",
-        "to": "i"
+        "id": "health-wellness-breathwork",
+        "from": "health-wellness",
+        "to": "breathwork"
       },
       {
-        "id": "f-i",
-        "from": "f",
-        "to": "i"
+        "id": "health-wellness-squat",
+        "from": "health-wellness",
+        "to": "squat"
       },
       {
-        "id": "g-i",
-        "from": "g",
-        "to": "i"
+        "id": "health-wellness-bench",
+        "from": "health-wellness",
+        "to": "bench"
       },
       {
-        "id": "h-i",
-        "from": "h",
-        "to": "i"
+        "id": "health-wellness-deadlift",
+        "from": "health-wellness",
+        "to": "deadlift"
       },
       {
-        "id": "a-j",
-        "from": "a",
-        "to": "j"
+        "id": "deadlift-pull-ups",
+        "from": "deadlift",
+        "to": "pull-ups"
       },
       {
-        "id": "b-j",
-        "from": "b",
-        "to": "j"
+        "id": "bench-push-ups",
+        "from": "bench",
+        "to": "push-ups"
       },
       {
-        "id": "c-j",
-        "from": "c",
-        "to": "j"
+        "id": "home-improvement-ac",
+        "from": "home-improvement",
+        "to": "ac"
       },
       {
-        "id": "d-j",
-        "from": "d",
-        "to": "j"
+        "id": "ac-insulation",
+        "from": "ac",
+        "to": "insulation"
       },
       {
-        "id": "e-j",
-        "from": "e",
-        "to": "j"
+        "id": "health-wellness-temp-stim",
+        "from": "health-wellness",
+        "to": "temp-stim"
       },
       {
-        "id": "f-j",
-        "from": "f",
-        "to": "j"
+        "id": "temp-stim-hotbox",
+        "from": "temp-stim",
+        "to": "hotbox"
       },
       {
-        "id": "g-j",
-        "from": "g",
-        "to": "j"
+        "id": "temp-stim-cold-plunge",
+        "from": "temp-stim",
+        "to": "cold-plunge"
       },
       {
-        "id": "h-j",
-        "from": "h",
-        "to": "j"
+        "id": "ng-mars",
+        "from": "ng",
+        "to": "mars"
+      },
+      {
+        "id": "mars-vig-kafka-mtls-ticket",
+        "from": "mars",
+        "to": "vig-kafka-mtls-ticket"
+      },
+      {
+        "id": "test-gemsbok-test-gemsbok-perf-metrics",
+        "from": "test-gemsbok-test",
+        "to": "gemsbok-perf-metrics"
+      },
+      {
+        "id": "test-gemsbok-test-write-blackfish-input-version",
+        "from": "test-gemsbok-test",
+        "to": "write-blackfish-input-version"
+      },
+      {
+        "id": "test-gemsbok-test-pop-the-nats-stream-cap-off",
+        "from": "test-gemsbok-test",
+        "to": "pop-the-nats-stream-cap-off"
+      },
+      {
+        "id": "write-blackfish-input-version-perf-test-ajax-from-clean",
+        "from": "write-blackfish-input-version",
+        "to": "perf-test-ajax-from-clean"
+      },
+      {
+        "id": "pop-the-nats-stream-cap-off-perf-test-ajax-from-clean",
+        "from": "pop-the-nats-stream-cap-off",
+        "to": "perf-test-ajax-from-clean"
+      },
+      {
+        "id": "perf-test-ajax-from-clean-write-full-perf-confluence-page-under-joe",
+        "from": "perf-test-ajax-from-clean",
+        "to": "write-full-perf-confluence-page-under-joe"
+      },
+      {
+        "id": "cats-ripped-up-the-carpet-hardwood-floors-for-master-and-gabes-room",
+        "from": "cats-ripped-up-the-carpet",
+        "to": "hardwood-floors-for-master-and-gabes-room"
+      },
+      {
+        "id": "ac-call-hvac-tech-for-ac",
+        "from": "ac",
+        "to": "call-hvac-tech-for-ac"
+      },
+      {
+        "id": "cats-ripped-up-the-carpet-get-a-quote-for-hardwooding-gabes-room",
+        "from": "cats-ripped-up-the-carpet",
+        "to": "get-a-quote-for-hardwooding-gabes-room"
+      },
+      {
+        "id": "home-improvement-lawyer-up",
+        "from": "home-improvement",
+        "to": "lawyer-up"
+      },
+      {
+        "id": "vig-kafka-mtls-ticket-put-his-branch-into-cgpt",
+        "from": "vig-kafka-mtls-ticket",
+        "to": "put-his-branch-into-cgpt"
+      },
+      {
+        "id": "admin-mark-poopooing-honus-for-second-job",
+        "from": "admin",
+        "to": "mark-poopooing-honus-for-second-job"
+      },
+      {
+        "id": "mark-poopooing-honus-for-second-job-data-ringing",
+        "from": "mark-poopooing-honus-for-second-job",
+        "to": "data-ringing"
+      },
+      {
+        "id": "mark-poopooing-honus-for-second-job-perf-related",
+        "from": "mark-poopooing-honus-for-second-job",
+        "to": "perf-related"
+      },
+      {
+        "id": "vig-kafka-mtls-ticket-vig-has-branch-now",
+        "from": "vig-kafka-mtls-ticket",
+        "to": "vig-has-branch-now"
+      },
+      {
+        "id": "lawyer-up-check-email-and-wait-to-hear-back",
+        "from": "lawyer-up",
+        "to": "check-email-and-wait-to-hear-back"
+      },
+      {
+        "id": "test-gemsbok-test-must-have-a-fully-functioning-consumer-before-perf-test",
+        "from": "test-gemsbok-test",
+        "to": "must-have-a-fully-functioning-consumer-before-perf-test"
+      },
+      {
+        "id": "compiles-tests-live-wire-in-call-to-performance-test-service-for-simple-traffic-test",
+        "from": "compiles-tests-live",
+        "to": "wire-in-call-to-performance-test-service-for-simple-traffic-test"
+      },
+      {
+        "id": "compiles-tests-live-check-other-manually-run-commands",
+        "from": "compiles-tests-live",
+        "to": "check-other-manually-run-commands"
+      },
+      {
+        "id": "home-improvement-build-catio",
+        "from": "home-improvement",
+        "to": "build-catio"
+      },
+      {
+        "id": "home-improvement-get-rid-of-insects",
+        "from": "home-improvement",
+        "to": "get-rid-of-insects"
+      },
+      {
+        "id": "get-rid-of-insects-reppellent-garden",
+        "from": "get-rid-of-insects",
+        "to": "reppellent-garden"
+      },
+      {
+        "id": "get-rid-of-insects-eat-onions",
+        "from": "get-rid-of-insects",
+        "to": "eat-onions"
+      },
+      {
+        "id": "reppellent-garden-water-the-flowers",
+        "from": "reppellent-garden",
+        "to": "water-the-flowers"
+      },
+      {
+        "id": "reppellent-garden-mix-compost-into-top-3",
+        "from": "reppellent-garden",
+        "to": "mix-compost-into-top-3"
+      },
+      {
+        "id": "mix-compost-into-top-3-get-pick-axe",
+        "from": "mix-compost-into-top-3",
+        "to": "get-pick-axe"
+      },
+      {
+        "id": "get-rid-of-insects-call-orkin",
+        "from": "get-rid-of-insects",
+        "to": "call-orkin"
+      },
+      {
+        "id": "call-orkin-garage-sprayed",
+        "from": "call-orkin",
+        "to": "garage-sprayed"
+      },
+      {
+        "id": "health-wellness-fight",
+        "from": "health-wellness",
+        "to": "fight"
+      },
+      {
+        "id": "fight-cardio-conditioning",
+        "from": "fight",
+        "to": "cardio-conditioning"
+      },
+      {
+        "id": "fight-distance-managmeent",
+        "from": "fight",
+        "to": "distance-managmeent"
+      },
+      {
+        "id": "cardio-conditioning-run",
+        "from": "cardio-conditioning",
+        "to": "run"
+      },
+      {
+        "id": "cardio-conditioning-walk",
+        "from": "cardio-conditioning",
+        "to": "walk"
+      },
+      {
+        "id": "cardio-conditioning-punch-quantity",
+        "from": "cardio-conditioning",
+        "to": "punch-quantity"
+      },
+      {
+        "id": "distance-managmeent-punch-quality",
+        "from": "distance-managmeent",
+        "to": "punch-quality"
+      },
+      {
+        "id": "distance-managmeent-foot-work",
+        "from": "distance-managmeent",
+        "to": "foot-work"
+      },
+      {
+        "id": "cardio-conditioning-skip-rope",
+        "from": "cardio-conditioning",
+        "to": "skip-rope"
+      },
+      {
+        "id": "distance-managmeent-juggle",
+        "from": "distance-managmeent",
+        "to": "juggle"
+      },
+      {
+        "id": "health-wellness-j-off",
+        "from": "health-wellness",
+        "to": "j-off"
+      },
+      {
+        "id": "call-orkin-spiders-outside-sprayed",
+        "from": "call-orkin",
+        "to": "spiders-outside-sprayed"
+      },
+      {
+        "id": "get-rid-of-insects-cut-grass",
+        "from": "get-rid-of-insects",
+        "to": "cut-grass"
+      },
+      {
+        "id": "mark-poopooing-honus-for-second-job-start-interviewing-to-compensate",
+        "from": "mark-poopooing-honus-for-second-job",
+        "to": "start-interviewing-to-compensate"
+      },
+      {
+        "id": "parallelism-gabe-does-the-laundry",
+        "from": "parallelism",
+        "to": "gabe-does-the-laundry"
+      },
+      {
+        "id": "parallelism-gabe-does-the-laundry-2",
+        "from": "parallelism",
+        "to": "gabe-does-the-laundry-2"
+      },
+      {
+        "id": "parallelism-dishes",
+        "from": "parallelism",
+        "to": "dishes"
+      },
+      {
+        "id": "parallelism-laundry",
+        "from": "parallelism",
+        "to": "laundry"
       }
     ],
-    "xpLedger": [],
-    "todayXp": 0,
+    "xpLedger": [
+      {
+        "id": "2026-07-27T13:36:46.465Z-4-running",
+        "nodeId": "4-running",
+        "occurredAt": "2026-07-27T13:36:46.465Z",
+        "minutes": 120,
+        "effort": "moderate",
+        "xp": 120,
+        "note": "- laundry\n- dishes\n- benchmark unit tests for gemsbok\n- hang up clothes"
+      },
+      {
+        "id": "2026-07-28T11:36:39.455Z-gemsbok-perf",
+        "nodeId": "gemsbok-perf",
+        "occurredAt": "2026-07-28T11:36:39.455Z",
+        "minutes": 60,
+        "effort": "moderate",
+        "xp": 60,
+        "note": ""
+      },
+      {
+        "id": "2026-07-28T11:36:39.455Z-1986",
+        "nodeId": "1986",
+        "occurredAt": "2026-07-28T11:36:39.455Z",
+        "minutes": 30,
+        "effort": "moderate",
+        "xp": 30,
+        "note": "- moving to new repo"
+      },
+      {
+        "id": "2026-07-28T11:39:40.242Z-gemsbok-dynamic-deployment",
+        "nodeId": "gemsbok-dynamic-deployment",
+        "occurredAt": "2026-07-28T11:39:40.242Z",
+        "minutes": 60,
+        "effort": "moderate",
+        "xp": 60,
+        "note": "test2"
+      },
+      {
+        "id": "2026-07-28T13:02:51.737Z-gemsbok-dynamic-deployment",
+        "nodeId": "gemsbok-dynamic-deployment",
+        "occurredAt": "2026-07-28T13:02:51.737Z",
+        "minutes": 60,
+        "effort": "moderate",
+        "xp": 60,
+        "note": "test"
+      },
+      {
+        "id": "2026-07-28T13:02:51.737Z-3619",
+        "nodeId": "3619",
+        "occurredAt": "2026-07-28T13:02:51.737Z",
+        "minutes": 60,
+        "effort": "moderate",
+        "xp": 60,
+        "note": "- working gemsbok deployment reconciler now, first pass"
+      },
+      {
+        "id": "2026-07-28T13:03:12.880Z-3619",
+        "nodeId": "3619",
+        "occurredAt": "2026-07-28T13:03:12.880Z",
+        "minutes": 60,
+        "effort": "moderate",
+        "xp": 60,
+        "note": "extra points"
+      },
+      {
+        "id": "2026-07-28T13:04:18.430Z-1986",
+        "nodeId": "1986",
+        "occurredAt": "2026-07-28T13:04:18.430Z",
+        "minutes": 140,
+        "effort": "moderate",
+        "xp": 140,
+        "note": "split gemsbok e2e perf test service into its own repo, kept supporting metrics in original PR"
+      },
+      {
+        "id": "2026-07-28T13:11:47.823Z-4-running",
+        "nodeId": "4-running",
+        "occurredAt": "2026-07-28T13:11:47.823Z",
+        "minutes": 90,
+        "effort": "hard",
+        "xp": 135,
+        "note": "-laundry\n-dishes\n-mastery thread\n-ng thread g perf\n-second ng thread g dep rec"
+      },
+      {
+        "id": "2026-07-28T13:25:20.727Z-admin",
+        "nodeId": "admin",
+        "occurredAt": "2026-07-28T13:25:20.727Z",
+        "minutes": 15,
+        "effort": "moderate",
+        "xp": 15,
+        "note": "need password change at the gccsj level",
+        "deadlineOn": "2026-08-11"
+      },
+      {
+        "id": "2026-07-28T14:35:42.563Z-test-gemsbok-test",
+        "nodeId": "test-gemsbok-test",
+        "occurredAt": "2026-07-28T14:35:42.563Z",
+        "minutes": 15,
+        "effort": "moderate",
+        "xp": 15,
+        "note": "Test gemsbok-test repo and get throughput"
+      },
+      {
+        "id": "2026-07-28T14:43:51.184Z-3619",
+        "nodeId": "3619",
+        "occurredAt": "2026-07-28T14:43:51.184Z",
+        "minutes": 15,
+        "effort": "moderate",
+        "xp": 15,
+        "note": "look over first pass in coder & test"
+      },
+      {
+        "id": "2026-07-28T15:14:23.382Z-cats-ripped-up-the-carpet",
+        "nodeId": "cats-ripped-up-the-carpet",
+        "occurredAt": "2026-07-28T15:14:23.382Z",
+        "minutes": 15,
+        "effort": "moderate",
+        "xp": 15,
+        "note": "research what can be done about this"
+      },
+      {
+        "id": "2026-07-28T15:18:58.290Z-confluence",
+        "nodeId": "confluence",
+        "occurredAt": "2026-07-28T15:18:58.290Z",
+        "minutes": 15,
+        "effort": "moderate",
+        "xp": 15,
+        "note": "draw.io diagrams in progress"
+      },
+      {
+        "id": "2026-07-28T15:21:01.777Z-compiles-tests-live",
+        "nodeId": "compiles-tests-live",
+        "occurredAt": "2026-07-28T15:21:01.777Z",
+        "minutes": 15,
+        "effort": "moderate",
+        "xp": 15,
+        "note": "have the zip to test"
+      },
+      {
+        "id": "2026-07-28T18:31:00.235Z-breathwork",
+        "nodeId": "breathwork",
+        "occurredAt": "2026-07-28T18:31:00.235Z",
+        "minutes": 45,
+        "effort": "moderate",
+        "xp": 45,
+        "note": "- 3 rounds"
+      },
+      {
+        "id": "2026-07-28T18:37:16.682Z-push-ups",
+        "nodeId": "push-ups",
+        "occurredAt": "2026-07-28T18:37:16.682Z",
+        "minutes": 20,
+        "effort": "moderate",
+        "xp": 20,
+        "note": "20"
+      },
+      {
+        "id": "2026-07-28T18:37:51.968Z-bench",
+        "nodeId": "bench",
+        "occurredAt": "2026-07-28T18:37:51.968Z",
+        "minutes": 30,
+        "effort": "moderate",
+        "xp": 30,
+        "note": "315x10"
+      },
+      {
+        "id": "2026-07-28T18:38:19.438Z-deadlift",
+        "nodeId": "deadlift",
+        "occurredAt": "2026-07-28T18:38:19.438Z",
+        "minutes": 5,
+        "effort": "moderate",
+        "xp": 5,
+        "note": "495*1"
+      },
+      {
+        "id": "2026-07-28T18:38:33.407Z-squat",
+        "nodeId": "squat",
+        "occurredAt": "2026-07-28T18:38:33.407Z",
+        "minutes": 4,
+        "effort": "moderate",
+        "xp": 4,
+        "note": "405x1"
+      },
+      {
+        "id": "2026-07-28T18:44:41.235Z-insulation",
+        "nodeId": "insulation",
+        "occurredAt": "2026-07-28T18:44:41.235Z",
+        "minutes": 15,
+        "effort": "moderate",
+        "xp": 15,
+        "note": "arrives july 29",
+        "opportuneOn": "2026-07-29"
+      },
+      {
+        "id": "2026-07-28T19:22:57.165Z-cold-plunge",
+        "nodeId": "cold-plunge",
+        "occurredAt": "2026-07-28T19:22:57.165Z",
+        "minutes": 10,
+        "effort": "moderate",
+        "xp": 10,
+        "note": "double plunge and some dunks"
+      },
+      {
+        "id": "2026-07-28T19:23:24.147Z-hotbox",
+        "nodeId": "hotbox",
+        "occurredAt": "2026-07-28T19:23:24.147Z",
+        "minutes": 20,
+        "effort": "moderate",
+        "xp": 20,
+        "note": "probably 15+ minutes standing"
+      },
+      {
+        "id": "2026-07-28T19:23:38.453Z-pull-ups",
+        "nodeId": "pull-ups",
+        "occurredAt": "2026-07-28T19:23:38.453Z",
+        "minutes": 30,
+        "effort": "moderate",
+        "xp": 30,
+        "note": "20, 10"
+      },
+      {
+        "id": "2026-07-28T19:26:55.689Z-gccsj-pw-change",
+        "nodeId": "gccsj-pw-change",
+        "occurredAt": "2026-07-28T19:26:55.689Z",
+        "minutes": 1,
+        "effort": "moderate",
+        "xp": 1,
+        "note": "AUG 5 Deadline",
+        "deadlineOn": "2026-08-11",
+        "opportuneOn": "2026-07-30"
+      },
+      {
+        "id": "2026-07-28T19:27:41.422Z-compiles-tests-live",
+        "nodeId": "compiles-tests-live",
+        "occurredAt": "2026-07-28T19:27:41.422Z",
+        "minutes": 1,
+        "effort": "moderate",
+        "xp": 1,
+        "note": "under take 1"
+      },
+      {
+        "id": "2026-07-29T14:11:56.694Z-pull-ups-a8b324ff-8ab5-43dd-9ec2-99968a6a4135",
+        "nodeId": "pull-ups",
+        "occurredAt": "2026-07-29T14:11:56.694Z",
+        "minutes": 20,
+        "effort": "moderate",
+        "xp": 20,
+        "note": "20"
+      },
+      {
+        "id": "2026-07-29T14:12:39.359Z-cold-plunge-01d2bfd4-f1e9-4edf-b5d1-2ecbe74b204a",
+        "nodeId": "cold-plunge",
+        "occurredAt": "2026-07-29T14:12:39.359Z",
+        "minutes": 30,
+        "effort": "moderate",
+        "xp": 30,
+        "note": "plunge, hotbox, long plunge + breathwork"
+      },
+      {
+        "id": "2026-07-29T14:13:32.677Z-hotbox-3072616a-4119-48cc-b224-a8740d8d24c5",
+        "nodeId": "hotbox",
+        "occurredAt": "2026-07-29T14:13:32.677Z",
+        "minutes": 15,
+        "effort": "moderate",
+        "xp": 15,
+        "note": "j'd"
+      },
+      {
+        "id": "2026-07-29T14:14:06.712Z-temp-stim-34217631-4ccd-444d-8907-0f284e513674",
+        "nodeId": "temp-stim",
+        "occurredAt": "2026-07-29T14:14:06.712Z",
+        "minutes": 10,
+        "effort": "moderate",
+        "xp": 10,
+        "note": "cold, hot, cold"
+      },
+      {
+        "id": "2026-07-29T14:14:41.668Z-breathwork-493973f1-d378-41fc-b8cc-c184ea90e79f",
+        "nodeId": "breathwork",
+        "occurredAt": "2026-07-29T14:14:41.668Z",
+        "minutes": 20,
+        "effort": "moderate",
+        "xp": 20,
+        "note": "40 breaths in the cold plunge"
+      },
+      {
+        "id": "2026-07-29T14:15:40.745Z-joe-ajax-dda6a4f7-bdb2-41a3-a597-a65e174e9e5b",
+        "nodeId": "joe-ajax",
+        "occurredAt": "2026-07-29T14:15:40.745Z",
+        "minutes": 30,
+        "effort": "moderate",
+        "xp": 30,
+        "note": "hes going to reset polly and kafka, then start at 400 updates per second and work his way up"
+      },
+      {
+        "id": "2026-07-29T14:16:44.370Z-test-gemsbok-test-bfb8a716-66c2-4403-bfaa-e1ba7e7c1856",
+        "nodeId": "test-gemsbok-test",
+        "occurredAt": "2026-07-29T14:16:44.370Z",
+        "minutes": 45,
+        "effort": "moderate",
+        "xp": 45,
+        "note": "have instructions for deploying gemsbok-test repo into nyx"
+      },
+      {
+        "id": "2026-07-29T14:18:29.032Z-4-running-2068fc9d-2eaf-46ea-83bd-40f4886e8d5f",
+        "nodeId": "4-running",
+        "occurredAt": "2026-07-29T14:18:29.032Z",
+        "minutes": 120,
+        "effort": "moderate",
+        "xp": 120,
+        "note": "-dishes\n-laundry\n-cgpt mastery\n-cgpt perf test"
+      },
+      {
+        "id": "2026-07-29T18:26:11.548Z-test-gemsbok-test-12b2480c-4cc5-4932-9853-eaf1496cec15",
+        "nodeId": "test-gemsbok-test",
+        "occurredAt": "2026-07-29T18:26:11.548Z",
+        "minutes": 200,
+        "effort": "moderate",
+        "xp": 200,
+        "note": "- change to registry to snapshot\n- 1.0.0-main-GCCSJ is an old not working image?\n- reset polly and kafka\n- gemsbok cant subscribe -> track summaries reset"
+      },
+      {
+        "id": "2026-07-29T20:00:08.641Z-test-gemsbok-test-9a8fed78-89d9-4761-b463-562485638e01",
+        "nodeId": "test-gemsbok-test",
+        "occurredAt": "2026-07-29T20:00:08.641Z",
+        "minutes": 120,
+        "effort": "moderate",
+        "xp": 120,
+        "note": "- fixed password failing on rotation\n- fixed settings\n- consistent operation"
+      },
+      {
+        "id": "2026-07-29T20:00:38.793Z-test-gemsbok-test-562b7bb6-8ccc-46d4-9bb9-a2ee35d753c4",
+        "nodeId": "test-gemsbok-test",
+        "occurredAt": "2026-07-29T20:00:38.793Z",
+        "minutes": 50,
+        "effort": "moderate",
+        "xp": 50,
+        "note": "Just need to have it tested in ajax with joe",
+        "opportuneOn": "2026-07-30"
+      },
+      {
+        "id": "2026-07-29T20:02:06.792Z-vig-kafka-mtls-ticket-a5873be1-03ef-477f-bdc2-65e38ffc6bf1",
+        "nodeId": "vig-kafka-mtls-ticket",
+        "occurredAt": "2026-07-29T20:02:06.792Z",
+        "minutes": 50,
+        "effort": "moderate",
+        "xp": 50,
+        "note": "- talked about the plan with stephen present\n- vig seems to be moving on it"
+      },
+      {
+        "id": "2026-07-29T20:05:02.422Z-breathwork-29f74e3c-b9b9-4582-a50f-908ba4436bd1",
+        "nodeId": "breathwork",
+        "occurredAt": "2026-07-29T20:05:02.422Z",
+        "minutes": 5,
+        "effort": "moderate",
+        "xp": 5,
+        "note": "using breath as a response to resistance to action"
+      },
+      {
+        "id": "2026-07-30T11:22:36.694Z-gemsbok-perf-metrics-a3a554b0-399c-49c7-8135-a880d8e3d864",
+        "nodeId": "gemsbok-perf-metrics",
+        "occurredAt": "2026-07-30T11:22:36.694Z",
+        "minutes": 10,
+        "effort": "moderate",
+        "xp": 10,
+        "note": "- write a confluence page that has joes findings\n- cluster, scenario, performance\n- add the e2e metrics for gemsbok services with metrics."
+      },
+      {
+        "id": "2026-07-31T11:59:28.215Z-perf-test-ajax-from-clean-f61b1dd4-a383-42ea-ac9b-c0b72707b9ac",
+        "nodeId": "perf-test-ajax-from-clean",
+        "occurredAt": "2026-07-31T11:59:28.215Z",
+        "minutes": 15,
+        "effort": "moderate",
+        "xp": 15,
+        "note": "- pop nats jetstream off first and confirm\n- clean ajax\n- test just gemsbok polly e2e\n- test blackfish gemsbok producer e2e\n- write confluence page for blackfish gemsbok-test\n- write confluence page for performance metrics"
+      },
+      {
+        "id": "2026-07-31T12:00:48.545Z-gemsbok-perf-metrics-88e96eed-3244-4e33-b629-7f6a4a533303",
+        "nodeId": "gemsbok-perf-metrics",
+        "occurredAt": "2026-07-31T12:00:48.545Z",
+        "minutes": 190,
+        "effort": "moderate",
+        "xp": 190,
+        "note": "- come up with plan, this node is finished"
+      },
+      {
+        "id": "2026-07-31T12:06:21.546Z-deadlift-5f7c0634-c484-41b4-86e1-15f8f6ec75d6",
+        "nodeId": "deadlift",
+        "occurredAt": "2026-07-31T12:06:21.546Z",
+        "minutes": 95,
+        "effort": "moderate",
+        "xp": 95,
+        "note": "315*10+\n\nback to fundamentals\n\nmassive T uptake, j'n 6+ times after sex"
+      },
+      {
+        "id": "2026-08-02T20:51:26.139Z-insulation-91d951b6-0950-42e5-a4ed-135f61657081",
+        "nodeId": "insulation",
+        "occurredAt": "2026-08-02T20:51:26.139Z",
+        "minutes": 120,
+        "effort": "moderate",
+        "xp": 120,
+        "note": ""
+      },
+      {
+        "id": "2026-08-03T01:54:06.878Z-call-hvac-tech-for-ac-ed74fce7-1806-43d4-956c-ec41bc789ebd",
+        "nodeId": "call-hvac-tech-for-ac",
+        "occurredAt": "2026-08-03T01:54:06.878Z",
+        "minutes": 15,
+        "effort": "moderate",
+        "xp": 15,
+        "note": "tell him about the two vents that actually work"
+      },
+      {
+        "id": "2026-08-03T01:57:28.378Z-call-hvac-tech-for-ac-cf97a64d-6b71-4b41-8997-cfea8c5bcc57",
+        "nodeId": "call-hvac-tech-for-ac",
+        "occurredAt": "2026-08-03T01:57:28.378Z",
+        "minutes": 15,
+        "effort": "moderate",
+        "xp": 15,
+        "note": "tell them only 2 vents work"
+      },
+      {
+        "id": "2026-08-03T16:13:01.835Z-lawyer-up-d299f43c-a10e-4750-be1d-65c4c5a718b0",
+        "nodeId": "lawyer-up",
+        "occurredAt": "2026-08-03T16:13:01.835Z",
+        "minutes": 60,
+        "effort": "moderate",
+        "xp": 60,
+        "note": "- called 2 lawyer firms\n- H&H and E&E\n- scheduled to talk to E&E at 1600",
+        "opportuneOn": "2026-08-04"
+      },
+      {
+        "id": "2026-08-03T16:14:36.637Z-insulation-1233d8cd-cae2-4c83-ae17-33ddcb105597",
+        "nodeId": "insulation",
+        "occurredAt": "2026-08-03T16:14:36.637Z",
+        "minutes": 120,
+        "effort": "moderate",
+        "xp": 120,
+        "note": "- put 100 dollars worth up there to cover the attic walk way"
+      },
+      {
+        "id": "2026-08-03T16:16:59.621Z-data-ringing-7e389bb8-4f07-4727-83e7-fc6536f37816",
+        "nodeId": "data-ringing",
+        "occurredAt": "2026-08-03T16:16:59.621Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": "poopooed inbetween solution for data ringing because \"would have to upgrade systems all at once\""
+      },
+      {
+        "id": "2026-08-03T16:18:19.706Z-perf-related-4e2c1b7e-8765-4b82-aac1-f450388d3c57",
+        "nodeId": "perf-related",
+        "occurredAt": "2026-08-03T16:18:19.706Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": "- didn't want to \"pop the cap off\" of the jetstream because he \"doesnt understand how that would affect performance\""
+      },
+      {
+        "id": "2026-08-03T23:50:33.865Z-compiles-tests-live-9f0cd5ed-80a8-45c2-8631-ff71cc9da9a4",
+        "nodeId": "compiles-tests-live",
+        "occurredAt": "2026-08-03T23:50:33.865Z",
+        "minutes": 400,
+        "effort": "moderate",
+        "xp": 400,
+        "note": "- need to be able to turn the reconciler off\n- need to test it with dev-df\n- get a list of test scenarios\n- the aim is the demo, we will fully demo the gemsbok reconciler by showing a confluence page table row describing the test, then show the test and how it works."
+      },
+      {
+        "id": "2026-08-04T22:11:41.708Z-lawyer-up-dd551574-5326-4b3a-9f24-32b756de3198",
+        "nodeId": "lawyer-up",
+        "occurredAt": "2026-08-04T22:11:41.708Z",
+        "minutes": 120,
+        "effort": "moderate",
+        "xp": 120,
+        "note": "PIA notarized and mailed out"
+      },
+      {
+        "id": "2026-08-04T22:12:26.772Z-lawyer-up-0f55111c-9157-4e3d-ac60-fc03ff243016",
+        "nodeId": "lawyer-up",
+        "occurredAt": "2026-08-04T22:12:26.772Z",
+        "minutes": 20,
+        "effort": "moderate",
+        "xp": 20,
+        "note": "its done"
+      },
+      {
+        "id": "2026-08-04T22:14:35.982Z-call-hvac-tech-for-ac-0d1a2424-7f53-444a-8aae-9f315aaa183c",
+        "nodeId": "call-hvac-tech-for-ac",
+        "occurredAt": "2026-08-04T22:14:35.982Z",
+        "minutes": 170,
+        "effort": "moderate",
+        "xp": 170,
+        "note": "- cashiers check incoming, friday for full replacement"
+      },
+      {
+        "id": "2026-08-04T22:19:35.898Z-3619-590094c3-7434-4d59-97af-da0e7a7d2586",
+        "nodeId": "3619",
+        "occurredAt": "2026-08-04T22:19:35.898Z",
+        "minutes": 180,
+        "effort": "moderate",
+        "xp": 180,
+        "note": "integrated into dev-df and dev-judea\nneed to continue testing and building on the test suite for it."
+      },
+      {
+        "id": "2026-08-04T22:27:06.752Z-breathwork-d8f3ef0a-bcf5-47da-8e05-c06d323b434a",
+        "nodeId": "breathwork",
+        "occurredAt": "2026-08-04T22:27:06.752Z",
+        "minutes": 120,
+        "effort": "moderate",
+        "xp": 120,
+        "note": ""
+      },
+      {
+        "id": "2026-08-23T11:38:37.329Z-check-email-and-wait-to-hear-back-417861dc-c660-43d7-9199-9bf9dbd6ccf8",
+        "nodeId": "check-email-and-wait-to-hear-back",
+        "occurredAt": "2026-08-23T11:38:37.329Z",
+        "minutes": 50,
+        "effort": "moderate",
+        "xp": 50,
+        "note": "second continuation in september"
+      },
+      {
+        "id": "2026-08-23T11:38:57.975Z-get-a-quote-for-hardwooding-gabes-room-9bc3bcfc-62bd-414f-bf2a-96168c1055d1",
+        "nodeId": "get-a-quote-for-hardwooding-gabes-room",
+        "occurredAt": "2026-08-23T11:38:57.975Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": ""
+      },
+      {
+        "id": "2026-08-23T11:39:10.735Z-get-a-quote-for-hardwooding-gabes-room-7d90e2d9-77ad-417b-a39e-04d598dd65e5",
+        "nodeId": "get-a-quote-for-hardwooding-gabes-room",
+        "occurredAt": "2026-08-23T11:39:10.735Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": ""
+      },
+      {
+        "id": "2026-08-23T11:39:20.794Z-hardwood-floors-for-master-and-gabes-room-e5994c19-bfc0-478d-ba70-6bfc7432bbcb",
+        "nodeId": "hardwood-floors-for-master-and-gabes-room",
+        "occurredAt": "2026-08-23T11:39:20.794Z",
+        "minutes": 200,
+        "effort": "moderate",
+        "xp": 200,
+        "note": "done"
+      },
+      {
+        "id": "2026-08-23T11:42:57.643Z-build-catio-4ed86dd6-274a-48ee-aedc-6b2677d9c042",
+        "nodeId": "build-catio",
+        "occurredAt": "2026-08-23T11:42:57.643Z",
+        "minutes": 500,
+        "effort": "moderate",
+        "xp": 500,
+        "note": "built, it was hard"
+      },
+      {
+        "id": "2026-08-23T12:03:51.597Z-fight-80745b95-e531-432e-b1cb-679c19b8a07f",
+        "nodeId": "fight",
+        "occurredAt": "2026-08-23T12:03:51.597Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": "- 300 windmill punches\n- breathwork, videos, etc."
+      },
+      {
+        "id": "2026-08-23T12:10:56.935Z-punch-quantity-bdd3b4af-fe06-4dcf-8d70-179b8cc5ab48",
+        "nodeId": "punch-quantity",
+        "occurredAt": "2026-08-23T12:10:56.935Z",
+        "minutes": 30,
+        "effort": "moderate",
+        "xp": 30,
+        "note": "300 punches in hotbox"
+      },
+      {
+        "id": "2026-08-23T12:11:24.560Z-walk-e9b5ab24-94c1-44ba-a9d6-d24601018e29",
+        "nodeId": "walk",
+        "occurredAt": "2026-08-23T12:11:24.560Z",
+        "minutes": 45,
+        "effort": "moderate",
+        "xp": 45,
+        "note": "lots of walking during lifts"
+      },
+      {
+        "id": "2026-08-23T12:11:47.634Z-deadlift-30bca416-4404-4d32-b70b-077aa435a09d",
+        "nodeId": "deadlift",
+        "occurredAt": "2026-08-23T12:11:47.634Z",
+        "minutes": 505,
+        "effort": "moderate",
+        "xp": 505,
+        "note": ""
+      },
+      {
+        "id": "2026-08-23T12:14:08.252Z-deadlift-a627e2b1-2baf-4a72-ba1e-6b97c0545ff1",
+        "nodeId": "deadlift",
+        "occurredAt": "2026-08-23T12:14:08.252Z",
+        "minutes": 1,
+        "effort": "moderate",
+        "xp": 1,
+        "note": "-525"
+      },
+      {
+        "id": "2026-08-23T12:14:51.262Z-breathwork-bcfc1d85-fe4f-4928-b02e-b47a3d31e829",
+        "nodeId": "breathwork",
+        "occurredAt": "2026-08-23T12:14:51.262Z",
+        "minutes": 200,
+        "effort": "moderate",
+        "xp": 200,
+        "note": "lots of breath work all the time. using it to stay anchored"
+      },
+      {
+        "id": "2026-08-23T12:15:26.179Z-cold-plunge-58c008cc-51f3-41cb-b8cb-d5e7e6a0ed4d",
+        "nodeId": "cold-plunge",
+        "occurredAt": "2026-08-23T12:15:26.179Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": "-  5 dunks"
+      },
+      {
+        "id": "2026-08-23T12:15:47.690Z-hotbox-ab1039d7-e7a0-435c-a2dc-12fd0c1fd57a",
+        "nodeId": "hotbox",
+        "occurredAt": "2026-08-23T12:15:47.690Z",
+        "minutes": 25,
+        "effort": "moderate",
+        "xp": 25,
+        "note": "- few rounds of quantity punches"
+      },
+      {
+        "id": "2026-08-23T12:21:21.213Z-j-off-a30c3914-7a40-4dad-befc-d615ded588a9",
+        "nodeId": "j-off",
+        "occurredAt": "2026-08-23T12:21:21.213Z",
+        "minutes": 50,
+        "effort": "moderate",
+        "xp": 50,
+        "note": "- a couple, hopefully a few more"
+      },
+      {
+        "id": "2026-08-23T12:27:25.237Z-3619-2bd0b8d3-b3bb-45fc-a094-6d43b20b5649",
+        "nodeId": "3619",
+        "occurredAt": "2026-08-23T12:27:25.237Z",
+        "minutes": 285,
+        "effort": "moderate",
+        "xp": 285,
+        "note": ""
+      },
+      {
+        "id": "2026-08-23T12:27:48.121Z-1986-25957673-c2d1-498b-933f-0da45d3aa277",
+        "nodeId": "1986",
+        "occurredAt": "2026-08-23T12:27:48.121Z",
+        "minutes": 130,
+        "effort": "moderate",
+        "xp": 130,
+        "note": ""
+      },
+      {
+        "id": "2026-08-23T12:27:57.224Z-1986-39af9493-6a2d-452f-88dc-4d420ca5de2f",
+        "nodeId": "1986",
+        "occurredAt": "2026-08-23T12:27:57.224Z",
+        "minutes": 300,
+        "effort": "moderate",
+        "xp": 300,
+        "note": ""
+      },
+      {
+        "id": "2026-08-23T12:28:09.881Z-joe-ajax-e6306067-016c-40eb-ab57-2e3ad29d6337",
+        "nodeId": "joe-ajax",
+        "occurredAt": "2026-08-23T12:28:09.881Z",
+        "minutes": 70,
+        "effort": "moderate",
+        "xp": 70,
+        "note": ""
+      },
+      {
+        "id": "2026-08-23T12:52:02.650Z-cats-ripped-up-the-carpet-57d8a3fc-30ce-44d4-abc3-686f154b0486",
+        "nodeId": "cats-ripped-up-the-carpet",
+        "occurredAt": "2026-08-23T12:52:02.650Z",
+        "minutes": 85,
+        "effort": "moderate",
+        "xp": 85,
+        "note": "done"
+      },
+      {
+        "id": "2026-08-23T12:52:16.671Z-eat-onions-b1e20ad6-e27a-46ff-a85a-5d8d31792e42",
+        "nodeId": "eat-onions",
+        "occurredAt": "2026-08-23T12:52:16.671Z",
+        "minutes": 30,
+        "effort": "moderate",
+        "xp": 30,
+        "note": ""
+      },
+      {
+        "id": "2026-08-23T12:52:24.473Z-eat-onions-fa257871-0636-4760-9691-e6633f30b3d0",
+        "nodeId": "eat-onions",
+        "occurredAt": "2026-08-23T12:52:24.473Z",
+        "minutes": 20,
+        "effort": "moderate",
+        "xp": 20,
+        "note": ""
+      },
+      {
+        "id": "2026-08-23T12:53:27.125Z-squat-835ee39d-5338-4687-a30c-dc0137d53841",
+        "nodeId": "squat",
+        "occurredAt": "2026-08-23T12:53:27.125Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": "405*1"
+      },
+      {
+        "id": "2026-08-23T12:54:02.196Z-bench-b573998a-7567-49b1-a1b7-d3c5272f49e3",
+        "nodeId": "bench",
+        "occurredAt": "2026-08-23T12:54:02.196Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": "315*8\n315*5"
+      },
+      {
+        "id": "2026-08-23T13:00:33.424Z-laundry-876af3e9-6192-4849-938c-32722443c48a",
+        "nodeId": "laundry",
+        "occurredAt": "2026-08-23T13:00:33.424Z",
+        "minutes": 50,
+        "effort": "moderate",
+        "xp": 50,
+        "note": ""
+      }
+    ],
+    "todayXp": 3176,
     "levelDefaults": {
       "levelStepXp": 100,
-      "maxLevel": 3
+      "maxLevel": 5
     }
   }
 }
