@@ -83,11 +83,16 @@ batch wizard:
  - not a huge fan of the visual when a parent has only one child.
  -
    I want health and wellness to come first.
+ - when typing text in the create new node dialog,
+ - if i type quickly, the UI will freeze before the complete text shows up
+
+ - when i start typing into any dialog, there should be a default text box "all-text" selection
+  - namely in the create node dialog for the node name
+
+==================FINISHED============================================
 
 imperative that only one node can be selected for udpates at a time, and that should be the last node selected.
 
-
-==================FINISHED============================================
 - template text for deadlines is confusing, should jsut say "type date numbers" or some shit
 - deadline pane in notes display takes up too much real estate, lets put it behind the deadline icon
 -

@@ -1,7 +1,7 @@
 {
   "format": "mastery-tracker.graph",
   "schemaVersion": 6,
-  "savedAt": "2026-08-23T13:00:33.424Z",
+  "savedAt": "2026-08-23T23:42:11.028Z",
   "data": {
     "roots": [
       {
@@ -25,6 +25,24 @@
       {
         "id": "health-wellness",
         "title": "Health & Wellness",
+        "accent": "rose",
+        "updateHistory": []
+      },
+      {
+        "id": "gabe",
+        "title": "Gabe",
+        "accent": "green",
+        "updateHistory": []
+      },
+      {
+        "id": "chicken",
+        "title": "Chicken",
+        "accent": "amber",
+        "updateHistory": []
+      },
+      {
+        "id": "career",
+        "title": "Career",
         "accent": "rose",
         "updateHistory": []
       }
@@ -2366,6 +2384,312 @@
         "momentum": 4,
         "gates": [],
         "updateHistory": []
+      },
+      {
+        "id": "cgpt-for-iteration",
+        "rootId": "gabe",
+        "title": "CGPT for iteration",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "say-in-different-words",
+        "rootId": "gabe",
+        "title": "\"say _ in different words\"",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "over-the-top",
+        "rootId": "health-wellness",
+        "title": "over the top",
+        "xp": 80,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 7,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "jab-n",
+        "rootId": "health-wellness",
+        "title": "jab'n",
+        "xp": 50,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 4,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "cut-n",
+        "rootId": "health-wellness",
+        "title": "cut'n",
+        "xp": 70,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 6,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "gas-n",
+        "rootId": "health-wellness",
+        "title": "gas'n",
+        "xp": 30,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 3,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "get-the-answers-and-think",
+        "rootId": "gabe",
+        "title": "get the answers and think",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "is-that-what-is-being-asked",
+        "rootId": "gabe",
+        "title": "is that what is being asked?",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "are-they-right",
+        "rootId": "gabe",
+        "title": "are they right?",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "gone-08-26-08-27",
+        "rootId": "chicken",
+        "title": "gone 08/26 - 08/27",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "christmas-2026",
+        "rootId": "chicken",
+        "title": "christmas 2026",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "ask",
+        "rootId": "career",
+        "title": "ASK",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "is-this-scope-creep",
+        "rootId": "career",
+        "title": "Is this scope creep?",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "is-there-a-low-code-way",
+        "rootId": "career",
+        "title": "Is there a low code way?",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "helm",
+        "rootId": "career",
+        "title": "helm?",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "spring-apache-commons",
+        "rootId": "career",
+        "title": "spring? apache-commons?",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "simpler-design",
+        "rootId": "career",
+        "title": "simpler design?",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
       }
     ],
     "links": [
@@ -2723,6 +3047,91 @@
         "id": "parallelism-laundry",
         "from": "parallelism",
         "to": "laundry"
+      },
+      {
+        "id": "gabe-cgpt-for-iteration",
+        "from": "gabe",
+        "to": "cgpt-for-iteration"
+      },
+      {
+        "id": "cgpt-for-iteration-say-in-different-words",
+        "from": "cgpt-for-iteration",
+        "to": "say-in-different-words"
+      },
+      {
+        "id": "punch-quantity-over-the-top",
+        "from": "punch-quantity",
+        "to": "over-the-top"
+      },
+      {
+        "id": "punch-quantity-jab-n",
+        "from": "punch-quantity",
+        "to": "jab-n"
+      },
+      {
+        "id": "punch-quantity-cut-n",
+        "from": "punch-quantity",
+        "to": "cut-n"
+      },
+      {
+        "id": "punch-quantity-gas-n",
+        "from": "punch-quantity",
+        "to": "gas-n"
+      },
+      {
+        "id": "cgpt-for-iteration-get-the-answers-and-think",
+        "from": "cgpt-for-iteration",
+        "to": "get-the-answers-and-think"
+      },
+      {
+        "id": "get-the-answers-and-think-is-that-what-is-being-asked",
+        "from": "get-the-answers-and-think",
+        "to": "is-that-what-is-being-asked"
+      },
+      {
+        "id": "get-the-answers-and-think-are-they-right",
+        "from": "get-the-answers-and-think",
+        "to": "are-they-right"
+      },
+      {
+        "id": "chicken-gone-08-26-08-27",
+        "from": "chicken",
+        "to": "gone-08-26-08-27"
+      },
+      {
+        "id": "chicken-christmas-2026",
+        "from": "chicken",
+        "to": "christmas-2026"
+      },
+      {
+        "id": "career-ask",
+        "from": "career",
+        "to": "ask"
+      },
+      {
+        "id": "ask-is-this-scope-creep",
+        "from": "ask",
+        "to": "is-this-scope-creep"
+      },
+      {
+        "id": "ask-is-there-a-low-code-way",
+        "from": "ask",
+        "to": "is-there-a-low-code-way"
+      },
+      {
+        "id": "is-there-a-low-code-way-helm",
+        "from": "is-there-a-low-code-way",
+        "to": "helm"
+      },
+      {
+        "id": "is-there-a-low-code-way-spring-apache-commons",
+        "from": "is-there-a-low-code-way",
+        "to": "spring-apache-commons"
+      },
+      {
+        "id": "is-there-a-low-code-way-simpler-design",
+        "from": "is-there-a-low-code-way",
+        "to": "simpler-design"
       }
     ],
     "xpLedger": [
@@ -3451,9 +3860,45 @@
         "effort": "moderate",
         "xp": 50,
         "note": ""
+      },
+      {
+        "id": "2026-08-23T23:32:12.211Z-gas-n-a886f573-a48f-4066-a3b5-9de53067ed47",
+        "nodeId": "gas-n",
+        "occurredAt": "2026-08-23T23:32:12.211Z",
+        "minutes": 30,
+        "effort": "moderate",
+        "xp": 30,
+        "note": ""
+      },
+      {
+        "id": "2026-08-23T23:32:26.200Z-over-the-top-72bbe008-4dba-4481-9d4a-98b40c47c438",
+        "nodeId": "over-the-top",
+        "occurredAt": "2026-08-23T23:32:26.200Z",
+        "minutes": 80,
+        "effort": "moderate",
+        "xp": 80,
+        "note": ""
+      },
+      {
+        "id": "2026-08-23T23:32:34.633Z-jab-n-afbdf8eb-9df2-4f78-a56e-7abf90fb5ae5",
+        "nodeId": "jab-n",
+        "occurredAt": "2026-08-23T23:32:34.633Z",
+        "minutes": 50,
+        "effort": "moderate",
+        "xp": 50,
+        "note": ""
+      },
+      {
+        "id": "2026-08-23T23:32:46.234Z-cut-n-0465867d-f326-46ea-b93b-771ce552fffb",
+        "nodeId": "cut-n",
+        "occurredAt": "2026-08-23T23:32:46.234Z",
+        "minutes": 70,
+        "effort": "moderate",
+        "xp": 70,
+        "note": ""
       }
     ],
-    "todayXp": 3176,
+    "todayXp": 3406,
     "levelDefaults": {
       "levelStepXp": 100,
       "maxLevel": 5
