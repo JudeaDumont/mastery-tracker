@@ -700,7 +700,7 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
           variant={BackgroundVariant.Dots}
           gap={28}
           size={1.2}
-          color="rgba(112, 168, 255, .13)"
+          color="rgba(198, 203, 214, .11)"
         />
         <Controls showInteractive={false} />
       </ReactFlow>

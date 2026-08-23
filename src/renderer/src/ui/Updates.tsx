@@ -2,7 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactElement } from 'react'
 import type { Effort, NodeId, RootAccent, Skill } from '../model'
-import { MAX_LEVEL_LIMIT, projectedXp, useMastery } from '../store'
+import {
+  MAX_LEVEL_LIMIT,
+  ROOT_ACCENTS,
+  ROOT_ACCENT_LABELS,
+  projectedXp,
+  useMastery
+} from '../store'
 import { isLocked, levelFor, levelProgressFor, uniformLevelStepXp } from '../xp'
 import { Create } from './Create'
 
@@ -550,6 +556,10 @@ export function Updates(): ReactElement {
               )}
 
               {settingsRoot && (
+                <RootColorSettings rootId={settingsRoot.id} accent={settingsRoot.accent ?? 'teal'} />
+              )}
+
+              {settingsRoot && (
                 <section className="node-settings-section">
                   <div className="node-settings-section__heading">
                     <div>
@@ -696,6 +706,43 @@ function NameSettings({
         />
       </label>
       <small>The internal node ID and every relationship stay unchanged.</small>
+    </section>
+  )
+}
+
+function RootColorSettings({
+  rootId,
+  accent
+}: {
+  rootId: NodeId
+  accent: RootAccent
+}): ReactElement {
+  const setRootAccent = useMastery((state) => state.setRootAccent)
+
+  return (
+    <section className="node-settings-section node-settings-color">
+      <div className="node-settings-section__heading">
+        <div>
+          <strong>Root color</strong>
+          <span>{ROOT_ACCENT_LABELS[accent]} · updates the entire root family</span>
+        </div>
+      </div>
+      <div className="root-color-options" role="group" aria-label="Root color">
+        {ROOT_ACCENTS.map((option) => (
+          <button
+            key={option}
+            className={`root-color-option root-color-option--${option} ${accent === option ? 'root-color-option--selected' : ''}`}
+            type="button"
+            aria-label={ROOT_ACCENT_LABELS[option]}
+            aria-pressed={accent === option}
+            title={ROOT_ACCENT_LABELS[option]}
+            onClick={() => setRootAccent(rootId, option)}
+          >
+            <span aria-hidden="true" />
+          </button>
+        ))}
+      </div>
+      <small>Color changes save to the graph state immediately.</small>
     </section>
   )
 }

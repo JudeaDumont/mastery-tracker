@@ -1,7 +1,25 @@
 export type NodeId = string
 export type SkillId = string
 export type RootId = string
-export type RootAccent = 'teal' | 'violet' | 'amber' | 'rose' | 'green' | 'blue'
+export type RootAccent =
+  | 'teal'
+  | 'aqua'
+  | 'sky'
+  | 'blue'
+  | 'indigo'
+  | 'violet'
+  | 'purple'
+  | 'magenta'
+  | 'pink'
+  | 'rose'
+  | 'red'
+  | 'coral'
+  | 'orange'
+  | 'amber'
+  | 'yellow'
+  | 'lime'
+  | 'green'
+  | 'emerald'
 
 export type Effort = 'recovery' | 'light' | 'moderate' | 'hard' | 'maximum'
 

@@ -1,26 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import type { ReactElement } from 'react'
-import type { LevelDefaults, RootAccent } from '../model'
+import type { LevelDefaults } from '../model'
 import {
   MAX_INCOMING_RELATIONSHIPS,
   MAX_LEVEL_LIMIT,
   MAX_OUTGOING_RELATIONSHIPS,
   ROOT_ACCENTS,
+  ROOT_ACCENT_LABELS,
   createSelectionFull,
   nodeRootId,
   nodeTitle,
   toCandidateIds,
   useMastery
 } from '../store'
-
-const ACCENT_LABELS: Record<RootAccent, string> = {
-  teal: 'Teal',
-  violet: 'Violet',
-  amber: 'Amber',
-  rose: 'Rose',
-  green: 'Green',
-  blue: 'Blue'
-}
 
 export function Create(): ReactElement | null {
   const roots = useMastery((state) => state.roots)
@@ -127,7 +119,7 @@ export function Create(): ReactElement | null {
       {draft.step === 'from' && creatingRoot && (
         <div className="create-color-picker" role="group" aria-label="Root color">
           <span className="create-field-label">
-            Root color · <strong>{ACCENT_LABELS[draft.accent]}</strong>
+            Root color · <strong>{ROOT_ACCENT_LABELS[draft.accent]}</strong>
           </span>
           <div className="create-color-options">
             {ROOT_ACCENTS.map((accent) => (
@@ -135,9 +127,9 @@ export function Create(): ReactElement | null {
                 key={accent}
                 className={`create-color-option create-color-option--${accent} ${draft.accent === accent ? 'create-color-option--selected' : ''}`}
                 type="button"
-                aria-label={ACCENT_LABELS[accent]}
+                aria-label={ROOT_ACCENT_LABELS[accent]}
                 aria-pressed={draft.accent === accent}
-                title={`${ACCENT_LABELS[accent]} — UI-safe root family color`}
+                title={`${ROOT_ACCENT_LABELS[accent]} — UI-safe root family color`}
                 onClick={() => setAccent(accent)}
               >
                 <span aria-hidden="true" />

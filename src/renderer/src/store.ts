@@ -23,7 +23,47 @@ export const DEFAULT_LEVEL_STEP_XP = 100
 export const DEFAULT_MAX_LEVEL = 3
 export const MAX_LEVEL_LIMIT = 99
 
-export const ROOT_ACCENTS: RootAccent[] = ['teal', 'violet', 'amber', 'rose', 'green', 'blue']
+export const ROOT_ACCENTS: RootAccent[] = [
+  'teal',
+  'aqua',
+  'sky',
+  'blue',
+  'indigo',
+  'violet',
+  'purple',
+  'magenta',
+  'pink',
+  'rose',
+  'red',
+  'coral',
+  'orange',
+  'amber',
+  'yellow',
+  'lime',
+  'green',
+  'emerald'
+]
+
+export const ROOT_ACCENT_LABELS: Record<RootAccent, string> = {
+  teal: 'Teal',
+  aqua: 'Aqua',
+  sky: 'Sky',
+  blue: 'Blue',
+  indigo: 'Indigo',
+  violet: 'Violet',
+  purple: 'Purple',
+  magenta: 'Magenta',
+  pink: 'Pink',
+  rose: 'Rose',
+  red: 'Red',
+  coral: 'Coral',
+  orange: 'Orange',
+  amber: 'Amber',
+  yellow: 'Yellow',
+  lime: 'Lime',
+  green: 'Green',
+  emerald: 'Emerald'
+}
 
 const initialRoots: Root[] = [
   { id: 'lifter', title: 'Lifter', accent: 'teal', updateHistory: [] }
@@ -285,6 +325,7 @@ interface MasteryStore {
   ) => void
   configureLevelDefaults: (patch: Partial<LevelDefaults>) => void
   renameNode: (id: NodeId, title: string) => void
+  setRootAccent: (id: RootId, accent: RootAccent) => void
   submit: () => void
   togglePicked: (id: NodeId) => void
   clearPicked: () => void
@@ -551,6 +592,18 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       return {
         skills: state.skills.map((candidate) =>
           candidate.id === id ? { ...candidate, title: normalizedTitle } : candidate
+        )
+      }
+    }),
+
+  setRootAccent: (id, accent) =>
+    set((state) => {
+      const root = state.roots.find((candidate) => candidate.id === id)
+      if (!root || root.accent === accent) return state
+
+      return {
+        roots: state.roots.map((candidate) =>
+          candidate.id === id ? { ...candidate, accent } : candidate
         )
       }
     }),

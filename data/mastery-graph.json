@@ -1,7 +1,7 @@
 {
   "format": "mastery-tracker.graph",
   "schemaVersion": 6,
-  "savedAt": "2026-08-23T23:42:11.028Z",
+  "savedAt": "2026-08-23T23:51:33.097Z",
   "data": {
     "roots": [
       {
@@ -31,7 +31,7 @@
       {
         "id": "gabe",
         "title": "Gabe",
-        "accent": "green",
+        "accent": "yellow",
         "updateHistory": []
       },
       {
