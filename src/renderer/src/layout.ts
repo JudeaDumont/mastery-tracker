@@ -18,7 +18,16 @@ interface LayoutInput {
   preview?: PreviewNode
 }
 
-const ROOT_GAP = 1100
+interface TreeLayout {
+  positions: Record<NodeId, Point>
+  minX: number
+  maxX: number
+}
+
+const MIN_ROOT_CENTER_GAP = 1800
+const TREE_GUTTER = 800
+const GRAPH_LEFT_MARGIN = 220
+const ROOT_CENTER_Y = 195
 const BASE_RING_RADIUS = 205
 const RING_DEPTH_GAP = 230
 const START_ANGLE = radians(150)
@@ -36,46 +45,87 @@ export function graphLayout({ roots, skills, links, preview }: LayoutInput): Rec
     ? [...skills, previewSkill(preview.id, preview.rootId)]
     : skills
   const positions: Record<NodeId, Point> = {}
+  const treeLayouts = allRoots.map((root) =>
+    layoutTree(
+      root.id,
+      allSkills.filter((skill) => skill.rootId === root.id),
+      links
+    )
+  )
 
-  allRoots.forEach((root, rootIndex) => {
-    const center = { x: 500 + rootIndex * ROOT_GAP, y: 195 }
-    const rootSkills = allSkills.filter((skill) => skill.rootId === root.id)
-    const depth = depthsFor(root.id, rootSkills, links)
-    const angles = new Map<NodeId, number>([[root.id, Math.PI / 2]])
-    const groups = new Map<number, Skill[]>()
+  let previousCenterX: number | undefined
+  let previousRightExtent = 0
 
-    positions[root.id] = centeredPosition(center, ROOT_SIZE)
-    rootSkills.forEach((skill) => {
-      const value = depth.get(skill.id) ?? 1
-      groups.set(value, [...(groups.get(value) ?? []), skill])
+  treeLayouts.forEach((tree) => {
+    const leftExtent = Math.max(0, -tree.minX)
+    const rightExtent = Math.max(0, tree.maxX)
+    const centerX =
+      previousCenterX === undefined
+        ? Math.max(500, GRAPH_LEFT_MARGIN + leftExtent)
+        : previousCenterX +
+          Math.max(
+            MIN_ROOT_CENTER_GAP,
+            previousRightExtent + leftExtent + TREE_GUTTER
+          )
+
+    Object.entries(tree.positions).forEach(([nodeId, point]) => {
+      positions[nodeId] = {
+        x: point.x + centerX,
+        y: point.y
+      }
     })
 
-    let previousRadius = 0
-
-    Array.from(groups.entries())
-      .sort(([a], [b]) => a - b)
-      .forEach(([ring, ringSkills]) => {
-        const minimumDepthRadius = ring === 1 ? BASE_RING_RADIUS : previousRadius + RING_DEPTH_GAP
-        const radius = Math.max(minimumDepthRadius, minimumRadiusForCount(ringSkills.length))
-        previousRadius = radius
-
-        const ordered = orderRing(ring, ringSkills, links, angles)
-        const ringAngles = anglesForRing(ring, ordered, links, angles, radius)
-
-        ordered.forEach((skill, index) => {
-          const angle = ringAngles[index]
-          const nodeCenter = {
-            x: center.x + Math.cos(angle) * radius,
-            y: center.y + Math.sin(angle) * radius
-          }
-
-          angles.set(skill.id, angle)
-          positions[skill.id] = centeredPosition(nodeCenter, NODE_SIZE)
-        })
-      })
+    previousCenterX = centerX
+    previousRightExtent = rightExtent
   })
 
   return positions
+}
+
+function layoutTree(rootId: RootId, rootSkills: Skill[], links: Link[]): TreeLayout {
+  const center = { x: 0, y: ROOT_CENTER_Y }
+  const positions: Record<NodeId, Point> = {}
+  const depth = depthsFor(rootId, rootSkills, links)
+  const angles = new Map<NodeId, number>([[rootId, Math.PI / 2]])
+  const groups = new Map<number, Skill[]>()
+  const rootPosition = centeredPosition(center, ROOT_SIZE)
+  let minX = rootPosition.x
+  let maxX = rootPosition.x + ROOT_SIZE
+
+  positions[rootId] = rootPosition
+  rootSkills.forEach((skill) => {
+    const value = depth.get(skill.id) ?? 1
+    groups.set(value, [...(groups.get(value) ?? []), skill])
+  })
+
+  let previousRadius = 0
+
+  Array.from(groups.entries())
+    .sort(([a], [b]) => a - b)
+    .forEach(([ring, ringSkills]) => {
+      const minimumDepthRadius = ring === 1 ? BASE_RING_RADIUS : previousRadius + RING_DEPTH_GAP
+      const radius = Math.max(minimumDepthRadius, minimumRadiusForCount(ringSkills.length))
+      previousRadius = radius
+
+      const ordered = orderRing(ring, ringSkills, links, angles)
+      const ringAngles = anglesForRing(ring, ordered, links, angles, radius)
+
+      ordered.forEach((skill, index) => {
+        const angle = ringAngles[index]
+        const nodeCenter = {
+          x: center.x + Math.cos(angle) * radius,
+          y: center.y + Math.sin(angle) * radius
+        }
+        const nodePosition = centeredPosition(nodeCenter, NODE_SIZE)
+
+        angles.set(skill.id, angle)
+        positions[skill.id] = nodePosition
+        minX = Math.min(minX, nodePosition.x)
+        maxX = Math.max(maxX, nodePosition.x + NODE_SIZE)
+      })
+    })
+
+  return { positions, minX, maxX }
 }
 
 function orderRing(

@@ -81,6 +81,10 @@ batch wizard:
  - have cgpt turn these into nice looking markdown first
  -
  - not a huge fan of the visual when a parent has only one child.
+ -
+   I want health and wellness to come first.
+
+imperative that only one node can be selected for udpates at a time, and that should be the last node selected.
 
 
 ==================FINISHED============================================
