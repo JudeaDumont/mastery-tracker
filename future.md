@@ -95,6 +95,12 @@ batch wizard:
   - ctrl + n = new node, type name, enter, created, no node selection change,
   - ctrl goes to next node, reaching downward towards leaves first and then sibiling across
   - ctrl + n again, ctrl + shift + n goes back, etc.
+
+
+ - each tab should come with an engraving shape
+  - this engraving shape should be selected via a string property on root nodes
+  - this engraving will then load up custom background engravings in the background of each tree,
+  - and would show up on the tab for that root node.
   -
 
 ==================FINISHED============================================
