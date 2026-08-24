@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactElement } from 'react'
 import type { LevelDefaults } from '../model'
 import {
@@ -26,9 +26,27 @@ export function Create(): ReactElement | null {
   const escape = useMastery((state) => state.escapeCreate)
   const levelDefaults = useMastery((state) => state.levelDefaults)
   const configureLevelDefaults = useMastery((state) => state.configureLevelDefaults)
+  const [titleValue, setTitleValue] = useState(() => draft?.title ?? '')
+  const draftTitle = draft?.title
+
+  // Keep keystrokes local to this small dialog. Updating the global create draft on
+  // every character makes the graph renderer wake up unnecessarily; a short
+  // debounce keeps the preview label current without blocking fast typing.
+  useEffect(() => {
+    if (draftTitle === undefined || draftTitle === titleValue) return undefined
+
+    const timeout = window.setTimeout(() => setTitle(titleValue), 140)
+    return () => window.clearTimeout(timeout)
+  }, [draftTitle, setTitle, titleValue])
+
+  const advance = useCallback((): void => {
+    if (draftTitle === undefined || !titleValue.trim()) return
+    if (draftTitle !== titleValue) setTitle(titleValue)
+    next()
+  }, [draftTitle, next, setTitle, titleValue])
 
   useEffect(() => {
-    if (!draft) return undefined
+    if (draftTitle === undefined) return undefined
 
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
@@ -59,15 +77,15 @@ export function Create(): ReactElement | null {
         }
       }
 
-      if (!draft.title.trim()) return
+      if (!titleValue.trim()) return
 
       event.preventDefault()
-      next()
+      advance()
     }
 
     window.addEventListener('keydown', onKeyDown, true)
     return () => window.removeEventListener('keydown', onKeyDown, true)
-  }, [draft, escape, next])
+  }, [advance, draftTitle, escape, titleValue])
 
   const candidateCount = useMemo(() => {
     if (!draft || draft.step !== 'to') return 0
@@ -109,8 +127,11 @@ export function Create(): ReactElement | null {
       <label className="create-name">
         Name
         <input
-          value={draft.title}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => setTitle(event.target.value)}
+          value={titleValue}
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => setTitleValue(event.target.value)}
+          onBlur={() => {
+            if (draft.title !== titleValue) setTitle(titleValue)
+          }}
           data-create-enter="advance"
           autoFocus
         />
@@ -182,8 +203,8 @@ export function Create(): ReactElement | null {
         <button
           className="create-continue"
           type="button"
-          disabled={!draft.title.trim()}
-          onClick={next}
+          disabled={!titleValue.trim()}
+          onClick={advance}
         >
           {draft.step === 'from'
             ? creatingRoot

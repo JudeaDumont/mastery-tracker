@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactElement } from 'react'
 import {
   Background,
@@ -231,23 +231,43 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
     })
   }, [cameraDebug, flowInstance, focusedHistoryNodeId, pendingFocusNodeId])
 
+  // Creation title edits are not structural graph edits. Keep the structural
+  // portions of the draft referentially stable so fast typing does not force
+  // layout/candidate recomputation for the entire React Flow graph.
+  const createStep = create?.step
+  const createFromIds = create?.fromIds
+  const createToIds = create?.toIds
+  const createAccent = create?.accent
+  const deferredCreateTitle = useDeferredValue(create?.title ?? '')
+
+  const structuralCreate = useMemo<CreateDraft | null>(() => {
+    if (!createStep || !createFromIds || !createToIds || !createAccent) return null
+    return {
+      step: createStep,
+      title: '',
+      accent: createAccent,
+      fromIds: createFromIds,
+      toIds: createToIds
+    }
+  }, [createAccent, createFromIds, createStep, createToIds])
+
   const preview = useMemo<PreviewNode | undefined>(() => {
-    if (!create) return undefined
-    if (create.step === 'from' && create.fromIds.length === 0) {
+    if (!structuralCreate) return undefined
+    if (structuralCreate.step === 'from' && structuralCreate.fromIds.length === 0) {
       return { id: PREVIEW_ID, root: true }
     }
-    const source = create.fromIds[0]
+    const source = structuralCreate.fromIds[0]
     const rootId = source ? nodeRootId(source, roots, skills) : undefined
     return rootId ? { id: PREVIEW_ID, rootId, root: false } : undefined
-  }, [create, roots, skills])
+  }, [roots, skills, structuralCreate])
 
   const previewLinks = useMemo<Link[]>(() => {
-    if (!create || !preview || preview.root) return []
+    if (!structuralCreate || !preview || preview.root) return []
     return [
-      ...create.fromIds.map((from) => ({ id: `preview-${from}`, from, to: PREVIEW_ID })),
-      ...create.toIds.map((to) => ({ id: `preview-${to}`, from: PREVIEW_ID, to }))
+      ...structuralCreate.fromIds.map((from) => ({ id: `preview-${from}`, from, to: PREVIEW_ID })),
+      ...structuralCreate.toIds.map((to) => ({ id: `preview-${to}`, from: PREVIEW_ID, to }))
     ]
-  }, [create, preview])
+  }, [preview, structuralCreate])
 
   const positions = useMemo(
     () => graphLayout({ roots, skills, links: [...links, ...previewLinks], preview }),
@@ -255,10 +275,13 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
   )
 
   const toCandidates = useMemo(
-    () => (create ? toCandidateIds(roots, skills, links, create) : new Set<NodeId>()),
-    [create, links, roots, skills]
+    () =>
+      structuralCreate
+        ? toCandidateIds(roots, skills, links, structuralCreate)
+        : new Set<NodeId>(),
+    [links, roots, skills, structuralCreate]
   )
-  const toFull = create ? createSelectionFull(create) : false
+  const toFull = structuralCreate ? createSelectionFull(structuralCreate) : false
 
   const nodes = useMemo<Node<MasteryNodeData>[]>(() => {
     const rootNodes = roots.map((root) => {
@@ -298,7 +321,7 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
           root.id,
           root.id,
           pickedIds,
-          create,
+          structuralCreate,
           toCandidates,
           toFull,
           roots,
@@ -336,7 +359,7 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
           skill.id,
           skill.rootId,
           pickedIds,
-          create,
+          structuralCreate,
           toCandidates,
           toFull,
           roots,
@@ -349,14 +372,14 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
     const previewNode = preview
       ? [
           masteryNode(PREVIEW_ID, positions[PREVIEW_ID], {
-            title: create?.title.trim() || 'New mastery',
+            title: deferredCreateTitle.trim() || 'New mastery',
             rootId: preview.root ? undefined : preview.rootId,
             historyPinned: false,
             level: 0,
             maxLevel: preview.root ? 10 : 3,
             momentum: 0,
             accent: preview.root
-              ? create?.accent ?? 'teal'
+              ? createAccent ?? 'teal'
               : rootAccentFor(preview.rootId, roots),
             locked: false,
             root: preview.root,
@@ -371,7 +394,8 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
 
     return [...rootNodes, ...skillNodes, ...previewNode]
   }, [
-    create,
+    createAccent,
+    deferredCreateTitle,
     focusedHistoryNodeId,
     requestNodeFocus,
     links,
@@ -380,6 +404,7 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
     preview,
     roots,
     skills,
+    structuralCreate,
     toCandidates,
     toFull,
     xpLedger
@@ -396,7 +421,7 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
     )
     const skillsById = new Map(skills.map((skill) => [skill.id, skill]))
     const titleFor = (id: NodeId): string =>
-      id === PREVIEW_ID ? create?.title.trim() || 'New mastery' : nodeTitle(id, roots, skills)
+      id === PREVIEW_ID ? deferredCreateTitle.trim() || 'New mastery' : nodeTitle(id, roots, skills)
 
     const buildEdge = (
       link: Link,
@@ -433,7 +458,7 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
       buildEdge(link, 'flow-edge flow-edge--preview')
     )
     return [...structural, ...temporary]
-  }, [create, links, positions, previewLinks, roots, skills])
+  }, [deferredCreateTitle, links, positions, previewLinks, roots, skills])
 
   useEffect(() => {
     if (!flowInstance) {
