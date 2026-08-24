@@ -1,7 +1,7 @@
 {
   "format": "mastery-tracker.graph",
   "schemaVersion": 6,
-  "savedAt": "2026-08-23T23:51:33.097Z",
+  "savedAt": "2026-08-24T05:17:10.639Z",
   "data": {
     "roots": [
       {
@@ -1779,15 +1779,15 @@
         "id": "get-pick-axe",
         "rootId": "home-improvement",
         "title": "get pick axe",
-        "xp": 0,
+        "xp": 100,
         "maxLevel": 1,
         "levelXpRequirements": [
           100
         ],
         "levelReachedAt": [
-          null
+          "2026-08-24T05:17:10.638Z"
         ],
-        "momentum": 0,
+        "momentum": 8,
         "gates": [],
         "updateHistory": []
       },
@@ -3896,9 +3896,18 @@
         "effort": "moderate",
         "xp": 70,
         "note": ""
+      },
+      {
+        "id": "2026-08-24T05:17:10.638Z-get-pick-axe-37f17b4e-5b12-444c-810f-09d83ed92e24",
+        "nodeId": "get-pick-axe",
+        "occurredAt": "2026-08-24T05:17:10.638Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": ""
       }
     ],
-    "todayXp": 3406,
+    "todayXp": 100,
     "levelDefaults": {
       "levelStepXp": 100,
       "maxLevel": 5

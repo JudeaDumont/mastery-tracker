@@ -98,9 +98,12 @@ batch wizard:
 
 
  - each tab should come with an engraving shape
-  - this engraving shape should be selected via a string property on root nodes
+  - this engraving shape should be selected via a string property on root nodes, thats what selects the engraving type
   - this engraving will then load up custom background engravings in the background of each tree,
   - and would show up on the tab for that root node.
+  - health and wellness should heart themed
+  - career should be brain themed
+  - home improvement should be gear themed.
   -
 
 ==================FINISHED============================================
