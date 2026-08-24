@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { ReactElement } from 'react'
+import type { CSSProperties, ReactElement } from 'react'
 import type { NodeId, RootId } from './model'
 import { Graph, type GraphViewRequest } from './ui/Graph'
 import { Updates } from './ui/Updates'
@@ -10,6 +10,7 @@ import { NodeSearch } from './ui/NodeSearch'
 import { deadlineStatus } from './deadline'
 import { dailyXpTotal, useMastery } from './store'
 import { isLocked, levelFor } from './xp'
+import { EngravingGlyph, rootAccentRgb } from './rootEngravings'
 
 const CAMERA_DEBUG_EVENT = 'mastery-camera-debug'
 const CAMERA_DEBUG_MAX_LINES = 100
@@ -147,9 +148,19 @@ function App(): ReactElement {
                   className={`view-tab ${graphView.rootId === root.id ? 'view-tab--active' : ''}`}
                   type="button"
                   title={`${root.title} ${level}`}
+                  style={{ '--tab-rgb': rootAccentRgb(root.accent) } as CSSProperties}
                   onClick={() => requestGraphView(root.id)}
                 >
-                  {root.title} {level}
+                  <span className="view-tab__content">
+                    <span className="view-tab__engraving" aria-hidden="true">
+                      <EngravingGlyph
+                        type={root.engraving}
+                        className="view-tab__engraving-svg"
+                      />
+                    </span>
+                    <span className="view-tab__label">{root.title}</span>
+                    <span className="view-tab__level">{level}</span>
+                  </span>
                 </button>
               )
             })}

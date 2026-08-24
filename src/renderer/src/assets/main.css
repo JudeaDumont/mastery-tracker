@@ -81,10 +81,41 @@ button { color: inherit; }
   padding: 8px 14px; border-radius: 10px; color: var(--muted);
 }
 .view-tab {
+  --tab-rgb: 99, 219, 255;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.view-tab__content {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+}
+.view-tab__engraving {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  color: rgba(var(--tab-rgb), .76);
+}
+.view-tab__engraving-svg {
+  width: 17px;
+  height: 17px;
+}
+.view-tab__label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: left;
+}
+.view-tab__level {
+  color: rgba(var(--tab-rgb), .72);
+  font-size: .9em;
+  font-variant-numeric: tabular-nums;
 }
 .view-tab--full { min-width: max-content; }
 .view-tabs__arrow {
@@ -109,11 +140,15 @@ button { color: inherit; }
   opacity: .22;
   cursor: default;
 }
-.view-tab:hover, .top-actions button:hover { color: var(--text); background: rgba(255,255,255,.05); }
+.view-tab:hover { color: var(--text); background: rgba(var(--tab-rgb), .07); }
+.top-actions button:hover { color: var(--text); background: rgba(255,255,255,.05); }
 .view-tab--active {
-  color: var(--cyan-2); background: rgba(75, 177, 232, .14);
-  box-shadow: inset 0 0 0 1px rgba(99, 219, 255, .18);
+  color: rgb(var(--tab-rgb));
+  background: rgba(var(--tab-rgb), .12);
+  box-shadow: inset 0 0 0 1px rgba(var(--tab-rgb), .24), 0 0 14px rgba(var(--tab-rgb), .07);
 }
+.view-tab--active .view-tab__engraving,
+.view-tab--active .view-tab__level { color: rgb(var(--tab-rgb)); }
 .top-actions { display: flex; justify-content: flex-end; gap: 6px; }
 
 .workspace {
@@ -123,14 +158,51 @@ button { color: inherit; }
   grid-template-columns: minmax(0, 1fr) 360px;
 }
 .workspace > * { min-height: 0; }
-.graph-panel { min-width: 0; position: relative; border-right: 1px solid var(--line); }
+.graph-panel {
+  min-width: 0;
+  position: relative;
+  border-right: 1px solid var(--line);
+  background: #02040a;
+}
 .graph-flow-host {
   width: 100%;
   height: 100%;
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 8%, rgba(28, 49, 83, .16), transparent 44%),
+    radial-gradient(circle at 50% 110%, rgba(18, 34, 64, .11), transparent 48%),
+    linear-gradient(180deg, #010309 0%, #03060d 52%, #010208 100%);
 }
-.graph-panel::before {
-  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
-  background: linear-gradient(to bottom, rgba(10, 11, 14, .42), transparent 18%, transparent 78%, rgba(10, 11, 14, .4));
+.graph-flow-host .react-flow__background { z-index: 0; }
+.graph-flow-host .react-flow__renderer { z-index: 2; }
+.graph-engravings {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.graph-engraving {
+  --engraving-rgb: 99, 219, 255;
+  position: absolute;
+  display: grid;
+  place-items: center;
+  color: rgb(var(--engraving-rgb));
+  pointer-events: none;
+  will-change: left, top, width, height;
+}
+.graph-engraving--full { opacity: .46; }
+.graph-engraving--focused { opacity: .62; }
+.graph-engraving__pattern {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter:
+    drop-shadow(0 0 5px rgba(var(--engraving-rgb), .52))
+    drop-shadow(0 0 18px rgba(var(--engraving-rgb), .26));
 }
 .graph-label { position: absolute; top: 20px; left: 24px; z-index: 4; display: flex; flex-direction: column; }
 .graph-label strong { font-size: 18px; }
@@ -151,6 +223,15 @@ button { color: inherit; }
 .react-flow__controls { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: none; }
 .react-flow__controls-button { background: rgba(23, 24, 29, .92); color: var(--text); border-color: var(--line); }
 .react-flow__edge-path { stroke-width: 2; }
+.edge-black-outline.react-flow__edge-path {
+  stroke: #000 !important;
+  stroke-width: 10 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  stroke-dasharray: none !important;
+  filter: none !important;
+  opacity: .98 !important;
+}
 .flow-edge--momentum .react-flow__edge-path { stroke: rgba(255, 151, 63, .64); filter: drop-shadow(0 0 5px rgba(255, 140, 45, .55)); }
 .flow-edge--dim .react-flow__edge-path { stroke: rgba(108, 132, 170, .28); }
 .flow-edge--gate .react-flow__edge-path { stroke: rgba(146, 161, 190, .48); stroke-dasharray: 6 7; }
@@ -164,6 +245,8 @@ button { color: inherit; }
   width: 112px; height: 112px; position: relative; display: grid; place-items: center;
   border-radius: 50%; cursor: pointer;
   isolation: isolate;
+  background: #000;
+  box-shadow: 0 0 0 6px #000;
   filter:
     saturate(calc(1.02 + .45 * var(--momentum)))
     brightness(var(--momentum-color-brightness))
@@ -233,65 +316,63 @@ button { color: inherit; }
   text-align: center;
   gap: 1px;
   border-radius: 50%;
-  overflow: hidden;
-  border: 1px solid rgba(var(--family-rgb), calc(.44 + .22 * var(--momentum)));
+  overflow: visible;
+  border: 1px solid rgba(var(--family-rgb), calc(.48 + .2 * var(--momentum)));
   background:
-    radial-gradient(circle at 35% 30%, rgba(var(--family-rgb), .24) 0, rgba(70, 73, 87, .96) 34%, rgba(29, 31, 39, .985) 70%, rgba(15, 17, 23, 1) 100%),
-    radial-gradient(circle at 68% 72%, rgba(var(--family-rgb), calc(.08 + .12 * var(--momentum))), rgba(var(--family-rgb), 0) 44%);
+    radial-gradient(circle at 50% 42%, rgba(var(--family-rgb), calc(.1 + .08 * var(--momentum))), rgba(var(--family-rgb), 0) 48%),
+    linear-gradient(145deg, rgba(53, 61, 76, .98), rgba(24, 29, 40, .99) 48%, rgba(8, 11, 18, 1) 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .16),
-    inset 0 8px 14px rgba(255, 255, 255, .03),
-    inset 0 -12px 18px rgba(0, 0, 0, .28),
-    inset 0 0 22px rgba(var(--family-rgb), calc(.08 + .12 * var(--momentum))),
-    0 10px 18px rgba(2, 5, 12, .34),
-    0 0 calc(10px + 20px * var(--momentum)) rgba(var(--family-rgb), calc(.08 + .2 * var(--momentum)));
+    inset 0 1px 0 rgba(255, 255, 255, .12),
+    inset 0 0 0 5px rgba(3, 6, 12, .35),
+    inset 0 -12px 20px rgba(0, 0, 0, .34),
+    inset 0 0 24px rgba(var(--family-rgb), calc(.07 + .12 * var(--momentum))),
+    0 11px 20px rgba(0, 2, 8, .48),
+    0 0 calc(10px + 19px * var(--momentum)) rgba(var(--family-rgb), calc(.08 + .2 * var(--momentum)));
 }
 .node-core::before {
   content: '';
   position: absolute;
-  top: 10px;
-  left: 15px;
-  width: 20px;
-  height: 20px;
+  inset: 7px;
+  z-index: 0;
+  border: 1px solid rgba(223, 235, 250, .07);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, .7) 0, rgba(255, 255, 255, .18) 38%, rgba(255, 255, 255, 0) 74%);
-  filter: blur(.35px);
-  opacity: .96;
+  background: transparent;
   pointer-events: none;
 }
 .node-core::after {
   content: '';
   position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 10px;
-  height: 14px;
+  inset: 15px;
+  z-index: 0;
+  border: 1px solid rgba(var(--family-rgb), calc(.05 + .08 * var(--momentum)));
   border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, .1), rgba(255, 255, 255, .02) 46%, rgba(255, 255, 255, 0) 76%);
-  filter: blur(1px);
-  opacity: .58;
+  background: radial-gradient(circle, rgba(255, 255, 255, .025), transparent 66%);
   pointer-events: none;
 }
 .node-core strong { position: relative; z-index: 1; font-size: 13px; font-weight: 750; text-shadow: 0 1px 4px rgba(0, 0, 0, .42); }
 .node-core span { position: relative; z-index: 1; color: rgba(225, 232, 243, .74); font-size: 9px; }
-.node--root { width: 130px; height: 130px; }
+.node--root {
+  width: 130px;
+  height: 130px;
+  box-shadow: 0 0 0 13px #000;
+}
 .node--root .level-ring { transform: scale(1.14); z-index: 2; }
 .node--root .node-core {
   position: relative;
   z-index: 3;
   width: 92px;
   height: 92px;
-  border-color: rgba(var(--family-rgb), calc(.52 + .22 * var(--momentum)));
+  border-color: rgba(var(--family-rgb), calc(.58 + .2 * var(--momentum)));
   background:
-    radial-gradient(circle at 35% 30%, rgba(var(--family-rgb), .3) 0, rgba(76, 72, 91, .97) 34%, rgba(31, 28, 42, .99) 71%, rgba(16, 14, 24, 1) 100%),
-    radial-gradient(circle at 69% 74%, rgba(var(--family-rgb), calc(.1 + .13 * var(--momentum))), rgba(var(--family-rgb), 0) 46%);
+    radial-gradient(circle at 50% 40%, rgba(var(--family-rgb), calc(.14 + .09 * var(--momentum))), rgba(var(--family-rgb), 0) 50%),
+    linear-gradient(145deg, rgba(60, 65, 82, .99), rgba(28, 30, 43, .995) 48%, rgba(10, 10, 18, 1) 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .18),
-    inset 0 8px 16px rgba(255, 255, 255, .03),
-    inset 0 -14px 22px rgba(0, 0, 0, .32),
-    inset 0 0 28px rgba(var(--family-rgb), calc(.1 + .14 * var(--momentum))),
-    0 14px 24px rgba(2, 6, 13, .36),
-    0 0 calc(14px + 24px * var(--momentum)) rgba(var(--family-rgb), calc(.12 + .22 * var(--momentum)));
+    inset 0 1px 0 rgba(255, 255, 255, .14),
+    inset 0 0 0 6px rgba(3, 5, 11, .34),
+    inset 0 -14px 23px rgba(0, 0, 0, .36),
+    inset 0 0 30px rgba(var(--family-rgb), calc(.1 + .14 * var(--momentum))),
+    0 15px 26px rgba(0, 2, 8, .48),
+    0 0 calc(15px + 24px * var(--momentum)) rgba(var(--family-rgb), calc(.12 + .22 * var(--momentum)));
 }
 .root-crown-ring {
   position: absolute;
@@ -3656,4 +3737,84 @@ button { color: inherit; }
   color: var(--muted);
   text-align: center;
   font-size: 12px;
+}
+
+/* Root engraving controls */
+.create-engraving-picker,
+.node-settings-engraving {
+  --engraving-option-rgb: 99, 219, 255;
+}
+.create-engraving-picker {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+.create-engraving-options,
+.root-engraving-options {
+  display: grid;
+  gap: 7px;
+}
+.create-engraving-options {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.root-engraving-options {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.create-engraving-option,
+.root-engraving-option {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  padding: 7px 8px;
+  border: 1px solid rgba(var(--engraving-option-rgb), .2);
+  border-radius: 9px;
+  background: rgba(var(--engraving-option-rgb), .035);
+  color: rgba(var(--engraving-option-rgb), .76);
+  cursor: pointer;
+  text-align: left;
+  font-size: 8.5px;
+  transition: transform .14s ease, border-color .14s ease, background .14s ease, box-shadow .14s ease;
+}
+.create-engraving-option:hover,
+.root-engraving-option:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--engraving-option-rgb), .48);
+  background: rgba(var(--engraving-option-rgb), .075);
+}
+.create-engraving-option--selected,
+.root-engraving-option--selected {
+  border-color: rgba(var(--engraving-option-rgb), .76);
+  background: rgba(var(--engraving-option-rgb), .12);
+  color: rgb(var(--engraving-option-rgb));
+  box-shadow:
+    0 0 0 1px rgba(var(--engraving-option-rgb), .11),
+    0 0 14px rgba(var(--engraving-option-rgb), .09);
+}
+.create-engraving-option__icon,
+.root-engraving-option__icon {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  color: rgb(var(--engraving-option-rgb));
+}
+.create-engraving-option__icon-svg,
+.root-engraving-option__icon-svg {
+  width: 20px;
+  height: 20px;
+}
+.node-settings-engraving > small {
+  display: block;
+  margin-top: 8px;
+  color: rgba(167, 171, 181, .74);
+  font-size: 8.75px;
+  line-height: 1.4;
+}
+
+@media (max-width: 1280px) {
+  .root-engraving-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

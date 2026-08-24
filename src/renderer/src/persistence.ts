@@ -11,6 +11,7 @@ import type {
   Skill
 } from './model'
 import { normalizeDeadlineDay } from './deadline'
+import { inferRootEngraving, normalizeRootEngraving } from './rootEngravings'
 import {
   DEFAULT_LEVEL_STEP_XP,
   DEFAULT_MAX_LEVEL,
@@ -22,9 +23,9 @@ import {
 } from './store'
 
 export const GRAPH_FILE_FORMAT = 'mastery-tracker.graph'
-export const GRAPH_FILE_VERSION = 6
+export const GRAPH_FILE_VERSION = 7
 
-interface GraphFileV6 {
+interface GraphFileV7 {
   format: typeof GRAPH_FILE_FORMAT
   schemaVersion: typeof GRAPH_FILE_VERSION
   savedAt: string
@@ -88,7 +89,7 @@ export async function initializeMasteryPersistence(): Promise<void> {
 }
 
 function saveSnapshot(snapshot: GraphStateSnapshot): Promise<void> {
-  const document: GraphFileV6 = {
+  const document: GraphFileV7 = {
     format: GRAPH_FILE_FORMAT,
     schemaVersion: GRAPH_FILE_VERSION,
     savedAt: new Date().toISOString(),
@@ -114,7 +115,7 @@ export function migrateGraphFile(raw: unknown): GraphStateSnapshot | null {
     const version = finiteInteger(object.schemaVersion, 0)
     if (version > GRAPH_FILE_VERSION) throw new UnsupportedGraphVersionError(version)
 
-    if (version === 6 || version === 5 || version === 4 || version === 3 || version === 2 || version === 1) {
+    if (version === 7 || version === 6 || version === 5 || version === 4 || version === 3 || version === 2 || version === 1) {
       return normalizeSnapshot(object.data)
     }
     return normalizeSnapshot(object.data ?? object.state ?? object)
@@ -177,11 +178,15 @@ function normalizeRoots(raw: unknown): Root[] {
     const id = stringValue(root?.id)
     if (!root || !id) return []
 
+    const title = stringValue(root.title) || id
+
     return [
       {
         id,
-        title: stringValue(root.title) || id,
+        title,
         accent: rootAccent(root.accent) ?? ROOT_ACCENTS[index % ROOT_ACCENTS.length],
+        engraving:
+          normalizeRootEngraving(root.engraving) ?? inferRootEngraving({ id, title }),
         updateHistory: normalizeNodeHistory(root.updateHistory, id)
       }
     ]

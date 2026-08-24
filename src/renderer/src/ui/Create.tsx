@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import type { ReactElement } from 'react'
-import type { LevelDefaults } from '../model'
+import type { CSSProperties, ReactElement } from 'react'
+import type { LevelDefaults, RootAccent, RootEngraving } from '../model'
 import {
   MAX_INCOMING_RELATIONSHIPS,
   MAX_LEVEL_LIMIT,
@@ -13,6 +13,12 @@ import {
   toCandidateIds,
   useMastery
 } from '../store'
+import {
+  EngravingGlyph,
+  ROOT_ENGRAVINGS,
+  ROOT_ENGRAVING_LABELS,
+  rootAccentRgb
+} from '../rootEngravings'
 
 export function Create(): ReactElement | null {
   const roots = useMastery((state) => state.roots)
@@ -21,6 +27,7 @@ export function Create(): ReactElement | null {
   const draft = useMastery((state) => state.create)
   const setTitle = useMastery((state) => state.setCreateTitle)
   const setAccent = useMastery((state) => state.setCreateAccent)
+  const setEngraving = useMastery((state) => state.setCreateEngraving)
   const clear = useMastery((state) => state.clearCreateSelection)
   const next = useMastery((state) => state.continueCreate)
   const escape = useMastery((state) => state.escapeCreate)
@@ -158,6 +165,14 @@ export function Create(): ReactElement | null {
             ))}
           </div>
         </div>
+      )}
+
+      {draft.step === 'from' && creatingRoot && (
+        <CreateEngravingPicker
+          engraving={draft.engraving}
+          accent={draft.accent}
+          onChange={setEngraving}
+        />
       )}
 
       <p className="create-copy">
@@ -343,3 +358,45 @@ function CreateLevelDefaults({
   )
 }
 
+
+
+function CreateEngravingPicker({
+  engraving,
+  accent,
+  onChange
+}: {
+  engraving: RootEngraving
+  accent: RootAccent
+  onChange: (engraving: RootEngraving) => void
+}): ReactElement {
+  return (
+    <div
+      className="create-engraving-picker"
+      role="group"
+      aria-label="Root engraving"
+      style={{ '--engraving-option-rgb': rootAccentRgb(accent) } as CSSProperties}
+    >
+      <span className="create-field-label">
+        Root engraving · <strong>{ROOT_ENGRAVING_LABELS[engraving]}</strong>
+      </span>
+      <div className="create-engraving-options">
+        {ROOT_ENGRAVINGS.map((option) => (
+          <button
+            key={option}
+            className={`create-engraving-option ${engraving === option ? 'create-engraving-option--selected' : ''}`}
+            type="button"
+            aria-label={ROOT_ENGRAVING_LABELS[option]}
+            aria-pressed={engraving === option}
+            title={ROOT_ENGRAVING_LABELS[option]}
+            onClick={() => onChange(option)}
+          >
+            <span className="create-engraving-option__icon" aria-hidden="true">
+              <EngravingGlyph type={option} className="create-engraving-option__icon-svg" />
+            </span>
+            <span>{ROOT_ENGRAVING_LABELS[option]}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}

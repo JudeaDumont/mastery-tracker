@@ -1,49 +1,56 @@
 {
   "format": "mastery-tracker.graph",
-  "schemaVersion": 6,
-  "savedAt": "2026-08-24T05:17:10.639Z",
+  "schemaVersion": 7,
+  "savedAt": "2026-08-24T17:00:02.197Z",
   "data": {
     "roots": [
       {
         "id": "parallelism",
         "title": "Parallel Chore",
         "accent": "violet",
+        "engraving": "parallel",
         "updateHistory": []
       },
       {
         "id": "ng",
         "title": "NG",
         "accent": "amber",
+        "engraving": "code",
         "updateHistory": []
       },
       {
         "id": "home-improvement",
         "title": "Home Improvement",
         "accent": "green",
+        "engraving": "gear",
         "updateHistory": []
       },
       {
         "id": "health-wellness",
         "title": "Health & Wellness",
         "accent": "rose",
+        "engraving": "heart",
         "updateHistory": []
       },
       {
         "id": "gabe",
         "title": "Gabe",
         "accent": "yellow",
+        "engraving": "gabe",
         "updateHistory": []
       },
       {
         "id": "chicken",
         "title": "Chicken",
         "accent": "amber",
+        "engraving": "chicken",
         "updateHistory": []
       },
       {
         "id": "career",
         "title": "Career",
         "accent": "rose",
+        "engraving": "brain",
         "updateHistory": []
       }
     ],
@@ -2690,6 +2697,60 @@
         "momentum": 0,
         "gates": [],
         "updateHistory": []
+      },
+      {
+        "id": "4530-kafka-cfs-xml-mars-intel",
+        "rootId": "ng",
+        "title": "4530, kafka + cfs + xml + mars intel",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "new-baseline-without-test-ng",
+        "rootId": "ng",
+        "title": "new baseline without test-ng",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
+      },
+      {
+        "id": "smoke-test-live-system",
+        "rootId": "ng",
+        "title": "smoke test live system",
+        "xp": 0,
+        "maxLevel": 5,
+        "levelXpRequirements": [
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": []
       }
     ],
     "links": [
@@ -3132,6 +3193,21 @@
         "id": "is-there-a-low-code-way-simpler-design",
         "from": "is-there-a-low-code-way",
         "to": "simpler-design"
+      },
+      {
+        "id": "mars-4530-kafka-cfs-xml-mars-intel",
+        "from": "mars",
+        "to": "4530-kafka-cfs-xml-mars-intel"
+      },
+      {
+        "id": "4530-kafka-cfs-xml-mars-intel-new-baseline-without-test-ng",
+        "from": "4530-kafka-cfs-xml-mars-intel",
+        "to": "new-baseline-without-test-ng"
+      },
+      {
+        "id": "new-baseline-without-test-ng-smoke-test-live-system",
+        "from": "new-baseline-without-test-ng",
+        "to": "smoke-test-live-system"
       }
     ],
     "xpLedger": [

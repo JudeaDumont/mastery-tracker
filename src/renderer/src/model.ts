@@ -23,10 +23,21 @@ export type RootAccent =
 
 export type Effort = 'recovery' | 'light' | 'moderate' | 'hard' | 'maximum'
 
+export type RootEngraving =
+  | 'heart'
+  | 'brain'
+  | 'gear'
+  | 'chicken'
+  | 'gabe'
+  | 'code'
+  | 'parallel'
+  | 'orbit'
+
 export interface Root {
   id: RootId
   title: string
   accent?: RootAccent
+  engraving: RootEngraving
   updateHistory: ActivityEntry[]
 }
 
@@ -88,6 +99,7 @@ export interface CreateDraft {
   step: CreateStep
   title: string
   accent: RootAccent
+  engraving: RootEngraving
   fromIds: NodeId[]
   toIds: NodeId[]
 }

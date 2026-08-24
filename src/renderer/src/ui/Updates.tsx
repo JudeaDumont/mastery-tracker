@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactElement } from 'react'
-import type { Effort, NodeId, RootAccent, Skill } from '../model'
+import type { Effort, NodeId, RootAccent, RootEngraving, Skill } from '../model'
 import {
   MAX_LEVEL_LIMIT,
   ROOT_ACCENTS,
@@ -9,6 +9,12 @@ import {
   projectedXp,
   useMastery
 } from '../store'
+import {
+  EngravingGlyph,
+  ROOT_ENGRAVINGS,
+  ROOT_ENGRAVING_LABELS,
+  rootAccentRgb
+} from '../rootEngravings'
 import { isLocked, levelFor, levelProgressFor, uniformLevelStepXp } from '../xp'
 import { Create } from './Create'
 
@@ -556,7 +562,17 @@ export function Updates(): ReactElement {
               )}
 
               {settingsRoot && (
-                <RootColorSettings rootId={settingsRoot.id} accent={settingsRoot.accent ?? 'teal'} />
+                <>
+                  <RootColorSettings
+                    rootId={settingsRoot.id}
+                    accent={settingsRoot.accent ?? 'teal'}
+                  />
+                  <RootEngravingSettings
+                    rootId={settingsRoot.id}
+                    engraving={settingsRoot.engraving}
+                    accent={settingsRoot.accent ?? 'teal'}
+                  />
+                </>
               )}
 
               {settingsRoot && (
@@ -743,6 +759,51 @@ function RootColorSettings({
         ))}
       </div>
       <small>Color changes save to the graph state immediately.</small>
+    </section>
+  )
+}
+
+function RootEngravingSettings({
+  rootId,
+  engraving,
+  accent
+}: {
+  rootId: NodeId
+  engraving: RootEngraving
+  accent: RootAccent
+}): ReactElement {
+  const setRootEngraving = useMastery((state) => state.setRootEngraving)
+
+  return (
+    <section
+      className="node-settings-section node-settings-engraving"
+      style={{ '--engraving-option-rgb': rootAccentRgb(accent) } as CSSProperties}
+    >
+      <div className="node-settings-section__heading">
+        <div>
+          <strong>Root engraving</strong>
+          <span>{ROOT_ENGRAVING_LABELS[engraving]} · shown on the tab and behind the tree</span>
+        </div>
+      </div>
+      <div className="root-engraving-options" role="group" aria-label="Root engraving">
+        {ROOT_ENGRAVINGS.map((option) => (
+          <button
+            key={option}
+            className={`root-engraving-option ${engraving === option ? 'root-engraving-option--selected' : ''}`}
+            type="button"
+            aria-label={ROOT_ENGRAVING_LABELS[option]}
+            aria-pressed={engraving === option}
+            title={ROOT_ENGRAVING_LABELS[option]}
+            onClick={() => setRootEngraving(rootId, option)}
+          >
+            <span className="root-engraving-option__icon" aria-hidden="true">
+              <EngravingGlyph type={option} className="root-engraving-option__icon-svg" />
+            </span>
+            <span>{ROOT_ENGRAVING_LABELS[option]}</span>
+          </button>
+        ))}
+      </div>
+      <small>Engraving changes save to the graph state immediately.</small>
     </section>
   )
 }

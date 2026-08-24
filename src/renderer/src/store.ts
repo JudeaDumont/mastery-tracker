@@ -9,12 +9,14 @@ import type {
   NodeId,
   Root,
   RootAccent,
+  RootEngraving,
   RootId,
   Skill,
   SkillId,
   SubmitResult
 } from './model'
 import { normalizeDeadlineDay } from './deadline'
+import { ROOT_ENGRAVINGS } from './rootEngravings'
 import { earnedXp, isLocked, levelFor } from './xp'
 
 export const MAX_INCOMING_RELATIONSHIPS = 8
@@ -66,7 +68,13 @@ export const ROOT_ACCENT_LABELS: Record<RootAccent, string> = {
 }
 
 const initialRoots: Root[] = [
-  { id: 'lifter', title: 'Lifter', accent: 'teal', updateHistory: [] }
+  {
+    id: 'lifter',
+    title: 'Lifter',
+    accent: 'teal',
+    engraving: 'orbit',
+    updateHistory: []
+  }
 ]
 
 const levelXpRequirements = [100, 180, 275, 425, 650]
@@ -326,6 +334,7 @@ interface MasteryStore {
   configureLevelDefaults: (patch: Partial<LevelDefaults>) => void
   renameNode: (id: NodeId, title: string) => void
   setRootAccent: (id: RootId, accent: RootAccent) => void
+  setRootEngraving: (id: RootId, engraving: RootEngraving) => void
   submit: () => void
   togglePicked: (id: NodeId) => void
   clearPicked: () => void
@@ -333,6 +342,7 @@ interface MasteryStore {
   beginCreate: () => void
   setCreateTitle: (title: string) => void
   setCreateAccent: (accent: RootAccent) => void
+  setCreateEngraving: (engraving: RootEngraving) => void
   toggleCreateNode: (id: NodeId) => void
   clearCreateSelection: () => void
   continueCreate: () => void
@@ -608,6 +618,18 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       }
     }),
 
+  setRootEngraving: (id, engraving) =>
+    set((state) => {
+      const root = state.roots.find((candidate) => candidate.id === id)
+      if (!root || root.engraving === engraving) return state
+
+      return {
+        roots: state.roots.map((candidate) =>
+          candidate.id === id ? { ...candidate, engraving } : candidate
+        )
+      }
+    }),
+
   submit: () => {
     const before = get()
     const selectedNodeId = before.pickedIds.length === 1 ? before.pickedIds[0] : undefined
@@ -766,6 +788,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
         step: 'from',
         title: 'New mastery',
         accent: ROOT_ACCENTS[state.roots.length % ROOT_ACCENTS.length],
+        engraving: ROOT_ENGRAVINGS[state.roots.length % ROOT_ENGRAVINGS.length],
         fromIds: normalizedInitialFrom(state.pickedIds, state.roots, state.skills, state.links),
         toIds: []
       },
@@ -780,6 +803,11 @@ export const useMastery = create<MasteryStore>((set, get) => ({
   setCreateAccent: (accent) =>
     set((state) => ({
       create: state.create ? { ...state.create, accent } : null
+    })),
+
+  setCreateEngraving: (engraving) =>
+    set((state) => ({
+      create: state.create ? { ...state.create, engraving } : null
     })),
 
   toggleCreateNode: (id) =>
@@ -826,6 +854,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
         id,
         title: draft.title.trim(),
         accent: draft.accent,
+        engraving: draft.engraving,
         updateHistory: []
       }
       set({

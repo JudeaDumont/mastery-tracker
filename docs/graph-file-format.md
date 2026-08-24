@@ -11,9 +11,9 @@ If no Git checkout can be found, such as in a packaged installation, the app fal
 ## Compatibility contract
 
 - `format` identifies the file independently from the application version.
-- `schemaVersion` is an integer and currently uses version `6`.
+- `schemaVersion` is an integer and currently uses version `7`.
 - Readers migrate older versions before hydrating the store.
-- Version 6 accepts versions 5, 4, 3, 2, 1, the unversioned prototype shape, and Zustand-style `{ "state": ... }` wrappers.
+- Version 7 accepts versions 6, 5, 4, 3, 2, 1, the unversioned prototype shape, and Zustand-style `{ "state": ... }` wrappers.
 - Version 1's global `history` array is distributed into each matching node's `updateHistory` during migration.
 - Versions 1-3 infer the initial XP ledger from existing node note histories. XP submissions that were never historically stored cannot be reconstructed.
 - Version 2 files receive default new-node level settings during migration.
@@ -23,17 +23,17 @@ If no Git checkout can be found, such as in a packaged installation, the app fal
 - A file with a newer unsupported schema version is never overwritten.
 - The committed repository seed is replaced by the previous `userData` graph on the first launch
   after this storage change, preserving an existing local graph.
-- Loading an already-current version 6 file does not rewrite it just to refresh `savedAt`, avoiding
+- Loading an already-current version 7 file does not rewrite it just to refresh `savedAt`, avoiding
   meaningless Git changes on startup.
 - Writes use a temporary file and keep `mastery-graph.json.backup` as the previous complete save.
 - Invalid JSON is moved aside with a `.corrupt-<timestamp>` suffix instead of being destroyed.
 
-## Version 6
+## Version 7
 
 ```json
 {
   "format": "mastery-tracker.graph",
-  "schemaVersion": 6,
+  "schemaVersion": 7,
   "savedAt": "2026-07-28T12:00:00.000Z",
   "data": {
     "roots": [
@@ -41,6 +41,7 @@ If no Git checkout can be found, such as in a packaged installation, the app fal
         "id": "lifter",
         "title": "Lifter",
         "accent": "teal",
+        "engraving": "orbit",
         "updateHistory": []
       }
     ],
@@ -118,7 +119,13 @@ When a noted update is deleted from the hover display, the matching ledger entry
 
 `levelDefaults` controls newly created mastery nodes. The creation card edits these defaults directly. Existing nodes retain their own level configuration until edited individually.
 
+Every root has an `engraving` string. Supported values are `heart`, `brain`, `gear`, `chicken`, `gabe`, `code`, `parallel`, and `orbit`. The value selects the root-color icon shown in its tab and the matching rudimentary line pattern rendered behind its tree. Background patterns combine complete, partial, and broken-up versions of the selected motif. Version 6 and older files infer an engraving from the root ID/title, then save the explicit string in version 7.
+
 Transient UI state such as selections, open panels, unfinished updates, and an unfinished create wizard is intentionally not persisted.
+
+## Version 6 migration
+
+Version 6 has no root `engraving` field. Migration assigns deterministic defaults from the root ID/title: health and wellness roots use `heart`, career roots use `brain`, home-improvement roots use `gear`, Chicken uses `chicken`, and unmatched roots use the closest built-in theme or `orbit`.
 
 ## Version 5 migration
 
@@ -149,7 +156,7 @@ Existing node-specific XP requirements and maximum levels remain unchanged. Exis
 
 Version 1 stores activity in one top-level `history` array. During migration, each entry is copied into the matching root or skill's `updateHistory` and into the XP ledger. Duplicate entry IDs are removed and entries are sorted chronologically.
 
-## Adding version 7
+## Adding version 8
 
 1. Add a new versioned document type.
 2. Add a deterministic migration to the new shape.

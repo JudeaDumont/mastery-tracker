@@ -8,6 +8,7 @@ import {
   EdgeLabelRenderer,
   ReactFlow,
   getBezierPath,
+  useViewport,
   type Edge,
   type EdgeProps,
   type Node,
@@ -29,6 +30,7 @@ import {
   levelFor,
   levelProgressFor
 } from '../xp'
+import { EngravingPattern, rootAccentRgb } from '../rootEngravings'
 import { MasteryNode, type MasteryNodeData, type NodeVisual } from './MasteryNode'
 
 const nodeTypes = { mastery: MasteryNode }
@@ -238,18 +240,28 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
   const createFromIds = create?.fromIds
   const createToIds = create?.toIds
   const createAccent = create?.accent
+  const createEngraving = create?.engraving
   const deferredCreateTitle = useDeferredValue(create?.title ?? '')
 
   const structuralCreate = useMemo<CreateDraft | null>(() => {
-    if (!createStep || !createFromIds || !createToIds || !createAccent) return null
+    if (
+      !createStep ||
+      !createFromIds ||
+      !createToIds ||
+      !createAccent ||
+      !createEngraving
+    ) {
+      return null
+    }
     return {
       step: createStep,
       title: '',
       accent: createAccent,
+      engraving: createEngraving,
       fromIds: createFromIds,
       toIds: createToIds
     }
-  }, [createAccent, createFromIds, createStep, createToIds])
+  }, [createAccent, createEngraving, createFromIds, createStep, createToIds])
 
   const preview = useMemo<PreviewNode | undefined>(() => {
     if (!structuralCreate) return undefined
@@ -723,13 +735,104 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
       >
         <Background
           variant={BackgroundVariant.Dots}
-          gap={28}
-          size={1.2}
-          color="rgba(198, 203, 214, .11)"
+          gap={30}
+          size={1}
+          color="rgba(133, 159, 194, .065)"
+        />
+        <GraphEngravings
+          roots={roots}
+          skills={skills}
+          positions={positions}
+          activeRootId={viewRequest.rootId}
         />
         <Controls showInteractive={false} />
       </ReactFlow>
 
+    </div>
+  )
+}
+
+interface GraphEngravingPlacement {
+  root: Root
+  x: number
+  y: number
+  size: number
+}
+
+function GraphEngravings({
+  roots,
+  skills,
+  positions,
+  activeRootId
+}: {
+  roots: Root[]
+  skills: Skill[]
+  positions: Record<NodeId, { x: number; y: number }>
+  activeRootId?: RootId
+}): ReactElement {
+  const viewport = useViewport()
+  const placements = useMemo<GraphEngravingPlacement[]>(() => {
+    const visibleRoots = activeRootId
+      ? roots.filter((root) => root.id === activeRootId)
+      : roots
+
+    return visibleRoots.flatMap((root) => {
+      const nodeIds = [
+        root.id,
+        ...skills.filter((skill) => skill.rootId === root.id).map((skill) => skill.id)
+      ]
+      const measured = nodeIds.flatMap((nodeId) => {
+        const point = positions[nodeId]
+        if (!point) return []
+        const size = nodeId === root.id ? 130 : 112
+        return [{ x: point.x, y: point.y, width: size, height: size }]
+      })
+      if (measured.length === 0) return []
+
+      const minX = Math.min(...measured.map((node) => node.x))
+      const minY = Math.min(...measured.map((node) => node.y))
+      const maxX = Math.max(...measured.map((node) => node.x + node.width))
+      const maxY = Math.max(...measured.map((node) => node.y + node.height))
+      const treeWidth = Math.max(130, maxX - minX)
+      const treeHeight = Math.max(130, maxY - minY)
+      const availableSpan = Math.min(treeWidth, treeHeight)
+      const size = Math.min(
+        activeRootId ? 780 : 650,
+        Math.max(activeRootId ? 460 : 340, availableSpan * (activeRootId ? 1.1 : .94))
+      )
+      const centerX = (minX + maxX) / 2
+      const centerY = (minY + maxY) / 2 + Math.min(55, treeHeight * .06)
+
+      return [
+        {
+          root,
+          x: centerX - size / 2,
+          y: centerY - size / 2,
+          size
+        }
+      ]
+    })
+  }, [activeRootId, positions, roots, skills])
+
+  return (
+    <div className="graph-engravings" aria-hidden="true">
+      {placements.map(({ root, x, y, size }) => (
+        <div
+          key={root.id}
+          className={`graph-engraving ${activeRootId ? 'graph-engraving--focused' : 'graph-engraving--full'}`}
+          style={
+            {
+              left: viewport.x + x * viewport.zoom,
+              top: viewport.y + y * viewport.zoom,
+              width: size * viewport.zoom,
+              height: size * viewport.zoom,
+              '--engraving-rgb': rootAccentRgb(root.accent)
+            } as CSSProperties
+          }
+        >
+          <EngravingPattern type={root.engraving} className="graph-engraving__pattern" />
+        </div>
+      ))}
     </div>
   )
 }
@@ -1037,6 +1140,7 @@ function MasteryEdge({
 
   return (
     <>
+      <BaseEdge id={`${id}-outline`} path={path} className="edge-black-outline" />
       <BaseEdge id={id} path={path} className={edgeClass} />
       <path
         d={path}
