@@ -89,6 +89,14 @@ batch wizard:
  - when i start typing into any dialog, there should be a default text box "all-text" selection
   - namely in the create node dialog for the node name
 
+ - I need the nodes to pop more, and look like orbs or marbles or something.
+
+ - should be able to use the whole flow with just the key board
+  - ctrl + n = new node, type name, enter, created, no node selection change,
+  - ctrl goes to next node, reaching downward towards leaves first and then sibiling across
+  - ctrl + n again, ctrl + shift + n goes back, etc.
+  -
+
 ==================FINISHED============================================
 
 imperative that only one node can be selected for udpates at a time, and that should be the last node selected.
