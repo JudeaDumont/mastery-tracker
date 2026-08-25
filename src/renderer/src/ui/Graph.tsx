@@ -15,7 +15,7 @@ import {
   type ReactFlowInstance
 } from '@xyflow/react'
 import { graphLayout, type PreviewNode } from '../layout'
-import type { CreateDraft, Link, NodeId, Root, RootAccent, RootId, Skill } from '../model'
+import type { ActivityEntry, CreateDraft, Link, NodeId, Root, RootAccent, RootId, Skill } from '../model'
 import {
   canUseFromNode,
   createSelectionFull,
@@ -48,6 +48,7 @@ const RETARGETED_SECOND_CLICK_MAX_DISTANCE_PX = 36
 const HISTORY_FOCUS_ANIMATION_MS = 300
 const CAMERA_DEBUG_PREFIX = '[camera-debug]'
 const CAMERA_DEBUG_EVENT = 'mastery-camera-debug'
+const RECENT_ACTIVITY_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
 
 export interface GraphViewRequest {
   rootId?: RootId
@@ -329,6 +330,7 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
           (entry) => entry.nodeId === root.id && Boolean(entry.opportuneOn)
         ),
         activitySelected: pickedIds.includes(root.id),
+        recentActivity: hasRecentActivity(root.id, xpLedger),
         visual: visualFor(
           root.id,
           root.id,
@@ -367,6 +369,7 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
           (entry) => entry.nodeId === skill.id && Boolean(entry.opportuneOn)
         ),
         activitySelected: pickedIds.includes(skill.id),
+        recentActivity: hasRecentActivity(skill.id, xpLedger),
         visual: visualFor(
           skill.id,
           skill.rootId,
@@ -399,6 +402,7 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
             deadlineEntries: [],
             opportuneEntries: [],
             currentLevelProgress: 0,
+            recentActivity: false,
             visual: 'preview'
           })
         ]
@@ -1454,6 +1458,16 @@ function cumulativeXpTargets(requirements: number[], maxLevel: number): number[]
     const configured = requirements[index]
     total += Number.isFinite(configured) && configured > 0 ? configured : 1
     return total
+  })
+}
+
+function hasRecentActivity(nodeId: NodeId, xpLedger: ActivityEntry[]): boolean {
+  const cutoff = Date.now() - RECENT_ACTIVITY_WINDOW_MS
+
+  return xpLedger.some((entry) => {
+    if (entry.nodeId !== nodeId) return false
+    const occurredAt = new Date(entry.occurredAt).getTime()
+    return Number.isFinite(occurredAt) && occurredAt >= cutoff
   })
 }
 

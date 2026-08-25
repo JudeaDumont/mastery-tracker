@@ -356,6 +356,16 @@ button { color: inherit; }
   height: 130px;
   box-shadow: 0 0 0 13px #000;
 }
+.node--recent-activity {
+  box-shadow:
+    0 0 0 6px rgba(255, 255, 255, .98),
+    0 0 11px rgba(255, 255, 255, .42);
+}
+.node--root.node--recent-activity {
+  box-shadow:
+    0 0 0 13px rgba(255, 255, 255, .98),
+    0 0 15px rgba(255, 255, 255, .46);
+}
 .node--root .level-ring { transform: scale(1.14); z-index: 2; }
 .node--root .node-core {
   position: relative;

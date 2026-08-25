@@ -1,7 +1,7 @@
 {
   "format": "mastery-tracker.graph",
   "schemaVersion": 7,
-  "savedAt": "2026-08-25T08:05:16.337Z",
+  "savedAt": "2026-08-25T16:14:15.482Z",
   "data": {
     "roots": [
       {
@@ -727,7 +727,7 @@
         "id": "pull-ups",
         "rootId": "health-wellness",
         "title": "Pull ups",
-        "xp": 50,
+        "xp": 60,
         "maxLevel": 10,
         "levelXpRequirements": [
           100,
@@ -742,7 +742,7 @@
           100
         ],
         "levelReachedAt": [],
-        "momentum": 6,
+        "momentum": 9,
         "gates": [],
         "updateHistory": [
           {
@@ -3176,6 +3176,150 @@
             "note": "Created"
           }
         ]
+      },
+      {
+        "id": "kafka-ui-produce-json-to-translate-input",
+        "rootId": "ng",
+        "title": "kafka ui produce json to translate input",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T16:11:21.625Z-kafka-ui-produce-json-to-translate-input-58221754-7564-4d8b-b97d-725493098777",
+            "nodeId": "kafka-ui-produce-json-to-translate-input",
+            "occurredAt": "2026-08-25T16:11:21.625Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "test-whole-system",
+        "rootId": "ng",
+        "title": "test whole system with envelop generator & blackfish",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T16:11:38.043Z-test-whole-system-4282194c-1751-46bc-ac72-8b91c10039e7",
+            "nodeId": "test-whole-system",
+            "occurredAt": "2026-08-25T16:11:38.043Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "incorporate-denisses-kafka-envelope-generator",
+        "rootId": "ng",
+        "title": "incorporate denisses kafka envelope generator",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T16:11:59.114Z-incorporate-denisses-kafka-envelope-generator-142ed85a-e725-4b3c-b7bb-57a47d481e82",
+            "nodeId": "incorporate-denisses-kafka-envelope-generator",
+            "occurredAt": "2026-08-25T16:11:59.114Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "blackfish-actuator-for-trace-logs-at-provenance",
+        "rootId": "ng",
+        "title": "blackfish actuator for trace logs at provenance",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T16:13:22.535Z-blackfish-actuator-for-trace-logs-at-provenance-f91b5090-6b28-440d-a751-f7c6e82c1523",
+            "nodeId": "blackfish-actuator-for-trace-logs-at-provenance",
+            "occurredAt": "2026-08-25T16:13:22.535Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "denisses-branch-merged-into-4530",
+        "rootId": "ng",
+        "title": "denisses branch merged into 4530",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T16:13:55.336Z-denisses-branch-merged-into-4530-f4080ad7-5fc0-4d93-9d10-e92ca5f59680",
+            "nodeId": "denisses-branch-merged-into-4530",
+            "occurredAt": "2026-08-25T16:13:55.336Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "deploy-into-same-setup",
+        "rootId": "ng",
+        "title": "deploy into same setup",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T16:14:15.482Z-deploy-into-same-setup-9744914a-e448-490c-a64c-b03bee95abaa",
+            "nodeId": "deploy-into-same-setup",
+            "occurredAt": "2026-08-25T16:14:15.482Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
       }
     ],
     "links": [
@@ -3688,6 +3832,36 @@
         "id": "build-catio-vinyl-getting-ripped-up-on-outside",
         "from": "build-catio",
         "to": "vinyl-getting-ripped-up-on-outside"
+      },
+      {
+        "id": "smoke-test-live-system-kafka-ui-produce-json-to-translate-input",
+        "from": "smoke-test-live-system",
+        "to": "kafka-ui-produce-json-to-translate-input"
+      },
+      {
+        "id": "4530-kafka-cfs-xml-mars-intel-test-whole-system",
+        "from": "4530-kafka-cfs-xml-mars-intel",
+        "to": "test-whole-system"
+      },
+      {
+        "id": "4530-kafka-cfs-xml-mars-intel-incorporate-denisses-kafka-envelope-generator",
+        "from": "4530-kafka-cfs-xml-mars-intel",
+        "to": "incorporate-denisses-kafka-envelope-generator"
+      },
+      {
+        "id": "test-whole-system-blackfish-actuator-for-trace-logs-at-provenance",
+        "from": "test-whole-system",
+        "to": "blackfish-actuator-for-trace-logs-at-provenance"
+      },
+      {
+        "id": "incorporate-denisses-kafka-envelope-generator-denisses-branch-merged-into-4530",
+        "from": "incorporate-denisses-kafka-envelope-generator",
+        "to": "denisses-branch-merged-into-4530"
+      },
+      {
+        "id": "denisses-branch-merged-into-4530-deploy-into-same-setup",
+        "from": "denisses-branch-merged-into-4530",
+        "to": "deploy-into-same-setup"
       }
     ],
     "xpLedger": [
@@ -4758,9 +4932,72 @@
         "effort": "recovery",
         "xp": 0,
         "note": "Created"
+      },
+      {
+        "id": "2026-08-25T11:30:29.936Z-pull-ups-75f6eca9-003e-42e9-9810-03891099ac70",
+        "nodeId": "pull-ups",
+        "occurredAt": "2026-08-25T11:30:29.936Z",
+        "minutes": 10,
+        "effort": "moderate",
+        "xp": 10,
+        "note": ""
+      },
+      {
+        "id": "2026-08-25T16:11:21.625Z-kafka-ui-produce-json-to-translate-input-58221754-7564-4d8b-b97d-725493098777",
+        "nodeId": "kafka-ui-produce-json-to-translate-input",
+        "occurredAt": "2026-08-25T16:11:21.625Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T16:11:38.043Z-test-whole-system-4282194c-1751-46bc-ac72-8b91c10039e7",
+        "nodeId": "test-whole-system",
+        "occurredAt": "2026-08-25T16:11:38.043Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T16:11:59.114Z-incorporate-denisses-kafka-envelope-generator-142ed85a-e725-4b3c-b7bb-57a47d481e82",
+        "nodeId": "incorporate-denisses-kafka-envelope-generator",
+        "occurredAt": "2026-08-25T16:11:59.114Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T16:13:22.535Z-blackfish-actuator-for-trace-logs-at-provenance-f91b5090-6b28-440d-a751-f7c6e82c1523",
+        "nodeId": "blackfish-actuator-for-trace-logs-at-provenance",
+        "occurredAt": "2026-08-25T16:13:22.535Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T16:13:55.336Z-denisses-branch-merged-into-4530-f4080ad7-5fc0-4d93-9d10-e92ca5f59680",
+        "nodeId": "denisses-branch-merged-into-4530",
+        "occurredAt": "2026-08-25T16:13:55.336Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T16:14:15.482Z-deploy-into-same-setup-9744914a-e448-490c-a64c-b03bee95abaa",
+        "nodeId": "deploy-into-same-setup",
+        "occurredAt": "2026-08-25T16:14:15.482Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
       }
     ],
-    "todayXp": 1371,
+    "todayXp": 1381,
     "levelDefaults": {
       "levelStepXp": 100,
       "maxLevel": 1
