@@ -102,6 +102,7 @@ export interface CreateDraft {
   engraving: RootEngraving
   fromIds: NodeId[]
   toIds: NodeId[]
+  quick?: boolean
 }
 
 export interface LevelDefaults {

@@ -337,9 +337,11 @@ interface MasteryStore {
   setRootEngraving: (id: RootId, engraving: RootEngraving) => void
   submit: () => void
   togglePicked: (id: NodeId) => void
+  selectPicked: (id: NodeId) => void
   clearPicked: () => void
   deleteNode: (id: NodeId) => void
   beginCreate: () => void
+  beginQuickCreate: () => void
   setCreateTitle: (title: string) => void
   setCreateAccent: (accent: RootAccent) => void
   setCreateEngraving: (engraving: RootEngraving) => void
@@ -725,6 +727,19 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       }
     }),
 
+  selectPicked: (id) =>
+    set((state) => {
+      const root = state.roots.find((candidate) => candidate.id === id)
+      const skill = state.skills.find((candidate) => candidate.id === id)
+      if (!root && !skill) return state
+
+      const selected = Boolean(skill && !isLocked(skill, state.skills))
+      return {
+        pickedIds: [id],
+        draft: draftWithOnlySelection(state.draft, skill?.id, selected)
+      }
+    }),
+
   clearPicked: () =>
     set((state) => ({
       pickedIds: [],
@@ -790,7 +805,22 @@ export const useMastery = create<MasteryStore>((set, get) => ({
         accent: ROOT_ACCENTS[state.roots.length % ROOT_ACCENTS.length],
         engraving: ROOT_ENGRAVINGS[state.roots.length % ROOT_ENGRAVINGS.length],
         fromIds: normalizedInitialFrom(state.pickedIds, state.roots, state.skills, state.links),
-        toIds: []
+        toIds: [],
+        quick: false
+      },
+      lastCreated: null
+    })),
+
+  beginQuickCreate: () =>
+    set((state) => ({
+      create: {
+        step: 'from',
+        title: '',
+        accent: ROOT_ACCENTS[state.roots.length % ROOT_ACCENTS.length],
+        engraving: ROOT_ENGRAVINGS[state.roots.length % ROOT_ENGRAVINGS.length],
+        fromIds: state.pickedIds.slice(0, 1),
+        toIds: [],
+        quick: true
       },
       lastCreated: null
     })),
@@ -848,8 +878,9 @@ export const useMastery = create<MasteryStore>((set, get) => ({
     if (!draft || !draft.title.trim()) return
 
     const id = uniqueId(draft.title, allNodeIds(state.roots, state.skills))
+    const creatingRoot = draft.fromIds.length === 0
 
-    if (draft.step === 'from' && draft.fromIds.length === 0) {
+    if (draft.step === 'from' && creatingRoot) {
       const root: Root = {
         id,
         title: draft.title.trim(),
@@ -860,14 +891,14 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       set({
         roots: [...state.roots, root],
         create: null,
-        draft: draftWithOnlySelection(state.draft),
-        pickedIds: [id],
+        draft: draft.quick ? state.draft : draftWithOnlySelection(state.draft),
+        pickedIds: draft.quick ? state.pickedIds : [id],
         lastCreated: `${root.title} root created`
       })
       return
     }
 
-    if (draft.step === 'from') {
+    if (draft.step === 'from' && !draft.quick) {
       set({ create: { ...draft, step: 'to', toIds: [] } })
       return
     }
@@ -899,15 +930,22 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       ...draft.toIds.map((to) => ({ id: `${id}-${to}`, from: id, to }))
     ]
 
+    const nextDraft = draft.quick
+      ? {
+          ...state.draft,
+          [id]: { selected: false, minutes: 0, effort: 'moderate', note: '' }
+        }
+      : {
+          ...draftWithOnlySelection(state.draft),
+          [id]: { selected: true, minutes: 0, effort: 'moderate', note: '' }
+        }
+
     set({
       skills: [...state.skills, skill],
       links,
-      draft: {
-        ...draftWithOnlySelection(state.draft),
-        [id]: { selected: true, minutes: 0, effort: 'moderate', note: '' }
-      },
+      draft: nextDraft,
       create: null,
-      pickedIds: [id],
+      pickedIds: draft.quick ? state.pickedIds : [id],
       lastCreated: `${skill.title} created and placed automatically`
     })
   },

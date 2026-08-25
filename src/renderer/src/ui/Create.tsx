@@ -106,6 +106,10 @@ export function Create(): ReactElement | null {
     ? nodeRootId(draft.fromIds[0], roots, skills)
     : undefined
   const selectedRoot = roots.find((root) => root.id === selectedRootId)
+  const selectedParentLabel =
+    draft.fromIds.length > 0
+      ? draft.fromIds.map((id) => nodeTitle(id, roots, skills)).join(' · ')
+      : undefined
   const ids = draft.step === 'from' ? draft.fromIds : draft.toIds
   const label =
     ids.length > 0
@@ -118,7 +122,7 @@ export function Create(): ReactElement | null {
   const capacity =
     draft.step === 'from' ? MAX_INCOMING_RELATIONSHIPS : MAX_OUTGOING_RELATIONSHIPS
   const relationshipDirection = draft.step === 'from' ? 'incoming' : 'outgoing'
-  const stepCount = creatingRoot ? 1 : 2
+  const stepCount = draft.quick ? 1 : creatingRoot ? 1 : 2
 
   return (
     <section className="create-card" aria-label="Create node wizard">
@@ -127,7 +131,11 @@ export function Create(): ReactElement | null {
           {draft.step === 'from' ? '1' : '2'} of {stepCount}
         </span>
         <strong>
-          {draft.step === 'from' ? 'Choose From relationships' : 'Choose To relationships'}
+          {draft.quick
+            ? 'Keyboard quick create'
+            : draft.step === 'from'
+              ? 'Choose From relationships'
+              : 'Choose To relationships'}
         </strong>
       </div>
 
@@ -176,11 +184,15 @@ export function Create(): ReactElement | null {
       )}
 
       <p className="create-copy">
-        {draft.step === 'from'
+        {draft.quick
           ? creatingRoot
-            ? 'Click any eligible root or non-root node in the graph to make it a parent. Leave From empty to create a new root instead.'
-            : `The new node will belong to ${selectedRoot?.title ?? 'the selected root family'}. Click additional eligible nodes in that family to add more parents, then continue.`
-          : 'Click graph nodes this new node should point To. Green nodes are available; red nodes are unavailable or at incoming capacity. Leave To empty for a terminal node.'}
+            ? 'Quick create has no selected parent, so Enter creates a new root. Your current graph selection stays unchanged.'
+            : `Enter creates this node directly beneath ${selectedParentLabel ?? selectedRoot?.title ?? 'the selected parent'} with no outgoing relationship. Your current graph selection stays unchanged.`
+          : draft.step === 'from'
+            ? creatingRoot
+              ? 'Click any eligible root or non-root node in the graph to make it a parent. Leave From empty to create a new root instead.'
+              : `The new node will belong to ${selectedRoot?.title ?? 'the selected root family'}. Click additional eligible nodes in that family to add more parents, then continue.`
+            : 'Click graph nodes this new node should point To. Green nodes are available; red nodes are unavailable or at incoming capacity. Leave To empty for a terminal node.'}
       </p>
 
       {!creatingRoot && (
@@ -221,22 +233,30 @@ export function Create(): ReactElement | null {
           disabled={!titleValue.trim()}
           onClick={advance}
         >
-          {draft.step === 'from'
+          {draft.quick
             ? creatingRoot
               ? 'Create Root'
-              : 'Choose To Relationships'
-            : 'Create Node'}
+              : 'Create Node'
+            : draft.step === 'from'
+              ? creatingRoot
+                ? 'Create Root'
+                : 'Choose To Relationships'
+              : 'Create Node'}
         </button>
       </div>
 
       <small className="create-escape">
         Enter{' '}
-        {draft.step === 'from'
+        {draft.quick
           ? creatingRoot
             ? 'creates the root'
-            : 'continues to To selection'
-          : 'creates the node'}
-        {' · '}Esc {draft.step === 'from' ? 'cancels creation' : 'returns to From selection'}
+            : 'creates the node'
+          : draft.step === 'from'
+            ? creatingRoot
+              ? 'creates the root'
+              : 'continues to To selection'
+            : 'creates the node'}
+        {' · '}Esc {draft.quick ? 'cancels quick create' : draft.step === 'from' ? 'cancels creation' : 'returns to From selection'}
       </small>
     </section>
   )

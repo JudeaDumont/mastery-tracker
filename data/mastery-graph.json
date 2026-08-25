@@ -1,7 +1,7 @@
 {
   "format": "mastery-tracker.graph",
   "schemaVersion": 7,
-  "savedAt": "2026-08-24T17:00:02.197Z",
+  "savedAt": "2026-08-25T05:05:37.397Z",
   "data": {
     "roots": [
       {
@@ -2702,7 +2702,7 @@
         "id": "4530-kafka-cfs-xml-mars-intel",
         "rootId": "ng",
         "title": "4530, kafka + cfs + xml + mars intel",
-        "xp": 0,
+        "xp": 1,
         "maxLevel": 5,
         "levelXpRequirements": [
           100,
@@ -2712,15 +2712,25 @@
           100
         ],
         "levelReachedAt": [],
-        "momentum": 0,
+        "momentum": 3,
         "gates": [],
-        "updateHistory": []
+        "updateHistory": [
+          {
+            "id": "2026-08-24T17:01:52.286Z-4530-kafka-cfs-xml-mars-intel-5c7f269c-d4ff-4326-b511-0b1f240ede10",
+            "nodeId": "4530-kafka-cfs-xml-mars-intel",
+            "occurredAt": "2026-08-24T17:01:52.286Z",
+            "minutes": 1,
+            "effort": "moderate",
+            "xp": 1,
+            "note": "baseline first, then smoke test in live system"
+          }
+        ]
       },
       {
         "id": "new-baseline-without-test-ng",
         "rootId": "ng",
         "title": "new baseline without test-ng",
-        "xp": 0,
+        "xp": 1,
         "maxLevel": 5,
         "levelXpRequirements": [
           100,
@@ -2730,15 +2740,25 @@
           100
         ],
         "levelReachedAt": [],
-        "momentum": 0,
+        "momentum": 3,
         "gates": [],
-        "updateHistory": []
+        "updateHistory": [
+          {
+            "id": "2026-08-24T17:01:37.353Z-new-baseline-without-test-ng-f820f38c-2e78-4c99-8555-0e249910e21c",
+            "nodeId": "new-baseline-without-test-ng",
+            "occurredAt": "2026-08-24T17:01:37.353Z",
+            "minutes": 1,
+            "effort": "moderate",
+            "xp": 1,
+            "note": "need joshs branch to get merged"
+          }
+        ]
       },
       {
         "id": "smoke-test-live-system",
         "rootId": "ng",
         "title": "smoke test live system",
-        "xp": 0,
+        "xp": 1,
         "maxLevel": 5,
         "levelXpRequirements": [
           100,
@@ -2748,9 +2768,45 @@
           100
         ],
         "levelReachedAt": [],
-        "momentum": 0,
+        "momentum": 3,
         "gates": [],
-        "updateHistory": []
+        "updateHistory": [
+          {
+            "id": "2026-08-24T17:01:25.462Z-smoke-test-live-system-bb7965e2-7191-40e7-9c18-f49a6e9b8647",
+            "nodeId": "smoke-test-live-system",
+            "occurredAt": "2026-08-24T17:01:25.462Z",
+            "minutes": 1,
+            "effort": "moderate",
+            "xp": 1,
+            "note": "need this recorded"
+          }
+        ]
+      },
+      {
+        "id": "de-the-couch",
+        "rootId": "home-improvement",
+        "title": "DE the couch",
+        "xp": 100,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-24T17:02:35.117Z"
+        ],
+        "momentum": 8,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-24T17:02:35.117Z-de-the-couch-82cbc4e1-0126-4663-b84b-472817486d43",
+            "nodeId": "de-the-couch",
+            "occurredAt": "2026-08-24T17:02:35.117Z",
+            "minutes": 100,
+            "effort": "moderate",
+            "xp": 100,
+            "note": "done"
+          }
+        ]
       }
     ],
     "links": [
@@ -3208,6 +3264,11 @@
         "id": "new-baseline-without-test-ng-smoke-test-live-system",
         "from": "new-baseline-without-test-ng",
         "to": "smoke-test-live-system"
+      },
+      {
+        "id": "get-rid-of-insects-de-the-couch",
+        "from": "get-rid-of-insects",
+        "to": "de-the-couch"
       }
     ],
     "xpLedger": [
@@ -3981,12 +4042,48 @@
         "effort": "moderate",
         "xp": 100,
         "note": ""
+      },
+      {
+        "id": "2026-08-24T17:01:25.462Z-smoke-test-live-system-bb7965e2-7191-40e7-9c18-f49a6e9b8647",
+        "nodeId": "smoke-test-live-system",
+        "occurredAt": "2026-08-24T17:01:25.462Z",
+        "minutes": 1,
+        "effort": "moderate",
+        "xp": 1,
+        "note": "need this recorded"
+      },
+      {
+        "id": "2026-08-24T17:01:37.353Z-new-baseline-without-test-ng-f820f38c-2e78-4c99-8555-0e249910e21c",
+        "nodeId": "new-baseline-without-test-ng",
+        "occurredAt": "2026-08-24T17:01:37.353Z",
+        "minutes": 1,
+        "effort": "moderate",
+        "xp": 1,
+        "note": "need joshs branch to get merged"
+      },
+      {
+        "id": "2026-08-24T17:01:52.286Z-4530-kafka-cfs-xml-mars-intel-5c7f269c-d4ff-4326-b511-0b1f240ede10",
+        "nodeId": "4530-kafka-cfs-xml-mars-intel",
+        "occurredAt": "2026-08-24T17:01:52.286Z",
+        "minutes": 1,
+        "effort": "moderate",
+        "xp": 1,
+        "note": "baseline first, then smoke test in live system"
+      },
+      {
+        "id": "2026-08-24T17:02:35.117Z-de-the-couch-82cbc4e1-0126-4663-b84b-472817486d43",
+        "nodeId": "de-the-couch",
+        "occurredAt": "2026-08-24T17:02:35.117Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": "done"
       }
     ],
-    "todayXp": 100,
+    "todayXp": 0,
     "levelDefaults": {
       "levelStepXp": 100,
-      "maxLevel": 5
+      "maxLevel": 1
     }
   }
 }

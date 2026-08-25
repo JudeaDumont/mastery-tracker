@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactElement } from 'react'
-import type { NodeId, RootId } from './model'
+import type { Link, NodeId, Root, RootId, Skill } from './model'
 import { Graph, type GraphViewRequest } from './ui/Graph'
 import { Updates } from './ui/Updates'
 import { DailyUpdates } from './ui/DailyUpdates'
@@ -9,6 +9,7 @@ import { ScheduleIcon } from './ui/ScheduleIcon'
 import { NodeSearch } from './ui/NodeSearch'
 import { deadlineStatus } from './deadline'
 import { dailyXpTotal, useMastery } from './store'
+import { graphLayout } from './layout'
 import { isLocked, levelFor } from './xp'
 import { EngravingGlyph, rootAccentRgb } from './rootEngravings'
 
@@ -22,6 +23,11 @@ function App(): ReactElement {
   const xpLedger = useMastery((state) => state.xpLedger)
   const lastResult = useMastery((state) => state.lastResult)
   const create = useMastery((state) => state.create)
+  const links = useMastery((state) => state.links)
+  const pickedIds = useMastery((state) => state.pickedIds)
+  const beginQuickCreate = useMastery((state) => state.beginQuickCreate)
+  const escapeCreate = useMastery((state) => state.escapeCreate)
+  const selectPicked = useMastery((state) => state.selectPicked)
   const [graphView, setGraphView] = useState<GraphViewRequest>({
     requestId: 0
   })
@@ -29,6 +35,8 @@ function App(): ReactElement {
   const [dailyUpdatesOpen, setDailyUpdatesOpen] = useState(false)
   const [deadlinesOpen, setDeadlinesOpen] = useState(false)
   const [rootTabStart, setRootTabStart] = useState(0)
+  const controlChordUsedRef = useRef(false)
+  const controlShiftRef = useRef(false)
 
   useEffect(() => {
     const onCameraDebug = (event: Event): void => {
@@ -92,6 +100,92 @@ function App(): ReactElement {
     },
     [roots]
   )
+
+  const focusKeyboardNode = useCallback(
+    (nodeId: NodeId): void => {
+      selectPicked(nodeId)
+      setDailyUpdatesOpen(false)
+      setDeadlinesOpen(false)
+      setGraphView((current) => ({
+        rootId: current.rootId,
+        nodeId,
+        requestId: current.requestId + 1
+      }))
+    },
+    [selectPicked]
+  )
+
+  const moveKeyboardSelection = useCallback(
+    (direction: 1 | -1): void => {
+      const order = keyboardTraversalOrder(roots, skills, links, graphView.rootId)
+      if (order.length === 0) return
+
+      const currentId = pickedIds.length === 1 ? pickedIds[0] : undefined
+      const currentIndex = currentId ? order.indexOf(currentId) : -1
+      const nextIndex =
+        currentIndex < 0
+          ? direction > 0
+            ? 0
+            : order.length - 1
+          : (currentIndex + direction + order.length) % order.length
+
+      focusKeyboardNode(order[nextIndex])
+    },
+    [focusKeyboardNode, graphView.rootId, links, pickedIds, roots, skills]
+  )
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Control') {
+        if (!event.repeat) {
+          controlChordUsedRef.current = false
+          controlShiftRef.current = event.shiftKey
+        }
+        return
+      }
+
+      if (event.key === 'Shift' && event.ctrlKey) {
+        controlShiftRef.current = true
+        return
+      }
+
+      if (!event.ctrlKey) return
+      controlChordUsedRef.current = true
+      if (event.shiftKey) controlShiftRef.current = true
+
+      if (event.key.toLowerCase() !== 'n') return
+
+      event.preventDefault()
+      event.stopPropagation()
+
+      if (event.shiftKey) {
+        if (create) escapeCreate()
+        else moveKeyboardSelection(-1)
+        return
+      }
+
+      if (!create) beginQuickCreate()
+    }
+
+    const onKeyUp = (event: KeyboardEvent): void => {
+      if (event.key !== 'Control') return
+
+      const usedChord = controlChordUsedRef.current
+      const backwards = controlShiftRef.current
+      controlChordUsedRef.current = false
+      controlShiftRef.current = false
+
+      if (usedChord || create || isEditableKeyboardTarget(document.activeElement)) return
+      moveKeyboardSelection(backwards ? -1 : 1)
+    }
+
+    window.addEventListener('keydown', onKeyDown, true)
+    window.addEventListener('keyup', onKeyUp, true)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown, true)
+      window.removeEventListener('keyup', onKeyUp, true)
+    }
+  }, [beginQuickCreate, create, escapeCreate, moveKeyboardSelection])
 
   const totalXp = skills.reduce((sum, skill) => sum + skill.xp, 0)
   const todayXp = dailyXpTotal(xpLedger)
@@ -318,6 +412,71 @@ function App(): ReactElement {
       </footer>
     </div>
   )
+}
+
+function isEditableKeyboardTarget(target: Element | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  return Boolean(
+    target.isContentEditable ||
+      target.closest('input, textarea, select, [contenteditable="true"], [role="textbox"]')
+  )
+}
+
+function keyboardTraversalOrder(
+  roots: Root[],
+  skills: Skill[],
+  links: Link[],
+  scopedRootId?: RootId
+): NodeId[] {
+  const positions = graphLayout({ roots, skills, links })
+  const skillById = new Map(skills.map((skill) => [skill.id, skill]))
+  const rootsToVisit = scopedRootId
+    ? roots.filter((root) => root.id === scopedRootId)
+    : roots
+  const result: NodeId[] = []
+  const visited = new Set<NodeId>()
+
+  const childrenFor = (nodeId: NodeId, rootId: RootId): NodeId[] =>
+    links
+      .filter((link) => link.from === nodeId)
+      .map((link) => link.to)
+      .filter((childId) => skillById.get(childId)?.rootId === rootId)
+      .filter((childId, index, values) => values.indexOf(childId) === index)
+      .sort((left, right) => {
+        const leftPoint = positions[left]
+        const rightPoint = positions[right]
+        const xDelta = (leftPoint?.x ?? 0) - (rightPoint?.x ?? 0)
+        if (Math.abs(xDelta) > 1) return xDelta
+        const yDelta = (leftPoint?.y ?? 0) - (rightPoint?.y ?? 0)
+        if (Math.abs(yDelta) > 1) return yDelta
+        return left.localeCompare(right)
+      })
+
+  const visit = (nodeId: NodeId, rootId: RootId): void => {
+    if (visited.has(nodeId)) return
+    visited.add(nodeId)
+    result.push(nodeId)
+    childrenFor(nodeId, rootId).forEach((childId) => visit(childId, rootId))
+  }
+
+  rootsToVisit.forEach((root) => {
+    visit(root.id, root.id)
+
+    skills
+      .filter((skill) => skill.rootId === root.id && !visited.has(skill.id))
+      .sort((left, right) => {
+        const leftPoint = positions[left.id]
+        const rightPoint = positions[right.id]
+        const yDelta = (leftPoint?.y ?? 0) - (rightPoint?.y ?? 0)
+        if (Math.abs(yDelta) > 1) return yDelta
+        const xDelta = (leftPoint?.x ?? 0) - (rightPoint?.x ?? 0)
+        if (Math.abs(xDelta) > 1) return xDelta
+        return left.id.localeCompare(right.id)
+      })
+      .forEach((skill) => visit(skill.id, root.id))
+  })
+
+  return result
 }
 
 function Metric({

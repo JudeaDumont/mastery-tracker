@@ -91,22 +91,28 @@ batch wizard:
 
  - I need the nodes to pop more, and look like orbs or marbles or something.
 
- - should be able to use the whole flow with just the key board
-  - ctrl + n = new node, type name, enter, created, no node selection change,
-  - ctrl goes to next node, reaching downward towards leaves first and then sibiling across
-  - ctrl + n again, ctrl + shift + n goes back, etc.
 
 
- - each tab should come with an engraving shape
-  - this engraving shape should be selected via a string property on root nodes, thats what selects the engraving type
-  - this engraving will then load up custom background engravings in the background of each tree,
-  - and would show up on the tab for that root node.
-  - health and wellness should heart themed
-  - career should be brain themed
-  - home improvement should be gear themed.
-  -
+ - engravings need to fill out the background of the tree and a little further.
+
+ - !!!!! creating a node needs to put a default "created" update on it
+
 
 ==================FINISHED============================================
+
+- should be able to use the whole flow with just the key board
+- ctrl + n = new node, type name, enter, created, no node selection change,
+- ctrl goes to next node, reaching downward towards leaves first and then sibiling across
+- ctrl + n again, ctrl + shift + n goes back, etc.
+
+- each tab should come with an engraving shape
+- this engraving shape should be selected via a string property on root nodes, thats what selects the engraving type
+- this engraving will then load up custom background engravings in the background of each tree,
+- and would show up on the tab for that root node.
+- health and wellness should heart themed
+- career should be brain themed
+- home improvement should be gear themed.
+-
 
 imperative that only one node can be selected for udpates at a time, and that should be the last node selected.
 
