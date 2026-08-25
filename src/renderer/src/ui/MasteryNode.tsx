@@ -433,7 +433,10 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
                 No updates recorded for this node.
               </p>
             ) : (
-              updateHistory.map((entry) => (
+              updateHistory.map((entry) => {
+                const created = isCreatedEntry(entry)
+
+                return (
                 <article className="node-update-history-entry" key={entry.id}>
                   {confirmingEntryId !== entry.id && (
                     <>
@@ -524,7 +527,7 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
 
                   <header>
                     <time dateTime={entry.occurredAt}>{formatUpdateDate(entry.occurredAt)}</time>
-                    <span>+{entry.xp.toLocaleString()} XP</span>
+                    <span>{created ? 'Created' : `+${entry.xp.toLocaleString()} XP`}</span>
                   </header>
 
                   {confirmingEntryId === entry.id ? (
@@ -550,7 +553,9 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
                     >
                       <strong>Delete this update?</strong>
                       <span>
-                        This removes the note and subtracts {entry.xp.toLocaleString()} XP.
+                        {created
+                          ? 'This removes the creation entry.'
+                          : `This removes the note and subtracts ${entry.xp.toLocaleString()} XP.`}
                       </span>
                       <div>
                         <button
@@ -620,15 +625,14 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
                     </p>
                   )}
 
-                  {confirmingEntryId !== entry.id && (
-                    <>
-                      <small>
-                        {entry.minutes.toLocaleString()} min · {formatEffort(entry.effort)}
-                      </small>
-                    </>
+                  {confirmingEntryId !== entry.id && !created && (
+                    <small>
+                      {entry.minutes.toLocaleString()} min · {formatEffort(entry.effort)}
+                    </small>
                   )}
                 </article>
-              ))
+                )
+              })
             )}
           </div>
         </div>
@@ -669,6 +673,14 @@ function formatReachedDate(value: string): string {
     month: 'short',
     day: 'numeric'
   }).format(date)
+}
+
+function isCreatedEntry(entry: ActivityEntry): boolean {
+  return (
+    entry.xp === 0 &&
+    entry.minutes === 0 &&
+    entry.note.trim().toLowerCase() === 'created'
+  )
 }
 
 function formatUpdateDate(value: string): string {

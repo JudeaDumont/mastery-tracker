@@ -881,15 +881,20 @@ export const useMastery = create<MasteryStore>((set, get) => ({
     const creatingRoot = draft.fromIds.length === 0
 
     if (draft.step === 'from' && creatingRoot) {
+      const occurredAt = new Date().toISOString()
+      const createdEntry = createdActivityEntry(id, occurredAt)
       const root: Root = {
         id,
         title: draft.title.trim(),
         accent: draft.accent,
         engraving: draft.engraving,
-        updateHistory: []
+        updateHistory: [createdEntry]
       }
+      const xpLedger = [...state.xpLedger, createdEntry]
       set({
         roots: [...state.roots, root],
+        xpLedger,
+        todayXp: dailyXpTotal(xpLedger),
         create: null,
         draft: draft.quick ? state.draft : draftWithOnlySelection(state.draft),
         pickedIds: draft.quick ? state.pickedIds : [id],
@@ -910,6 +915,8 @@ export const useMastery = create<MasteryStore>((set, get) => ({
     if (draft.fromIds.some((from) => !canUseFromNode(from, state.links))) return
     if (draft.toIds.some((to) => !canUseToNode(to, state.links))) return
 
+    const occurredAt = new Date().toISOString()
+    const createdEntry = createdActivityEntry(id, occurredAt)
     const skill: Skill = {
       id,
       rootId,
@@ -922,7 +929,7 @@ export const useMastery = create<MasteryStore>((set, get) => ({
       levelReachedAt: [],
       momentum: 0,
       gates: [],
-      updateHistory: []
+      updateHistory: [createdEntry]
     }
     const links = [
       ...state.links,
@@ -940,9 +947,12 @@ export const useMastery = create<MasteryStore>((set, get) => ({
           [id]: { selected: true, minutes: 0, effort: 'moderate', note: '' }
         }
 
+    const xpLedger = [...state.xpLedger, createdEntry]
     set({
       skills: [...state.skills, skill],
       links,
+      xpLedger,
+      todayXp: dailyXpTotal(xpLedger),
       draft: nextDraft,
       create: null,
       pickedIds: draft.quick ? state.pickedIds : [id],
@@ -1046,6 +1056,18 @@ function skillAfterUpdateRemoval(
     momentum: Math.max(0, skill.momentum - momentumAwardForXp(removedEntry.xp)),
     levelReachedAt,
     updateHistory: skill.updateHistory.filter((entry) => entry.id !== entryId)
+  }
+}
+
+function createdActivityEntry(nodeId: NodeId, occurredAt: string): ActivityEntry {
+  return {
+    id: activityEntryId(occurredAt, nodeId),
+    nodeId,
+    occurredAt,
+    minutes: 0,
+    effort: 'recovery',
+    xp: 0,
+    note: 'Created'
   }
 }
 

@@ -85,7 +85,7 @@ export function DailyUpdates({ open, onClose }: DailyUpdatesProps): ReactElement
         <div>
           <span className="eyebrow">XP ledger</span>
           <h2>Daily Updates</h2>
-          <p>Every XP submission is recorded here, including updates without notes.</p>
+          <p>Created nodes and XP submissions are recorded here.</p>
         </div>
         <div className="daily-updates-overlay__summary">
           <span>
@@ -128,8 +128,8 @@ export function DailyUpdates({ open, onClose }: DailyUpdatesProps): ReactElement
 
               {group.entries.length === 0 ? (
                 <div className="daily-update-day__empty">
-                  <strong>No XP recorded today yet.</strong>
-                  <span>Your next submitted XP update will appear here.</span>
+                  <strong>No activity recorded today yet.</strong>
+                  <span>Your next created node or submitted XP update will appear here.</span>
                 </div>
               ) : (
                 <div className="daily-update-day__entries">
@@ -139,10 +139,12 @@ export function DailyUpdates({ open, onClose }: DailyUpdatesProps): ReactElement
                     const accent: RootAccent =
                       roots.find((root) => root.id === rootId)?.accent ?? 'teal'
 
+                    const created = isCreatedEntry(entry)
+
                     return (
                       <article
                         key={entry.id}
-                        className={`daily-update-entry daily-update-entry--accent-${accent}`}
+                        className={`daily-update-entry daily-update-entry--accent-${accent} ${created ? 'daily-update-entry--created' : ''}`}
                       >
                         <span className="daily-update-entry__mark" aria-hidden="true" />
                         <div className="daily-update-entry__content">
@@ -150,12 +152,20 @@ export function DailyUpdates({ open, onClose }: DailyUpdatesProps): ReactElement
                             <strong>{title}</strong>
                             <time dateTime={entry.occurredAt}>{formatTime(entry.occurredAt)}</time>
                           </div>
-                          <div className="daily-update-entry__meta">
-                            <span>{entry.minutes} min</span>
-                            <span>{formatEffort(entry.effort)}</span>
-                            <strong>+{entry.xp.toLocaleString()} XP</strong>
-                          </div>
-                          {entry.note && <p>{entry.note}</p>}
+                          {created ? (
+                            <div className="daily-update-entry__meta">
+                              <strong>Created</strong>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="daily-update-entry__meta">
+                                <span>{entry.minutes} min</span>
+                                <span>{formatEffort(entry.effort)}</span>
+                                <strong>+{entry.xp.toLocaleString()} XP</strong>
+                              </div>
+                              {entry.note && <p>{entry.note}</p>}
+                            </>
+                          )}
                         </div>
                       </article>
                     )
@@ -167,6 +177,14 @@ export function DailyUpdates({ open, onClose }: DailyUpdatesProps): ReactElement
         </div>
       </div>
     </section>
+  )
+}
+
+function isCreatedEntry(entry: ActivityEntry): boolean {
+  return (
+    entry.xp === 0 &&
+    entry.minutes === 0 &&
+    entry.note.trim().toLowerCase() === 'created'
   )
 }
 
