@@ -97,6 +97,13 @@ batch wizard:
 
  - pressing enter needs to submit an update for a node. even if the text area for daily note has focus.
  -  - shift + enter should be used for a new line in  the daily note section instead.
+ - after submitting an update, pressing ctrl causes the ui to zoom to the root node instead of the "next node"
+
+ - in daily updates, I need each update to be clickable and have node path information in it,
+ -  should be able to click on a node in the node path and zoom to it in the graph area.
+
+ - need special outlining for nodes that have been created or updated in the past 7 days.
+ -  black outline for that node should become white.
 
 ==================FINISHED============================================
 

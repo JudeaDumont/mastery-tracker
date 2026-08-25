@@ -1,7 +1,7 @@
 {
   "format": "mastery-tracker.graph",
   "schemaVersion": 7,
-  "savedAt": "2026-08-25T07:31:52.301Z",
+  "savedAt": "2026-08-25T08:05:16.337Z",
   "data": {
     "roots": [
       {
@@ -407,32 +407,6 @@
         ]
       },
       {
-        "id": "confluence",
-        "rootId": "ng",
-        "title": "Confluence",
-        "xp": 15,
-        "maxLevel": 1,
-        "levelXpRequirements": [
-          100
-        ],
-        "levelReachedAt": [
-          null
-        ],
-        "momentum": 3,
-        "gates": [],
-        "updateHistory": [
-          {
-            "id": "2026-07-28T15:18:58.290Z-confluence",
-            "nodeId": "confluence",
-            "occurredAt": "2026-07-28T15:18:58.290Z",
-            "minutes": 15,
-            "effort": "moderate",
-            "xp": 15,
-            "note": "draw.io diagrams in progress"
-          }
-        ]
-      },
-      {
         "id": "compiles-tests-live",
         "rootId": "ng",
         "title": "Compiles, Tests, Live",
@@ -506,13 +480,15 @@
         "id": "gccsj-pw-change",
         "rootId": "ng",
         "title": "GCCSJ PW Change",
-        "xp": 1,
+        "xp": 101,
         "maxLevel": 1,
         "levelXpRequirements": [
           100
         ],
-        "levelReachedAt": [],
-        "momentum": 3,
+        "levelReachedAt": [
+          "2026-08-25T07:34:18.211Z"
+        ],
+        "momentum": 11,
         "gates": [],
         "updateHistory": [
           {
@@ -525,6 +501,15 @@
             "note": "AUG 5 Deadline",
             "deadlineOn": "2026-08-11",
             "opportuneOn": "2026-07-30"
+          },
+          {
+            "id": "2026-08-25T07:34:18.211Z-gccsj-pw-change-daf3b9ef-5f3e-49fc-a9b3-89a606c8069e",
+            "nodeId": "gccsj-pw-change",
+            "occurredAt": "2026-08-25T07:34:18.211Z",
+            "minutes": 100,
+            "effort": "moderate",
+            "xp": 100,
+            "note": "done"
           }
         ]
       },
@@ -817,7 +802,7 @@
         "id": "ac",
         "rootId": "home-improvement",
         "title": "AC",
-        "xp": 0,
+        "xp": 500,
         "maxLevel": 10,
         "levelXpRequirements": [
           100,
@@ -831,8 +816,14 @@
           100,
           100
         ],
-        "levelReachedAt": [],
-        "momentum": 0,
+        "levelReachedAt": [
+          "2026-08-25T07:39:24.740Z",
+          "2026-08-25T07:39:24.740Z",
+          "2026-08-25T07:39:24.740Z",
+          "2026-08-25T07:39:24.740Z",
+          "2026-08-25T07:39:24.740Z"
+        ],
+        "momentum": 42,
         "gates": [],
         "updateHistory": []
       },
@@ -1046,17 +1037,17 @@
         "id": "vig-kafka-mtls-ticket",
         "rootId": "ng",
         "title": "Vig: Kafka MTLS ticket",
-        "xp": 50,
+        "xp": 200,
         "maxLevel": 2,
         "levelXpRequirements": [
           100,
           100
         ],
         "levelReachedAt": [
-          null,
-          null
+          "2026-08-25T07:38:26.847Z",
+          "2026-08-25T07:38:26.847Z"
         ],
-        "momentum": 4,
+        "momentum": 17,
         "gates": [],
         "updateHistory": [
           {
@@ -1111,21 +1102,6 @@
         "id": "write-blackfish-input-version",
         "rootId": "ng",
         "title": "Write blackfish input generator version",
-        "xp": 0,
-        "maxLevel": 2,
-        "levelXpRequirements": [
-          100,
-          100
-        ],
-        "levelReachedAt": [],
-        "momentum": 0,
-        "gates": [],
-        "updateHistory": []
-      },
-      {
-        "id": "pop-the-nats-stream-cap-off",
-        "rootId": "ng",
-        "title": "pop the nats stream cap off",
         "xp": 0,
         "maxLevel": 2,
         "levelXpRequirements": [
@@ -1317,21 +1293,6 @@
         ]
       },
       {
-        "id": "put-his-branch-into-cgpt",
-        "rootId": "ng",
-        "title": "Put his branch into cgpt",
-        "xp": 0,
-        "maxLevel": 2,
-        "levelXpRequirements": [
-          100,
-          100
-        ],
-        "levelReachedAt": [],
-        "momentum": 0,
-        "gates": [],
-        "updateHistory": []
-      },
-      {
         "id": "mark-poopooing-honus-for-second-job",
         "rootId": "ng",
         "title": "mark poopooing: honus for second job",
@@ -1401,21 +1362,6 @@
         ]
       },
       {
-        "id": "vig-has-branch-now",
-        "rootId": "ng",
-        "title": "Vig has branch now",
-        "xp": 0,
-        "maxLevel": 2,
-        "levelXpRequirements": [
-          100,
-          100
-        ],
-        "levelReachedAt": [],
-        "momentum": 0,
-        "gates": [],
-        "updateHistory": []
-      },
-      {
         "id": "check-email-and-wait-to-hear-back",
         "rootId": "home-improvement",
         "title": "check email and wait to hear back",
@@ -1471,13 +1417,15 @@
         "id": "check-other-manually-run-commands",
         "rootId": "ng",
         "title": "check other manually run commands",
-        "xp": 0,
+        "xp": 100,
         "maxLevel": 1,
         "levelXpRequirements": [
           100
         ],
-        "levelReachedAt": [],
-        "momentum": 0,
+        "levelReachedAt": [
+          "2026-08-25T07:35:16.927Z"
+        ],
+        "momentum": 8,
         "gates": [],
         "updateHistory": []
       },
@@ -2205,7 +2153,7 @@
         "id": "foot-work",
         "rootId": "health-wellness",
         "title": "foot work",
-        "xp": 0,
+        "xp": 50,
         "maxLevel": 5,
         "levelXpRequirements": [
           100,
@@ -2215,7 +2163,7 @@
           100
         ],
         "levelReachedAt": [],
-        "momentum": 0,
+        "momentum": 4,
         "gates": [],
         "updateHistory": []
       },
@@ -2241,7 +2189,7 @@
         "id": "juggle",
         "rootId": "health-wellness",
         "title": "juggle",
-        "xp": 0,
+        "xp": 100,
         "maxLevel": 5,
         "levelXpRequirements": [
           100,
@@ -2250,8 +2198,10 @@
           100,
           100
         ],
-        "levelReachedAt": [],
-        "momentum": 0,
+        "levelReachedAt": [
+          "2026-08-25T07:50:35.549Z"
+        ],
+        "momentum": 8,
         "gates": [],
         "updateHistory": []
       },
@@ -2259,7 +2209,7 @@
         "id": "j-off",
         "rootId": "health-wellness",
         "title": "J Off",
-        "xp": 50,
+        "xp": 90,
         "maxLevel": 5,
         "levelXpRequirements": [
           100,
@@ -2269,7 +2219,7 @@
           100
         ],
         "levelReachedAt": [],
-        "momentum": 4,
+        "momentum": 7,
         "gates": [],
         "updateHistory": [
           {
@@ -2280,6 +2230,15 @@
             "effort": "moderate",
             "xp": 50,
             "note": "- a couple, hopefully a few more"
+          },
+          {
+            "id": "2026-08-25T07:50:10.408Z-j-off-de1b9a4d-ab28-4488-b5bf-aa3a6eb6590d",
+            "nodeId": "j-off",
+            "occurredAt": "2026-08-25T07:50:10.408Z",
+            "minutes": 40,
+            "effort": "moderate",
+            "xp": 40,
+            "note": "4"
           }
         ]
       },
@@ -2395,7 +2354,7 @@
         "id": "laundry",
         "rootId": "parallelism",
         "title": "Laundry",
-        "xp": 50,
+        "xp": 100,
         "maxLevel": 5,
         "levelXpRequirements": [
           100,
@@ -2404,8 +2363,10 @@
           100,
           100
         ],
-        "levelReachedAt": [],
-        "momentum": 4,
+        "levelReachedAt": [
+          "2026-08-25T07:33:49.844Z"
+        ],
+        "momentum": 8,
         "gates": [],
         "updateHistory": []
       },
@@ -2485,7 +2446,7 @@
         "id": "cut-n",
         "rootId": "health-wellness",
         "title": "cut'n",
-        "xp": 70,
+        "xp": 100,
         "maxLevel": 5,
         "levelXpRequirements": [
           100,
@@ -2494,8 +2455,10 @@
           100,
           100
         ],
-        "levelReachedAt": [],
-        "momentum": 6,
+        "levelReachedAt": [
+          "2026-08-25T07:50:44.672Z"
+        ],
+        "momentum": 9,
         "gates": [],
         "updateHistory": []
       },
@@ -3115,6 +3078,104 @@
             "note": "Created"
           }
         ]
+      },
+      {
+        "id": "de-office",
+        "rootId": "home-improvement",
+        "title": "DE office",
+        "xp": 100,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-25T07:47:50.810Z"
+        ],
+        "momentum": 8,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T07:40:20.409Z-de-office-1209cfcd-80f5-4f2a-a857-b3951b1bcb82",
+            "nodeId": "de-office",
+            "occurredAt": "2026-08-25T07:40:20.409Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "de-carpeted-area",
+        "rootId": "home-improvement",
+        "title": "DE carpeted area",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T07:49:00.297Z-de-carpeted-area-1662e273-8594-4aaf-98ff-53b54864dae5",
+            "nodeId": "de-carpeted-area",
+            "occurredAt": "2026-08-25T07:49:00.297Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "needs-to-be-tucked-in",
+        "rootId": "observe",
+        "title": "needs to be tucked in",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T08:01:12.091Z-needs-to-be-tucked-in-74a79d1b-8f6d-421e-b4f0-c8fb95af2ead",
+            "nodeId": "needs-to-be-tucked-in",
+            "occurredAt": "2026-08-25T08:01:12.091Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "vinyl-getting-ripped-up-on-outside",
+        "rootId": "home-improvement",
+        "title": "vinyl getting ripped up on outside??",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T08:05:16.336Z-vinyl-getting-ripped-up-on-outside-08fa753c-36e2-4c38-ae80-889467b4f615",
+            "nodeId": "vinyl-getting-ripped-up-on-outside",
+            "occurredAt": "2026-08-25T08:05:16.336Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
       }
     ],
     "links": [
@@ -3157,11 +3218,6 @@
         "id": "1986-test-gemsbok-test",
         "from": "1986",
         "to": "test-gemsbok-test"
-      },
-      {
-        "id": "3619-confluence",
-        "from": "3619",
-        "to": "confluence"
       },
       {
         "id": "3619-compiles-tests-live",
@@ -3254,18 +3310,8 @@
         "to": "write-blackfish-input-version"
       },
       {
-        "id": "test-gemsbok-test-pop-the-nats-stream-cap-off",
-        "from": "test-gemsbok-test",
-        "to": "pop-the-nats-stream-cap-off"
-      },
-      {
         "id": "write-blackfish-input-version-perf-test-ajax-from-clean",
         "from": "write-blackfish-input-version",
-        "to": "perf-test-ajax-from-clean"
-      },
-      {
-        "id": "pop-the-nats-stream-cap-off-perf-test-ajax-from-clean",
-        "from": "pop-the-nats-stream-cap-off",
         "to": "perf-test-ajax-from-clean"
       },
       {
@@ -3294,11 +3340,6 @@
         "to": "lawyer-up"
       },
       {
-        "id": "vig-kafka-mtls-ticket-put-his-branch-into-cgpt",
-        "from": "vig-kafka-mtls-ticket",
-        "to": "put-his-branch-into-cgpt"
-      },
-      {
         "id": "admin-mark-poopooing-honus-for-second-job",
         "from": "admin",
         "to": "mark-poopooing-honus-for-second-job"
@@ -3312,11 +3353,6 @@
         "id": "mark-poopooing-honus-for-second-job-perf-related",
         "from": "mark-poopooing-honus-for-second-job",
         "to": "perf-related"
-      },
-      {
-        "id": "vig-kafka-mtls-ticket-vig-has-branch-now",
-        "from": "vig-kafka-mtls-ticket",
-        "to": "vig-has-branch-now"
       },
       {
         "id": "lawyer-up-check-email-and-wait-to-hear-back",
@@ -3632,6 +3668,26 @@
         "id": "christmas-2026-traveling-with-her-brother-to-some-island-in-december",
         "from": "christmas-2026",
         "to": "traveling-with-her-brother-to-some-island-in-december"
+      },
+      {
+        "id": "de-the-couch-de-office",
+        "from": "de-the-couch",
+        "to": "de-office"
+      },
+      {
+        "id": "de-the-couch-de-carpeted-area",
+        "from": "de-the-couch",
+        "to": "de-carpeted-area"
+      },
+      {
+        "id": "chickenisms-needs-to-be-tucked-in",
+        "from": "chickenisms",
+        "to": "needs-to-be-tucked-in"
+      },
+      {
+        "id": "build-catio-vinyl-getting-ripped-up-on-outside",
+        "from": "build-catio",
+        "to": "vinyl-getting-ripped-up-on-outside"
       }
     ],
     "xpLedger": [
@@ -3752,15 +3808,6 @@
         "effort": "moderate",
         "xp": 15,
         "note": "research what can be done about this"
-      },
-      {
-        "id": "2026-07-28T15:18:58.290Z-confluence",
-        "nodeId": "confluence",
-        "occurredAt": "2026-07-28T15:18:58.290Z",
-        "minutes": 15,
-        "effort": "moderate",
-        "xp": 15,
-        "note": "draw.io diagrams in progress"
       },
       {
         "id": "2026-07-28T15:21:01.777Z-compiles-tests-live",
@@ -4585,9 +4632,135 @@
         "effort": "moderate",
         "xp": 50,
         "note": ""
+      },
+      {
+        "id": "2026-08-25T07:33:49.844Z-laundry-92b8e9ea-d3d8-419b-9d71-3d60c4ad11de",
+        "nodeId": "laundry",
+        "occurredAt": "2026-08-25T07:33:49.844Z",
+        "minutes": 50,
+        "effort": "moderate",
+        "xp": 50,
+        "note": ""
+      },
+      {
+        "id": "2026-08-25T07:34:18.211Z-gccsj-pw-change-daf3b9ef-5f3e-49fc-a9b3-89a606c8069e",
+        "nodeId": "gccsj-pw-change",
+        "occurredAt": "2026-08-25T07:34:18.211Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": "done"
+      },
+      {
+        "id": "2026-08-25T07:35:16.927Z-check-other-manually-run-commands-3b618fcf-734c-48f8-b9d6-170b2181923b",
+        "nodeId": "check-other-manually-run-commands",
+        "occurredAt": "2026-08-25T07:35:16.927Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": ""
+      },
+      {
+        "id": "2026-08-25T07:38:26.847Z-vig-kafka-mtls-ticket-258f4700-d8f5-410a-99b6-b07193b9b161",
+        "nodeId": "vig-kafka-mtls-ticket",
+        "occurredAt": "2026-08-25T07:38:26.847Z",
+        "minutes": 150,
+        "effort": "moderate",
+        "xp": 150,
+        "note": ""
+      },
+      {
+        "id": "2026-08-25T07:39:24.740Z-ac-8e655192-2cb0-4145-bbb0-68a4829f9414",
+        "nodeId": "ac",
+        "occurredAt": "2026-08-25T07:39:24.740Z",
+        "minutes": 500,
+        "effort": "moderate",
+        "xp": 500,
+        "note": ""
+      },
+      {
+        "id": "2026-08-25T07:40:20.409Z-de-office-1209cfcd-80f5-4f2a-a857-b3951b1bcb82",
+        "nodeId": "de-office",
+        "occurredAt": "2026-08-25T07:40:20.409Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T07:47:50.810Z-de-office-930a90c2-0d80-496e-9270-f39d1c7f71a0",
+        "nodeId": "de-office",
+        "occurredAt": "2026-08-25T07:47:50.810Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": ""
+      },
+      {
+        "id": "2026-08-25T07:49:00.297Z-de-carpeted-area-1662e273-8594-4aaf-98ff-53b54864dae5",
+        "nodeId": "de-carpeted-area",
+        "occurredAt": "2026-08-25T07:49:00.297Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T07:50:10.408Z-j-off-de1b9a4d-ab28-4488-b5bf-aa3a6eb6590d",
+        "nodeId": "j-off",
+        "occurredAt": "2026-08-25T07:50:10.408Z",
+        "minutes": 40,
+        "effort": "moderate",
+        "xp": 40,
+        "note": "4"
+      },
+      {
+        "id": "2026-08-25T07:50:26.413Z-foot-work-29366f97-f794-431b-9de5-90c5405355f0",
+        "nodeId": "foot-work",
+        "occurredAt": "2026-08-25T07:50:26.413Z",
+        "minutes": 50,
+        "effort": "moderate",
+        "xp": 50,
+        "note": ""
+      },
+      {
+        "id": "2026-08-25T07:50:35.549Z-juggle-0638bad9-2a36-4852-90d6-ada6854dd061",
+        "nodeId": "juggle",
+        "occurredAt": "2026-08-25T07:50:35.549Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": ""
+      },
+      {
+        "id": "2026-08-25T07:50:44.672Z-cut-n-24581d58-04e1-4106-b1c9-f2ab206be71c",
+        "nodeId": "cut-n",
+        "occurredAt": "2026-08-25T07:50:44.672Z",
+        "minutes": 30,
+        "effort": "moderate",
+        "xp": 30,
+        "note": ""
+      },
+      {
+        "id": "2026-08-25T08:01:12.091Z-needs-to-be-tucked-in-74a79d1b-8f6d-421e-b4f0-c8fb95af2ead",
+        "nodeId": "needs-to-be-tucked-in",
+        "occurredAt": "2026-08-25T08:01:12.091Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T08:05:16.336Z-vinyl-getting-ripped-up-on-outside-08fa753c-36e2-4c38-ae80-889467b4f615",
+        "nodeId": "vinyl-getting-ripped-up-on-outside",
+        "occurredAt": "2026-08-25T08:05:16.336Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
       }
     ],
-    "todayXp": 151,
+    "todayXp": 1371,
     "levelDefaults": {
       "levelStepXp": 100,
       "maxLevel": 1
