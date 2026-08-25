@@ -105,6 +105,8 @@ batch wizard:
  - need special outlining for nodes that have been created or updated in the past 7 days.
  -  black outline for that node should become white.
 
+ - ng: the plan is to have an image that comes up with the base load and then goes down, and another separate pod that is long lived, processing kafka json
+
 ==================FINISHED============================================
 
 - !!!!! creating a node needs to put a default "created" update on it
