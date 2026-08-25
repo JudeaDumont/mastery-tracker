@@ -1,7 +1,7 @@
 {
   "format": "mastery-tracker.graph",
   "schemaVersion": 7,
-  "savedAt": "2026-08-25T07:13:32.067Z",
+  "savedAt": "2026-08-25T07:31:52.301Z",
   "data": {
     "roots": [
       {
@@ -52,6 +52,23 @@
         "accent": "rose",
         "engraving": "brain",
         "updateHistory": []
+      },
+      {
+        "id": "observe",
+        "title": "Observe",
+        "accent": "aqua",
+        "engraving": "orbit",
+        "updateHistory": [
+          {
+            "id": "2026-08-25T07:20:58.123Z-observe-40fca66b-d98e-4dd5-9c2f-153ede2fe18d",
+            "nodeId": "observe",
+            "occurredAt": "2026-08-25T07:20:58.123Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
       }
     ],
     "skills": [
@@ -2360,7 +2377,7 @@
         "id": "dishes",
         "rootId": "parallelism",
         "title": "Dishes",
-        "xp": 0,
+        "xp": 50,
         "maxLevel": 5,
         "levelXpRequirements": [
           100,
@@ -2370,7 +2387,7 @@
           100
         ],
         "levelReachedAt": [],
-        "momentum": 0,
+        "momentum": 4,
         "gates": [],
         "updateHistory": []
       },
@@ -2557,7 +2574,7 @@
       {
         "id": "gone-08-26-08-27",
         "rootId": "chicken",
-        "title": "gone 08/26 - 08/27",
+        "title": "gone 08/28 - 08/29",
         "xp": 0,
         "maxLevel": 5,
         "levelXpRequirements": [
@@ -2805,6 +2822,297 @@
             "effort": "moderate",
             "xp": 100,
             "note": "done"
+          }
+        ]
+      },
+      {
+        "id": "attitude",
+        "rootId": "observe",
+        "title": "Attitude",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T07:21:26.685Z-attitude-e92e5897-430d-4017-afdc-7dc91f97d09a",
+            "nodeId": "attitude",
+            "occurredAt": "2026-08-25T07:21:26.685Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "mantra",
+        "rootId": "observe",
+        "title": "Mantra",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T07:22:02.395Z-mantra-8535350f-1bd6-4886-9ebe-61dabe15f09a",
+            "nodeId": "mantra",
+            "occurredAt": "2026-08-25T07:22:02.395Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "take-the-load-off",
+        "rootId": "observe",
+        "title": "take the load off",
+        "xp": 50,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 4,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T07:22:19.768Z-take-the-load-off-d6c206a6-0a29-421d-bdea-33aec930a190",
+            "nodeId": "take-the-load-off",
+            "occurredAt": "2026-08-25T07:22:19.768Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          },
+          {
+            "id": "2026-08-25T07:29:40.766Z-take-the-load-off-e46c81a9-ba0c-4b49-ba99-f28164adc685",
+            "nodeId": "take-the-load-off",
+            "occurredAt": "2026-08-25T07:29:40.766Z",
+            "minutes": 50,
+            "effort": "moderate",
+            "xp": 50,
+            "note": "working particularly well while having to stay up to get on an ng appropriate schedule and working ng while cleaning everything"
+          }
+        ]
+      },
+      {
+        "id": "take-a-wrap-off",
+        "rootId": "observe",
+        "title": "take a wrap off",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T07:23:21.814Z-take-a-wrap-off-e6f453f2-38ce-44d7-9570-01179a547fe3",
+            "nodeId": "take-a-wrap-off",
+            "occurredAt": "2026-08-25T07:23:21.814Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "imagine-laying-down-on-your-phone",
+        "rootId": "observe",
+        "title": "imagine laying down on your phone",
+        "xp": 50,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 4,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T07:23:45.045Z-imagine-laying-down-on-your-phone-a00fab05-9041-47fd-b315-c65ea5bb0667",
+            "nodeId": "imagine-laying-down-on-your-phone",
+            "occurredAt": "2026-08-25T07:23:45.045Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          },
+          {
+            "id": "2026-08-25T07:30:56.138Z-imagine-laying-down-on-your-phone-35fd9ae1-ed7e-46b5-aadd-8622f1ee58b5",
+            "nodeId": "imagine-laying-down-on-your-phone",
+            "occurredAt": "2026-08-25T07:30:56.138Z",
+            "minutes": 50,
+            "effort": "moderate",
+            "xp": 50,
+            "note": "working particularly well 08/25/2026 for getting my head out of \"straight bitch\" attitude"
+          }
+        ]
+      },
+      {
+        "id": "imagine-going-to-sleep",
+        "rootId": "observe",
+        "title": "imagine going to sleep",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T07:23:59.699Z-imagine-going-to-sleep-428bf922-7571-428b-85b2-e195a6b65480",
+            "nodeId": "imagine-going-to-sleep",
+            "occurredAt": "2026-08-25T07:23:59.699Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "chickenisms",
+        "rootId": "observe",
+        "title": "Chickenisms",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T07:24:50.029Z-chickenisms-401c3e64-1e49-412c-a590-4cd31f517847",
+            "nodeId": "chickenisms",
+            "occurredAt": "2026-08-25T07:24:50.029Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "shows-me-stuff-for-no-reason",
+        "rootId": "observe",
+        "title": "shows me stuff for no reason",
+        "xp": 1,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 3,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T07:25:29.797Z-shows-me-stuff-for-no-reason-b7a48276-7a96-4703-be86-16e25584917c",
+            "nodeId": "shows-me-stuff-for-no-reason",
+            "occurredAt": "2026-08-25T07:25:29.797Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          },
+          {
+            "id": "2026-08-25T07:26:35.107Z-shows-me-stuff-for-no-reason-f5e47fc2-d2d3-4a9d-8661-a7aee7fc7ce2",
+            "nodeId": "shows-me-stuff-for-no-reason",
+            "occurredAt": "2026-08-25T07:26:35.107Z",
+            "minutes": 1,
+            "effort": "moderate",
+            "xp": 1,
+            "note": "wanted to go to some island instead of hawaii because it was cheaper. showed me a picture the amrketing team put up of the building on the shoreline. like how the fuck is that supposed to help me make a decision."
+          }
+        ]
+      },
+      {
+        "id": "applying-for-remote-job",
+        "rootId": "chicken",
+        "title": "applying for remote job",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T07:27:04.991Z-applying-for-remote-job-ca07cdfd-a869-4c82-bb30-335d3deaa89c",
+            "nodeId": "applying-for-remote-job",
+            "occurredAt": "2026-08-25T07:27:04.991Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "wants-more-money",
+        "rootId": "chicken",
+        "title": "wants more money",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T07:27:54.269Z-wants-more-money-9b6581c9-273d-4ba9-8ea3-d6ae5a7ecb1d",
+            "nodeId": "wants-more-money",
+            "occurredAt": "2026-08-25T07:27:54.269Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "traveling-with-her-brother-to-some-island-in-december",
+        "rootId": "chicken",
+        "title": "traveling with her brother to some island in december",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-25T07:28:19.584Z-traveling-with-her-brother-to-some-island-in-december-f5d4b55b-a471-49ba-9699-36eb43e822d4",
+            "nodeId": "traveling-with-her-brother-to-some-island-in-december",
+            "occurredAt": "2026-08-25T07:28:19.584Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
           }
         ]
       }
@@ -3269,6 +3577,61 @@
         "id": "get-rid-of-insects-de-the-couch",
         "from": "get-rid-of-insects",
         "to": "de-the-couch"
+      },
+      {
+        "id": "observe-attitude",
+        "from": "observe",
+        "to": "attitude"
+      },
+      {
+        "id": "attitude-mantra",
+        "from": "attitude",
+        "to": "mantra"
+      },
+      {
+        "id": "mantra-take-the-load-off",
+        "from": "mantra",
+        "to": "take-the-load-off"
+      },
+      {
+        "id": "mantra-take-a-wrap-off",
+        "from": "mantra",
+        "to": "take-a-wrap-off"
+      },
+      {
+        "id": "mantra-imagine-laying-down-on-your-phone",
+        "from": "mantra",
+        "to": "imagine-laying-down-on-your-phone"
+      },
+      {
+        "id": "mantra-imagine-going-to-sleep",
+        "from": "mantra",
+        "to": "imagine-going-to-sleep"
+      },
+      {
+        "id": "observe-chickenisms",
+        "from": "observe",
+        "to": "chickenisms"
+      },
+      {
+        "id": "chickenisms-shows-me-stuff-for-no-reason",
+        "from": "chickenisms",
+        "to": "shows-me-stuff-for-no-reason"
+      },
+      {
+        "id": "chicken-applying-for-remote-job",
+        "from": "chicken",
+        "to": "applying-for-remote-job"
+      },
+      {
+        "id": "applying-for-remote-job-wants-more-money",
+        "from": "applying-for-remote-job",
+        "to": "wants-more-money"
+      },
+      {
+        "id": "christmas-2026-traveling-with-her-brother-to-some-island-in-december",
+        "from": "christmas-2026",
+        "to": "traveling-with-her-brother-to-some-island-in-december"
       }
     ],
     "xpLedger": [
@@ -4078,9 +4441,153 @@
         "effort": "moderate",
         "xp": 100,
         "note": "done"
+      },
+      {
+        "id": "2026-08-25T07:20:58.123Z-observe-40fca66b-d98e-4dd5-9c2f-153ede2fe18d",
+        "nodeId": "observe",
+        "occurredAt": "2026-08-25T07:20:58.123Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T07:21:26.685Z-attitude-e92e5897-430d-4017-afdc-7dc91f97d09a",
+        "nodeId": "attitude",
+        "occurredAt": "2026-08-25T07:21:26.685Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T07:22:02.395Z-mantra-8535350f-1bd6-4886-9ebe-61dabe15f09a",
+        "nodeId": "mantra",
+        "occurredAt": "2026-08-25T07:22:02.395Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T07:22:19.768Z-take-the-load-off-d6c206a6-0a29-421d-bdea-33aec930a190",
+        "nodeId": "take-the-load-off",
+        "occurredAt": "2026-08-25T07:22:19.768Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T07:23:21.814Z-take-a-wrap-off-e6f453f2-38ce-44d7-9570-01179a547fe3",
+        "nodeId": "take-a-wrap-off",
+        "occurredAt": "2026-08-25T07:23:21.814Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T07:23:45.045Z-imagine-laying-down-on-your-phone-a00fab05-9041-47fd-b315-c65ea5bb0667",
+        "nodeId": "imagine-laying-down-on-your-phone",
+        "occurredAt": "2026-08-25T07:23:45.045Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T07:23:59.699Z-imagine-going-to-sleep-428bf922-7571-428b-85b2-e195a6b65480",
+        "nodeId": "imagine-going-to-sleep",
+        "occurredAt": "2026-08-25T07:23:59.699Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T07:24:50.029Z-chickenisms-401c3e64-1e49-412c-a590-4cd31f517847",
+        "nodeId": "chickenisms",
+        "occurredAt": "2026-08-25T07:24:50.029Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T07:25:29.797Z-shows-me-stuff-for-no-reason-b7a48276-7a96-4703-be86-16e25584917c",
+        "nodeId": "shows-me-stuff-for-no-reason",
+        "occurredAt": "2026-08-25T07:25:29.797Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T07:26:35.107Z-shows-me-stuff-for-no-reason-f5e47fc2-d2d3-4a9d-8661-a7aee7fc7ce2",
+        "nodeId": "shows-me-stuff-for-no-reason",
+        "occurredAt": "2026-08-25T07:26:35.107Z",
+        "minutes": 1,
+        "effort": "moderate",
+        "xp": 1,
+        "note": "wanted to go to some island instead of hawaii because it was cheaper. showed me a picture the amrketing team put up of the building on the shoreline. like how the fuck is that supposed to help me make a decision."
+      },
+      {
+        "id": "2026-08-25T07:27:04.991Z-applying-for-remote-job-ca07cdfd-a869-4c82-bb30-335d3deaa89c",
+        "nodeId": "applying-for-remote-job",
+        "occurredAt": "2026-08-25T07:27:04.991Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T07:27:54.269Z-wants-more-money-9b6581c9-273d-4ba9-8ea3-d6ae5a7ecb1d",
+        "nodeId": "wants-more-money",
+        "occurredAt": "2026-08-25T07:27:54.269Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T07:28:19.584Z-traveling-with-her-brother-to-some-island-in-december-f5d4b55b-a471-49ba-9699-36eb43e822d4",
+        "nodeId": "traveling-with-her-brother-to-some-island-in-december",
+        "occurredAt": "2026-08-25T07:28:19.584Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-25T07:29:40.766Z-take-the-load-off-e46c81a9-ba0c-4b49-ba99-f28164adc685",
+        "nodeId": "take-the-load-off",
+        "occurredAt": "2026-08-25T07:29:40.766Z",
+        "minutes": 50,
+        "effort": "moderate",
+        "xp": 50,
+        "note": "working particularly well while having to stay up to get on an ng appropriate schedule and working ng while cleaning everything"
+      },
+      {
+        "id": "2026-08-25T07:30:56.138Z-imagine-laying-down-on-your-phone-35fd9ae1-ed7e-46b5-aadd-8622f1ee58b5",
+        "nodeId": "imagine-laying-down-on-your-phone",
+        "occurredAt": "2026-08-25T07:30:56.138Z",
+        "minutes": 50,
+        "effort": "moderate",
+        "xp": 50,
+        "note": "working particularly well 08/25/2026 for getting my head out of \"straight bitch\" attitude"
+      },
+      {
+        "id": "2026-08-25T07:31:52.300Z-dishes-f961bf65-0212-4db2-a3ce-7956228c10cd",
+        "nodeId": "dishes",
+        "occurredAt": "2026-08-25T07:31:52.300Z",
+        "minutes": 50,
+        "effort": "moderate",
+        "xp": 50,
+        "note": ""
       }
     ],
-    "todayXp": 0,
+    "todayXp": 151,
     "levelDefaults": {
       "levelStepXp": 100,
       "maxLevel": 1

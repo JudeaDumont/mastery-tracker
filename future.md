@@ -95,10 +95,12 @@ batch wizard:
 
  - engravings need to fill out the background of the tree and a little further.
 
- - !!!!! creating a node needs to put a default "created" update on it
-
+ - pressing enter needs to submit an update for a node. even if the text area for daily note has focus.
+ -  - shift + enter should be used for a new line in  the daily note section instead.
 
 ==================FINISHED============================================
+
+- !!!!! creating a node needs to put a default "created" update on it
 
 - should be able to use the whole flow with just the key board
 - ctrl + n = new node, type name, enter, created, no node selection change,
