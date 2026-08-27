@@ -48,7 +48,8 @@ const RETARGETED_SECOND_CLICK_MAX_DISTANCE_PX = 36
 const HISTORY_FOCUS_ANIMATION_MS = 300
 const CAMERA_DEBUG_PREFIX = '[camera-debug]'
 const CAMERA_DEBUG_EVENT = 'mastery-camera-debug'
-const RECENT_ACTIVITY_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
+const FRESH_ACTIVITY_WINDOW_MS = 24 * 60 * 60 * 1000
+const RECENT_ACTIVITY_WINDOW_MS = 7 * FRESH_ACTIVITY_WINDOW_MS
 
 export interface GraphViewRequest {
   rootId?: RootId
@@ -330,7 +331,8 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
           (entry) => entry.nodeId === root.id && Boolean(entry.opportuneOn)
         ),
         activitySelected: pickedIds.includes(root.id),
-        recentActivity: hasRecentActivity(root.id, xpLedger),
+        recentActivity: hasActivityWithin(root.id, xpLedger, RECENT_ACTIVITY_WINDOW_MS),
+        freshActivity: hasActivityWithin(root.id, xpLedger, FRESH_ACTIVITY_WINDOW_MS),
         visual: visualFor(
           root.id,
           root.id,
@@ -369,7 +371,8 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
           (entry) => entry.nodeId === skill.id && Boolean(entry.opportuneOn)
         ),
         activitySelected: pickedIds.includes(skill.id),
-        recentActivity: hasRecentActivity(skill.id, xpLedger),
+        recentActivity: hasActivityWithin(skill.id, xpLedger, RECENT_ACTIVITY_WINDOW_MS),
+        freshActivity: hasActivityWithin(skill.id, xpLedger, FRESH_ACTIVITY_WINDOW_MS),
         visual: visualFor(
           skill.id,
           skill.rootId,
@@ -403,6 +406,7 @@ export function Graph({ viewRequest }: GraphProps): ReactElement {
             opportuneEntries: [],
             currentLevelProgress: 0,
             recentActivity: false,
+            freshActivity: false,
             visual: 'preview'
           })
         ]
@@ -1461,8 +1465,12 @@ function cumulativeXpTargets(requirements: number[], maxLevel: number): number[]
   })
 }
 
-function hasRecentActivity(nodeId: NodeId, xpLedger: ActivityEntry[]): boolean {
-  const cutoff = Date.now() - RECENT_ACTIVITY_WINDOW_MS
+function hasActivityWithin(
+  nodeId: NodeId,
+  xpLedger: ActivityEntry[],
+  windowMs: number
+): boolean {
+  const cutoff = Date.now() - windowMs
 
   return xpLedger.some((entry) => {
     if (entry.nodeId !== nodeId) return false

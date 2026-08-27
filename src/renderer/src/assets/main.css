@@ -366,6 +366,18 @@ button { color: inherit; }
     0 0 0 13px rgba(255, 255, 255, .98),
     0 0 15px rgba(255, 255, 255, .46);
 }
+.node--fresh-activity {
+  box-shadow:
+    0 0 0 6px rgba(255, 66, 84, 1),
+    0 0 12px rgba(255, 50, 72, .72),
+    0 0 24px rgba(255, 50, 72, .28);
+}
+.node--root.node--fresh-activity {
+  box-shadow:
+    0 0 0 13px rgba(255, 66, 84, 1),
+    0 0 16px rgba(255, 50, 72, .76),
+    0 0 30px rgba(255, 50, 72, .3);
+}
 .node--root .level-ring { transform: scale(1.14); z-index: 2; }
 .node--root .node-core {
   position: relative;

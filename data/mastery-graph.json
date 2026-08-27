@@ -1,7 +1,7 @@
 {
   "format": "mastery-tracker.graph",
   "schemaVersion": 7,
-  "savedAt": "2026-08-25T16:14:15.482Z",
+  "savedAt": "2026-08-27T13:38:47.547Z",
   "data": {
     "roots": [
       {
@@ -669,29 +669,33 @@
         "id": "deadlift",
         "rootId": "health-wellness",
         "title": "Deadlift",
-        "xp": 606,
+        "xp": 1131,
         "maxLevel": 10,
         "levelXpRequirements": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          5000,
+          5000,
+          5000,
+          5000,
+          5000,
+          5000,
+          5000,
+          5000,
+          5000,
+          5000
         ],
         "levelReachedAt": [
-          "2026-07-31T12:06:21.546Z",
-          "2026-08-23T12:11:47.634Z",
-          "2026-08-23T12:11:47.634Z",
-          "2026-08-23T12:11:47.634Z",
-          "2026-08-23T12:11:47.634Z",
-          "2026-08-23T12:11:47.634Z"
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
         ],
-        "momentum": 56,
+        "momentum": 100,
         "gates": [],
         "updateHistory": [
           {
@@ -720,6 +724,15 @@
             "effort": "moderate",
             "xp": 1,
             "note": "-525"
+          },
+          {
+            "id": "2026-08-26T08:38:44.085Z-deadlift-c6bf432b-7714-4c34-8fd8-d97e661fdf05",
+            "nodeId": "deadlift",
+            "occurredAt": "2026-08-26T08:38:44.085Z",
+            "minutes": 525,
+            "effort": "moderate",
+            "xp": 525,
+            "note": "525"
           }
         ]
       },
@@ -2079,7 +2092,7 @@
         "id": "walk",
         "rootId": "health-wellness",
         "title": "walk",
-        "xp": 45,
+        "xp": 48,
         "maxLevel": 5,
         "levelXpRequirements": [
           100,
@@ -2089,7 +2102,7 @@
           100
         ],
         "levelReachedAt": [],
-        "momentum": 4,
+        "momentum": 7,
         "gates": [],
         "updateHistory": [
           {
@@ -2100,6 +2113,15 @@
             "effort": "moderate",
             "xp": 45,
             "note": "lots of walking during lifts"
+          },
+          {
+            "id": "2026-08-26T08:39:31.479Z-walk-491b109f-d5d8-423c-9f10-115ff2eb3744",
+            "nodeId": "walk",
+            "occurredAt": "2026-08-26T08:39:31.479Z",
+            "minutes": 3,
+            "effort": "moderate",
+            "xp": 3,
+            "note": "3"
           }
         ]
       },
@@ -2189,7 +2211,7 @@
         "id": "juggle",
         "rootId": "health-wellness",
         "title": "juggle",
-        "xp": 100,
+        "xp": 105,
         "maxLevel": 5,
         "levelXpRequirements": [
           100,
@@ -2201,15 +2223,25 @@
         "levelReachedAt": [
           "2026-08-25T07:50:35.549Z"
         ],
-        "momentum": 8,
+        "momentum": 11,
         "gates": [],
-        "updateHistory": []
+        "updateHistory": [
+          {
+            "id": "2026-08-26T14:36:28.160Z-juggle-a82476cd-7c11-4cf9-bd5d-00e64bb53d2b",
+            "nodeId": "juggle",
+            "occurredAt": "2026-08-26T14:36:28.160Z",
+            "minutes": 5,
+            "effort": "moderate",
+            "xp": 5,
+            "note": "5"
+          }
+        ]
       },
       {
         "id": "j-off",
         "rootId": "health-wellness",
         "title": "J Off",
-        "xp": 90,
+        "xp": 93,
         "maxLevel": 5,
         "levelXpRequirements": [
           100,
@@ -2219,7 +2251,7 @@
           100
         ],
         "levelReachedAt": [],
-        "momentum": 7,
+        "momentum": 10,
         "gates": [],
         "updateHistory": [
           {
@@ -2239,6 +2271,15 @@
             "effort": "moderate",
             "xp": 40,
             "note": "4"
+          },
+          {
+            "id": "2026-08-26T08:39:07.884Z-j-off-b06c9dc3-5c09-4271-8881-de1ad8f82583",
+            "nodeId": "j-off",
+            "occurredAt": "2026-08-26T08:39:07.884Z",
+            "minutes": 3,
+            "effort": "moderate",
+            "xp": 3,
+            "note": "3"
           }
         ]
       },
@@ -2710,17 +2751,15 @@
         "id": "new-baseline-without-test-ng",
         "rootId": "ng",
         "title": "new baseline without test-ng",
-        "xp": 1,
-        "maxLevel": 5,
+        "xp": 101,
+        "maxLevel": 1,
         "levelXpRequirements": [
-          100,
-          100,
-          100,
-          100,
           100
         ],
-        "levelReachedAt": [],
-        "momentum": 3,
+        "levelReachedAt": [
+          "2026-08-27T13:30:17.213Z"
+        ],
+        "momentum": 11,
         "gates": [],
         "updateHistory": [
           {
@@ -3181,13 +3220,15 @@
         "id": "kafka-ui-produce-json-to-translate-input",
         "rootId": "ng",
         "title": "kafka ui produce json to translate input",
-        "xp": 0,
+        "xp": 100,
         "maxLevel": 1,
         "levelXpRequirements": [
           100
         ],
-        "levelReachedAt": [],
-        "momentum": 0,
+        "levelReachedAt": [
+          "2026-08-27T13:35:27.508Z"
+        ],
+        "momentum": 8,
         "gates": [],
         "updateHistory": [
           {
@@ -3198,6 +3239,24 @@
             "effort": "recovery",
             "xp": 0,
             "note": "Created"
+          },
+          {
+            "id": "2026-08-26T08:23:21.518Z-kafka-ui-produce-json-to-translate-input-598603c4-235c-4b4c-9222-474252d45d5e",
+            "nodeId": "kafka-ui-produce-json-to-translate-input",
+            "occurredAt": "2026-08-26T08:23:21.518Z",
+            "minutes": 50,
+            "effort": "moderate",
+            "xp": 50,
+            "note": "working through this, must recreate artemis app in juno"
+          },
+          {
+            "id": "2026-08-27T13:35:27.508Z-kafka-ui-produce-json-to-translate-input-cff996b4-5e10-4f39-a22f-36e3fd97c2d6",
+            "nodeId": "kafka-ui-produce-json-to-translate-input",
+            "occurredAt": "2026-08-27T13:35:27.508Z",
+            "minutes": 50,
+            "effort": "moderate",
+            "xp": 50,
+            "note": "success"
           }
         ]
       },
@@ -3218,30 +3277,6 @@
             "id": "2026-08-25T16:11:38.043Z-test-whole-system-4282194c-1751-46bc-ac72-8b91c10039e7",
             "nodeId": "test-whole-system",
             "occurredAt": "2026-08-25T16:11:38.043Z",
-            "minutes": 0,
-            "effort": "recovery",
-            "xp": 0,
-            "note": "Created"
-          }
-        ]
-      },
-      {
-        "id": "incorporate-denisses-kafka-envelope-generator",
-        "rootId": "ng",
-        "title": "incorporate denisses kafka envelope generator",
-        "xp": 0,
-        "maxLevel": 1,
-        "levelXpRequirements": [
-          100
-        ],
-        "levelReachedAt": [],
-        "momentum": 0,
-        "gates": [],
-        "updateHistory": [
-          {
-            "id": "2026-08-25T16:11:59.114Z-incorporate-denisses-kafka-envelope-generator-142ed85a-e725-4b3c-b7bb-57a47d481e82",
-            "nodeId": "incorporate-denisses-kafka-envelope-generator",
-            "occurredAt": "2026-08-25T16:11:59.114Z",
             "minutes": 0,
             "effort": "recovery",
             "xp": 0,
@@ -3274,22 +3309,68 @@
         ]
       },
       {
-        "id": "denisses-branch-merged-into-4530",
+        "id": "recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps",
         "rootId": "ng",
-        "title": "denisses branch merged into 4530",
-        "xp": 0,
+        "title": "recreating artemis app in juno under marks snapshot of argo apps",
+        "xp": 100,
         "maxLevel": 1,
         "levelXpRequirements": [
           100
         ],
-        "levelReachedAt": [],
-        "momentum": 0,
+        "levelReachedAt": [
+          "2026-08-26T14:35:51.055Z"
+        ],
+        "momentum": 9,
         "gates": [],
         "updateHistory": [
           {
-            "id": "2026-08-25T16:13:55.336Z-denisses-branch-merged-into-4530-f4080ad7-5fc0-4d93-9d10-e92ca5f59680",
-            "nodeId": "denisses-branch-merged-into-4530",
-            "occurredAt": "2026-08-25T16:13:55.336Z",
+            "id": "2026-08-26T08:23:45.636Z-recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps-9a3385c8-df71-436b-9c2a-f04b2fc5a016",
+            "nodeId": "recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps",
+            "occurredAt": "2026-08-26T08:23:45.636Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          },
+          {
+            "id": "2026-08-26T08:24:03.157Z-recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps-c7b7bedf-4644-4491-94f2-b9de851169ff",
+            "nodeId": "recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps",
+            "occurredAt": "2026-08-26T08:24:03.157Z",
+            "minutes": 33,
+            "effort": "moderate",
+            "xp": 33,
+            "note": "deleted"
+          },
+          {
+            "id": "2026-08-26T14:35:51.055Z-recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps-410525ec-de71-40a8-88de-2af3567a2e11",
+            "nodeId": "recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps",
+            "occurredAt": "2026-08-26T14:35:51.055Z",
+            "minutes": 67,
+            "effort": "moderate",
+            "xp": 67,
+            "note": "didnt work"
+          }
+        ]
+      },
+      {
+        "id": "recreating-artemis-app-with-regular-gccsj-scdf-workloads-missing",
+        "rootId": "ng",
+        "title": "recreating artemis app with regular gccsj, scdf workloads missing",
+        "xp": 100,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-27T13:35:13.524Z"
+        ],
+        "momentum": 8,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-26T14:35:32.373Z-recreating-artemis-app-with-regular-gccsj-scdf-workloads-missing-e4ff7944-6c0d-4a84-89e9-9ab043ec4d27",
+            "nodeId": "recreating-artemis-app-with-regular-gccsj-scdf-workloads-missing",
+            "occurredAt": "2026-08-26T14:35:32.373Z",
             "minutes": 0,
             "effort": "recovery",
             "xp": 0,
@@ -3298,9 +3379,9 @@
         ]
       },
       {
-        "id": "deploy-into-same-setup",
+        "id": "meeting-notes-for-fabric-semantics-in-snapshots",
         "rootId": "ng",
-        "title": "deploy into same setup",
+        "title": "meeting notes for fabric semantics in snapshots",
         "xp": 0,
         "maxLevel": 1,
         "levelXpRequirements": [
@@ -3311,9 +3392,157 @@
         "gates": [],
         "updateHistory": [
           {
-            "id": "2026-08-25T16:14:15.482Z-deploy-into-same-setup-9744914a-e448-490c-a64c-b03bee95abaa",
-            "nodeId": "deploy-into-same-setup",
-            "occurredAt": "2026-08-25T16:14:15.482Z",
+            "id": "2026-08-26T14:37:54.599Z-meeting-notes-for-fabric-semantics-in-snapshots-014af49d-0983-4e22-bae0-8434f4c62664",
+            "nodeId": "meeting-notes-for-fabric-semantics-in-snapshots",
+            "occurredAt": "2026-08-26T14:37:54.599Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "in-october-will-also-be-visiting-alba",
+        "rootId": "chicken",
+        "title": "In october will also be visiting alba",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-27T06:21:59.059Z-in-october-will-also-be-visiting-alba-2043ce67-0f29-494d-9295-5742d315ea4f",
+            "nodeId": "in-october-will-also-be-visiting-alba",
+            "occurredAt": "2026-08-27T06:21:59.059Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "solve-3231-and-4530-compatibility",
+        "rootId": "ng",
+        "title": "solve 3231 and 4530 compatibility",
+        "xp": 100,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-27T13:38:47.546Z"
+        ],
+        "momentum": 8,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-27T13:26:45.669Z-solve-3231-and-4530-compatibility-f82a16ae-ae7d-4df9-a955-ab58a25503ce",
+            "nodeId": "solve-3231-and-4530-compatibility",
+            "occurredAt": "2026-08-27T13:26:45.669Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "create-branch-off-of-4530-2-with-3231-in",
+        "rootId": "ng",
+        "title": "create branch off of 4530-2 with 3231 in",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-27T13:27:40.780Z-create-branch-off-of-4530-2-with-3231-in-c9e3b7c1-8882-442f-b7b2-940d3a431397",
+            "nodeId": "create-branch-off-of-4530-2-with-3231-in",
+            "occurredAt": "2026-08-27T13:27:40.780Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "create-new-test-suite-for-full-system",
+        "rootId": "ng",
+        "title": "create new test suite for full system",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-27T13:28:44.825Z-create-new-test-suite-for-full-system-3d43b5cb-09fd-4e05-9388-0e4dadc6d0d9",
+            "nodeId": "create-new-test-suite-for-full-system",
+            "occurredAt": "2026-08-27T13:28:44.825Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "pr-4035-2-after-test-passes",
+        "rootId": "ng",
+        "title": "PR 4035-2 after test passes",
+        "xp": 0,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [],
+        "momentum": 0,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-27T13:29:05.129Z-pr-4035-2-after-test-passes-3973c11a-27c9-42a1-8103-d43fc1e631ab",
+            "nodeId": "pr-4035-2-after-test-passes",
+            "occurredAt": "2026-08-27T13:29:05.129Z",
+            "minutes": 0,
+            "effort": "recovery",
+            "xp": 0,
+            "note": "Created"
+          }
+        ]
+      },
+      {
+        "id": "fix-was-to-pin-shared-service-scdf",
+        "rootId": "ng",
+        "title": "fix was to pin shared-service-scdf",
+        "xp": 100,
+        "maxLevel": 1,
+        "levelXpRequirements": [
+          100
+        ],
+        "levelReachedAt": [
+          "2026-08-27T13:31:06.939Z"
+        ],
+        "momentum": 8,
+        "gates": [],
+        "updateHistory": [
+          {
+            "id": "2026-08-27T13:30:54.024Z-fix-was-to-pin-shared-service-scdf-0d1e385a-d49b-41a2-80b6-7293aa15c000",
+            "nodeId": "fix-was-to-pin-shared-service-scdf",
+            "occurredAt": "2026-08-27T13:30:54.024Z",
             "minutes": 0,
             "effort": "recovery",
             "xp": 0,
@@ -3844,24 +4073,54 @@
         "to": "test-whole-system"
       },
       {
-        "id": "4530-kafka-cfs-xml-mars-intel-incorporate-denisses-kafka-envelope-generator",
-        "from": "4530-kafka-cfs-xml-mars-intel",
-        "to": "incorporate-denisses-kafka-envelope-generator"
-      },
-      {
         "id": "test-whole-system-blackfish-actuator-for-trace-logs-at-provenance",
         "from": "test-whole-system",
         "to": "blackfish-actuator-for-trace-logs-at-provenance"
       },
       {
-        "id": "incorporate-denisses-kafka-envelope-generator-denisses-branch-merged-into-4530",
-        "from": "incorporate-denisses-kafka-envelope-generator",
-        "to": "denisses-branch-merged-into-4530"
+        "id": "kafka-ui-produce-json-to-translate-input-recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps",
+        "from": "kafka-ui-produce-json-to-translate-input",
+        "to": "recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps"
       },
       {
-        "id": "denisses-branch-merged-into-4530-deploy-into-same-setup",
-        "from": "denisses-branch-merged-into-4530",
-        "to": "deploy-into-same-setup"
+        "id": "kafka-ui-produce-json-to-translate-input-recreating-artemis-app-with-regular-gccsj-scdf-workloads-missing",
+        "from": "kafka-ui-produce-json-to-translate-input",
+        "to": "recreating-artemis-app-with-regular-gccsj-scdf-workloads-missing"
+      },
+      {
+        "id": "data-ringing-meeting-notes-for-fabric-semantics-in-snapshots",
+        "from": "data-ringing",
+        "to": "meeting-notes-for-fabric-semantics-in-snapshots"
+      },
+      {
+        "id": "chicken-in-october-will-also-be-visiting-alba",
+        "from": "chicken",
+        "to": "in-october-will-also-be-visiting-alba"
+      },
+      {
+        "id": "4530-kafka-cfs-xml-mars-intel-solve-3231-and-4530-compatibility",
+        "from": "4530-kafka-cfs-xml-mars-intel",
+        "to": "solve-3231-and-4530-compatibility"
+      },
+      {
+        "id": "solve-3231-and-4530-compatibility-create-branch-off-of-4530-2-with-3231-in",
+        "from": "solve-3231-and-4530-compatibility",
+        "to": "create-branch-off-of-4530-2-with-3231-in"
+      },
+      {
+        "id": "create-branch-off-of-4530-2-with-3231-in-create-new-test-suite-for-full-system",
+        "from": "create-branch-off-of-4530-2-with-3231-in",
+        "to": "create-new-test-suite-for-full-system"
+      },
+      {
+        "id": "create-new-test-suite-for-full-system-pr-4035-2-after-test-passes",
+        "from": "create-new-test-suite-for-full-system",
+        "to": "pr-4035-2-after-test-passes"
+      },
+      {
+        "id": "recreating-artemis-app-with-regular-gccsj-scdf-workloads-missing-fix-was-to-pin-shared-service-scdf",
+        "from": "recreating-artemis-app-with-regular-gccsj-scdf-workloads-missing",
+        "to": "fix-was-to-pin-shared-service-scdf"
       }
     ],
     "xpLedger": [
@@ -4961,15 +5220,6 @@
         "note": "Created"
       },
       {
-        "id": "2026-08-25T16:11:59.114Z-incorporate-denisses-kafka-envelope-generator-142ed85a-e725-4b3c-b7bb-57a47d481e82",
-        "nodeId": "incorporate-denisses-kafka-envelope-generator",
-        "occurredAt": "2026-08-25T16:11:59.114Z",
-        "minutes": 0,
-        "effort": "recovery",
-        "xp": 0,
-        "note": "Created"
-      },
-      {
         "id": "2026-08-25T16:13:22.535Z-blackfish-actuator-for-trace-logs-at-provenance-f91b5090-6b28-440d-a751-f7c6e82c1523",
         "nodeId": "blackfish-actuator-for-trace-logs-at-provenance",
         "occurredAt": "2026-08-25T16:13:22.535Z",
@@ -4979,25 +5229,196 @@
         "note": "Created"
       },
       {
-        "id": "2026-08-25T16:13:55.336Z-denisses-branch-merged-into-4530-f4080ad7-5fc0-4d93-9d10-e92ca5f59680",
-        "nodeId": "denisses-branch-merged-into-4530",
-        "occurredAt": "2026-08-25T16:13:55.336Z",
+        "id": "2026-08-26T08:23:21.518Z-kafka-ui-produce-json-to-translate-input-598603c4-235c-4b4c-9222-474252d45d5e",
+        "nodeId": "kafka-ui-produce-json-to-translate-input",
+        "occurredAt": "2026-08-26T08:23:21.518Z",
+        "minutes": 50,
+        "effort": "moderate",
+        "xp": 50,
+        "note": "working through this, must recreate artemis app in juno"
+      },
+      {
+        "id": "2026-08-26T08:23:45.636Z-recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps-9a3385c8-df71-436b-9c2a-f04b2fc5a016",
+        "nodeId": "recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps",
+        "occurredAt": "2026-08-26T08:23:45.636Z",
         "minutes": 0,
         "effort": "recovery",
         "xp": 0,
         "note": "Created"
       },
       {
-        "id": "2026-08-25T16:14:15.482Z-deploy-into-same-setup-9744914a-e448-490c-a64c-b03bee95abaa",
-        "nodeId": "deploy-into-same-setup",
-        "occurredAt": "2026-08-25T16:14:15.482Z",
+        "id": "2026-08-26T08:24:03.157Z-recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps-c7b7bedf-4644-4491-94f2-b9de851169ff",
+        "nodeId": "recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps",
+        "occurredAt": "2026-08-26T08:24:03.157Z",
+        "minutes": 33,
+        "effort": "moderate",
+        "xp": 33,
+        "note": "deleted"
+      },
+      {
+        "id": "2026-08-26T08:38:44.085Z-deadlift-c6bf432b-7714-4c34-8fd8-d97e661fdf05",
+        "nodeId": "deadlift",
+        "occurredAt": "2026-08-26T08:38:44.085Z",
+        "minutes": 525,
+        "effort": "moderate",
+        "xp": 525,
+        "note": "525"
+      },
+      {
+        "id": "2026-08-26T08:39:07.884Z-j-off-b06c9dc3-5c09-4271-8881-de1ad8f82583",
+        "nodeId": "j-off",
+        "occurredAt": "2026-08-26T08:39:07.884Z",
+        "minutes": 3,
+        "effort": "moderate",
+        "xp": 3,
+        "note": "3"
+      },
+      {
+        "id": "2026-08-26T08:39:31.479Z-walk-491b109f-d5d8-423c-9f10-115ff2eb3744",
+        "nodeId": "walk",
+        "occurredAt": "2026-08-26T08:39:31.479Z",
+        "minutes": 3,
+        "effort": "moderate",
+        "xp": 3,
+        "note": "3"
+      },
+      {
+        "id": "2026-08-26T14:35:32.373Z-recreating-artemis-app-with-regular-gccsj-scdf-workloads-missing-e4ff7944-6c0d-4a84-89e9-9ab043ec4d27",
+        "nodeId": "recreating-artemis-app-with-regular-gccsj-scdf-workloads-missing",
+        "occurredAt": "2026-08-26T14:35:32.373Z",
         "minutes": 0,
         "effort": "recovery",
         "xp": 0,
         "note": "Created"
+      },
+      {
+        "id": "2026-08-26T14:35:51.055Z-recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps-410525ec-de71-40a8-88de-2af3567a2e11",
+        "nodeId": "recreating-artemis-app-in-juno-under-marks-snapshot-of-argo-apps",
+        "occurredAt": "2026-08-26T14:35:51.055Z",
+        "minutes": 67,
+        "effort": "moderate",
+        "xp": 67,
+        "note": "didnt work"
+      },
+      {
+        "id": "2026-08-26T14:36:28.160Z-juggle-a82476cd-7c11-4cf9-bd5d-00e64bb53d2b",
+        "nodeId": "juggle",
+        "occurredAt": "2026-08-26T14:36:28.160Z",
+        "minutes": 5,
+        "effort": "moderate",
+        "xp": 5,
+        "note": "5"
+      },
+      {
+        "id": "2026-08-26T14:37:54.599Z-meeting-notes-for-fabric-semantics-in-snapshots-014af49d-0983-4e22-bae0-8434f4c62664",
+        "nodeId": "meeting-notes-for-fabric-semantics-in-snapshots",
+        "occurredAt": "2026-08-26T14:37:54.599Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-27T06:21:59.059Z-in-october-will-also-be-visiting-alba-2043ce67-0f29-494d-9295-5742d315ea4f",
+        "nodeId": "in-october-will-also-be-visiting-alba",
+        "occurredAt": "2026-08-27T06:21:59.059Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-27T13:26:45.669Z-solve-3231-and-4530-compatibility-f82a16ae-ae7d-4df9-a955-ab58a25503ce",
+        "nodeId": "solve-3231-and-4530-compatibility",
+        "occurredAt": "2026-08-27T13:26:45.669Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-27T13:27:40.780Z-create-branch-off-of-4530-2-with-3231-in-c9e3b7c1-8882-442f-b7b2-940d3a431397",
+        "nodeId": "create-branch-off-of-4530-2-with-3231-in",
+        "occurredAt": "2026-08-27T13:27:40.780Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-27T13:28:44.825Z-create-new-test-suite-for-full-system-3d43b5cb-09fd-4e05-9388-0e4dadc6d0d9",
+        "nodeId": "create-new-test-suite-for-full-system",
+        "occurredAt": "2026-08-27T13:28:44.825Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-27T13:29:05.129Z-pr-4035-2-after-test-passes-3973c11a-27c9-42a1-8103-d43fc1e631ab",
+        "nodeId": "pr-4035-2-after-test-passes",
+        "occurredAt": "2026-08-27T13:29:05.129Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-27T13:30:17.213Z-new-baseline-without-test-ng-9b2229b7-349b-4910-9163-d18a11571092",
+        "nodeId": "new-baseline-without-test-ng",
+        "occurredAt": "2026-08-27T13:30:17.213Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": ""
+      },
+      {
+        "id": "2026-08-27T13:30:54.024Z-fix-was-to-pin-shared-service-scdf-0d1e385a-d49b-41a2-80b6-7293aa15c000",
+        "nodeId": "fix-was-to-pin-shared-service-scdf",
+        "occurredAt": "2026-08-27T13:30:54.024Z",
+        "minutes": 0,
+        "effort": "recovery",
+        "xp": 0,
+        "note": "Created"
+      },
+      {
+        "id": "2026-08-27T13:31:06.939Z-fix-was-to-pin-shared-service-scdf-2424ec38-e9d1-48ab-991e-3997d729e988",
+        "nodeId": "fix-was-to-pin-shared-service-scdf",
+        "occurredAt": "2026-08-27T13:31:06.939Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": ""
+      },
+      {
+        "id": "2026-08-27T13:35:13.524Z-recreating-artemis-app-with-regular-gccsj-scdf-workloads-missing-7f927cdb-dab2-411f-a58f-8baf1dd172ff",
+        "nodeId": "recreating-artemis-app-with-regular-gccsj-scdf-workloads-missing",
+        "occurredAt": "2026-08-27T13:35:13.524Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": ""
+      },
+      {
+        "id": "2026-08-27T13:35:27.508Z-kafka-ui-produce-json-to-translate-input-cff996b4-5e10-4f39-a22f-36e3fd97c2d6",
+        "nodeId": "kafka-ui-produce-json-to-translate-input",
+        "occurredAt": "2026-08-27T13:35:27.508Z",
+        "minutes": 50,
+        "effort": "moderate",
+        "xp": 50,
+        "note": "success"
+      },
+      {
+        "id": "2026-08-27T13:38:47.546Z-solve-3231-and-4530-compatibility-fc7ce12f-69ed-43f8-b5e1-6d2aebad9ddc",
+        "nodeId": "solve-3231-and-4530-compatibility",
+        "occurredAt": "2026-08-27T13:38:47.546Z",
+        "minutes": 100,
+        "effort": "moderate",
+        "xp": 100,
+        "note": ""
       }
     ],
-    "todayXp": 1381,
+    "todayXp": 450,
     "levelDefaults": {
       "levelStepXp": 100,
       "maxLevel": 1

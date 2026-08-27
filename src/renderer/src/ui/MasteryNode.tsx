@@ -31,6 +31,7 @@ export interface MasteryNodeData extends Record<string, unknown> {
   root?: boolean
   activitySelected?: boolean
   recentActivity?: boolean
+  freshActivity?: boolean
   maxed?: boolean
   levelXpTargets?: number[]
   levelReachedAt?: Array<string | null>
@@ -261,6 +262,7 @@ export function MasteryNode({ data }: NodeProps<MasteryNodeType>): ReactElement 
     data.maxed && !data.root ? 'node--maxed' : '',
     data.activitySelected ? 'node--activity' : '',
     data.recentActivity ? 'node--recent-activity' : '',
+    data.freshActivity ? 'node--fresh-activity' : '',
     data.historyPinned ? 'node--history-pinned' : '',
     scheduleHover ? 'node--schedule-hover' : '',
     opportuneToday ? 'node--opportune-today' : '',
